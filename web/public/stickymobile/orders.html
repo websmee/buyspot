@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover"/>
+    <title>StickyMobile BootStrap</title>
+    <link rel="stylesheet" type="text/css" href="styles/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="styles/style.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,500,500i,700,700i,900,900i|Source+Sans+Pro:300,300i,400,400i,600,600i,700,700i,900,900i&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="fonts/css/fontawesome-all.min.css">
+    <link rel="manifest" href="_manifest.json" data-pwa-version="set_in_manifest_and_pwa_js">
+    <link rel="apple-touch-icon" sizes="180x180" href="app/icons/icon-192x192.png">
+</head>
+
+<body class="theme-dark" data-highlight="highlight-red" data-gradient="body-default">
+
+<div id="preloader">
+    <div class="spinner-border color-highlight" role="status"></div>
+</div>
+
+<div id="page">
+
+    <div class="header header-fixed header-logo-left">
+		<span class="header-title">
+			<i class="fa fa-arrows-rotate color-sunny-light"></i>&nbsp;
+			<span class="color-sunny-light">
+                <span class="opacity-30 font-200">USDT</span>
+                234.56
+            </span>
+		</span>
+        <span class="header-title position-relative float-right pe-3 me-3">
+			<i class="fa fa-wallet color-sunny-light"></i>&nbsp;
+			<span class="color-sunny-light">
+                <span class="opacity-30 font-200">USDT</span>
+                1234.56
+            </span>
+		</span>
+    </div>
+
+    <div id="footer-bar" class="footer-bar-1">
+        <a href="spot.html"><i class="fa fa-chart-line"></i><span>Spots</span></a>
+        <a href="orders.html" class="active-nav"><i class="fa fa-list"></i><span>Orders</span></a>
+        <a href="settings.html"><i class="fa fa-cog"></i><span>Settings</span></a>
+        <a href="profile.html"><i class="fa fa-user"></i><span>Profile</span></a>
+    </div>
+
+    <div class="page-content header-clear-medium">
+
+        <div class="card card-style mb-3" data-menu="order-info-1">
+            <div class="content m-3">
+                <div class="d-flex">
+                    <div class="align-self-center">
+                        <h5 class="mb-n2">
+                            Bitcoin
+                            <span class="opacity-30 font-200">BTC</span>
+                        </h5>
+                        <p class="mt-n1 mb-0 font-10">1 hour ago</p>
+                    </div>
+                    <div class="align-self-center ms-auto ps-3">
+                        <h5 class="mb-n2">
+                            <span class="opacity-30 font-200">USDT</span>
+                            <a class="color-sunny-light">123.45</a>
+                        </h5>
+                        <p class="mt-n1 mb-0 font-10" style="text-align: right">+2.34%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card card-style mb-3" data-menu="order-info-2">
+            <div class="content m-3">
+                <div class="d-flex">
+                    <div class="align-self-center">
+                        <h5 class="mb-n2">
+                            Ethereum
+                            <span class="opacity-30 font-200">ETH</span>
+                        </h5>
+                        <p class="mt-n1 mb-0 font-10">24 hours ago</p>
+                    </div>
+                    <div class="align-self-center ms-auto ps-3">
+                        <h5 class="mb-n2">
+                            <span class="opacity-30 font-200">USDT</span>
+                            <a class="color-red-light">111.11</a>
+                        </h5>
+                        <p class="mt-n1 mb-0 font-10" style="text-align: right">-1.23%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="order-info-1" class="menu menu-box-modal menu-box-detached">
+        <div class="menu-title">
+            <h1>
+                Bitcoin
+                <span class="opacity-30 font-200">BTC</span>
+            </h1>
+            <p>1 hour ago</p>
+            <a href="#" class="close-menu"><i class="fa fa-times"></i></a>
+        </div>
+        <div class="divider divider-margins mb-1 mt-3"></div>
+        <div class="content px-1">
+            <p>
+                Current value: USDT <a class="color-sunny-light">123.45</a>
+                <br/>
+                PNL: <a class="color-sunny-light">+2.34%</a>
+                <br/>
+                Will be sold automatically at +3% or -1%
+            </p>
+            <a href="#"
+               class="close-menu btn btn-full btn-m bg-theme color-theme gradient-sunny rounded-sm text-uppercase font-800 mb-3">Sell Now</a>
+        </div>
+    </div>
+    <div id="order-info-2" class="menu menu-box-modal menu-box-detached">
+        <div class="menu-title">
+            <h1>
+                Ethereum
+                <span class="opacity-30 font-200">ETH</span>
+            </h1>
+            <p>24 hours ago</p>
+            <a href="#" class="close-menu"><i class="fa fa-times"></i></a>
+        </div>
+        <div class="divider divider-margins mb-1 mt-3"></div>
+        <div class="content px-1">
+            <p>
+                Current value: USDT <a class="color-red-light">111.11</a>
+                <br/>
+                PNL: <a class="color-red-light">-1.23%</a>
+                <br/>
+                Will be sold automatically at +4% or -2%
+            </p>
+            <a href="#"
+               class="close-menu btn btn-full btn-m bg-theme color-theme gradient-red rounded-sm text-uppercase font-800 mb-3">Sell Now</a>
+        </div>
+    </div>
+
+</div>
+
+<script type="text/javascript" src="scripts/bootstrap.min.js"></script>
+<script type="text/javascript" src="scripts/main.js"></script>
+</body>
