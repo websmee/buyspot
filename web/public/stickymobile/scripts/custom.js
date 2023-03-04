@@ -1,13 +1,16 @@
-const iOSversion = () => {
-    let d, v;
-    if (/iP(hone|od|ad)/.test(navigator.platform)) {
-        v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
-        d = { status: true, version: parseInt(v[1], 10), info: parseInt(v[1], 10) + '.' + parseInt(v[2], 10) + '.' + parseInt(v[3] || 0, 10) };
-    } else { d = { status: false, version: false, info: '' } }
-    return d;
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const iOSVersion = () => {
+        let d, v;
+        if (/iP(hone|od|ad)/.test(navigator.platform)) {
+            v = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
+            d = { status: true, version: parseInt(v[1], 10), info: parseInt(v[1], 10) + '.' + parseInt(v[2], 10) + '.' + parseInt(v[3] || 0, 10) };
+        } else { d = { status: false, version: false, info: '' } }
+        return d;
+    }
+    if (iOSVersion().version > 14) { document.querySelectorAll('#page')[0].classList.add('min-ios15'); }
+});
 
-const openListener = e => {
+const menuOpenListener = e => {
     //Close Existing Opened Menus
     const activeMenu = document.querySelectorAll('.menu-active');
     for (let i = 0; i < activeMenu.length; i++) { activeMenu[i].classList.remove('menu-active'); }
@@ -43,7 +46,7 @@ const openListener = e => {
     }
 }
 
-const closeListener = e => {
+const menuCloseListener = e => {
     const activeMenu = document.querySelectorAll('.menu-active');
     for (let i = 0; i < activeMenu.length; i++) { activeMenu[i].classList.remove('menu-active'); }
     var wrappers = document.querySelectorAll('.header, #footer-bar, .page-content');
@@ -82,11 +85,11 @@ const bindMenus = () => {
 
         //Opening Menus
         var menuOpen = document.querySelectorAll('[data-menu]');
-        menuOpen.forEach(el => el.addEventListener('click', openListener));
+        menuOpen.forEach(el => el.addEventListener('click', menuOpenListener));
 
         //Closing Menus
         const menuClose = document.querySelectorAll('.close-menu, .menu-hider');
-        menuClose.forEach(el => el.addEventListener('click', closeListener));
+        menuClose.forEach(el => el.addEventListener('click', menuCloseListener));
     }
 }
 
@@ -99,11 +102,11 @@ const unbindMenus = () => {
     if (menus.length) {
         //Opening Menus
         var menuOpen = document.querySelectorAll('[data-menu]');
-        menuOpen.forEach(el => el.removeEventListener('click', openListener));
+        menuOpen.forEach(el => el.removeEventListener('click', menuOpenListener));
 
         //Closing Menus
         const menuClose = document.querySelectorAll('.close-menu, .menu-hider');
-        menuClose.forEach(el => el.removeEventListener('click', closeListener));
+        menuClose.forEach(el => el.removeEventListener('click', menuCloseListener));
     }
 }
 
@@ -111,14 +114,21 @@ const unbindEmptyLinks = () => {
     document.querySelectorAll('a[href="#"]').forEach(el => el.removeEventListener('click', preventDefault));
 }
 
-const bind = () => {
-    bindMenus();
-    bindEmptyLinks();
+function showPreloader() {
+    document.getElementById('preloader').classList.remove('preloader-hide')
 }
 
-const unbind = () => {
+function hidePreloader() {
+    document.getElementById('preloader').classList.add('preloader-hide')
+}
+
+function bindAll() {
+    bindMenus();
+    bindEmptyLinks();
+    hidePreloader();
+}
+
+function unbindAll() {
     unbindMenus();
     unbindEmptyLinks();
 }
-
-export { bind, unbind, iOSversion }

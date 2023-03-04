@@ -1,21 +1,26 @@
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { useRoutes } from 'react-router-dom';
 
-import SpotHeader from 'Layouts/Header/spotHeader';
-import OrdersHeader from 'Layouts/Header/ordersHeader';
-import Footer from 'Layouts/Footer/index';
 import Spot from 'Pages/spot';
 import Orders from 'Pages/orders';
+import Settings from 'Pages/settings';
+import Profile from 'Pages/profile';
+import Layout from 'Layouts/layout';
 
 function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route exact path='/' element={<><SpotHeader /><Spot /></>}></Route>
-        <Route exact path='/orders' element={<><OrdersHeader /><Orders /></>}></Route>
-      </Routes>
-      <Footer />
-    </Router>
-  );
+  const routes = [
+    {
+      path: '/',
+      element: <Layout />,
+      children: [
+        { index: true, element: <Spot /> },
+        { path: '/orders', element: <Orders /> },
+        { path: '/settings', element: <Settings /> },
+        { path: '/profile', element: <Profile /> },
+      ],
+    },
+  ];
+
+  return useRoutes(routes);
 }
 
 export default App;

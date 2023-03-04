@@ -1,14 +1,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from 'app';
+import { BrowserRouter } from 'react-router-dom';
+import { Provider } from "react-redux";
+import TimeAgo from 'javascript-time-ago'
+import en from 'javascript-time-ago/locale/en.json'
 
-import { iOSversion } from 'Services/Utils/stickymobile';
+import configureStore from './Store/store'
 
-if (iOSversion().version > 14) { document.querySelectorAll('#page')[0].classList.add('min-ios15'); }
 
+TimeAgo.addDefaultLocale(en)
+const store = configureStore();
 const root = ReactDOM.createRoot(document.getElementById('page'));
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+  // <React.StrictMode>
+    <BrowserRouter>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </BrowserRouter>
+  // </React.StrictMode>
 );

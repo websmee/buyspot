@@ -1,11 +1,11 @@
 import HeaderSpots from 'Components/headerSpots';
 import HeaderBalance from 'Components/headerBalance';
 
-function SpotHeader() {
+function SpotHeader(props) {
     return (
         <div className="header header-fixed header-logo-left">
-            <HeaderSpots count="10"/>
-            <HeaderBalance currency="USDT" amount="1234.56"/>
+            <HeaderSpots count={props.spotsCount} />
+            <HeaderBalance />
         </div>
     );
 }
