@@ -1,10 +1,22 @@
 import classNames from 'classnames';
+import { useEffect } from 'react';
 import ReactTimeAgo from 'react-time-ago'
 import { NEWS_ARTICLE_SENTIMENT } from 'Store/reducer';
 
 import numbers from 'Utils/numbers';
+import stickymobile from 'Utils/stickymobile';
 
 function NewsArticle(props) {
+    useEffect(() => {
+        const menuOpenListener = stickymobile.getMenuOpenListener(props.modalId);
+        const menuCloseListener = stickymobile.getMenuCloseListener();
+        stickymobile.bindMenu(props.modalId, menuOpenListener, menuCloseListener);
+
+        return () => {
+            stickymobile.unbindMenu(props.modalId, menuOpenListener, menuCloseListener);
+        }
+    }, [])
+
     return (
         <div className="card card-style mb-2" data-menu={props.modalId}>
             <a href="#" className="content ms-2 my-0">

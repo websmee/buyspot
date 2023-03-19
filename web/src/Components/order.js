@@ -1,4 +1,20 @@
+import { useEffect } from "react";
+
+import stickymobile from "Utils/stickymobile";
+
 function Order(props) {
+    useEffect(() => {
+        const menuOpenListener = stickymobile.getMenuOpenListener(props.modalId);
+        const menuCloseListener = stickymobile.getMenuCloseListener();
+        stickymobile.bindMenu(props.modalId, menuOpenListener, menuCloseListener);
+        stickymobile.bindEmptyLinks();
+
+        return () => {
+            stickymobile.unbindMenu(props.modalId, menuOpenListener, menuCloseListener);
+            stickymobile.unbindEmptyLinks();
+        }
+    }, [])
+
     return (
         <div className="card card-style mb-3" data-menu={props.modalId}>
             <div className="content m-3">

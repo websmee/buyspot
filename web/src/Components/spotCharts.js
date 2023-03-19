@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import {
     BarElement,
@@ -14,6 +14,8 @@ import {
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 
+import stickymobile from 'Utils/stickymobile';
+
 ChartJS.register(
     CategoryScale,
     Filler,
@@ -27,6 +29,18 @@ ChartJS.register(
 );
 
 function SpotCharts(props) {
+    useEffect(() => {
+        const menuOpenListener = stickymobile.getMenuOpenListener(props.assetDescriptionModalId);
+        const menuCloseListener = stickymobile.getMenuCloseListener();
+        stickymobile.bindMenu(props.assetDescriptionModalId, menuOpenListener, menuCloseListener);
+        stickymobile.bindEmptyLinks();
+
+        return () => {
+            stickymobile.unbindMenu(props.assetDescriptionModalId, menuOpenListener, menuCloseListener);
+            stickymobile.unbindEmptyLinks();
+        }
+    }, [])
+
     let prices = [];
     let forecast = [];
     for(let i = 0; i < props.chartPrices.length; i++) {

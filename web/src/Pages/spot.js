@@ -17,14 +17,6 @@ function Spot() {
     const spot = useSelector((state) => state.spot);
 
     useEffect(() => {
-        window.bindAll();
-
-        return () => {
-            window.unbindAll();
-        };
-    }, []);
-
-    useEffect(() => {
         dispatch(getNextSpot());
     }, [dispatch]);
 

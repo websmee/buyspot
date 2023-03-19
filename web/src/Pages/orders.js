@@ -1,18 +1,8 @@
-import { useEffect } from 'react';
-
 import Order from "Components/order"
 import OrderSellModal from "Components/orderSellModal"
 import OrdersHeader from 'Layouts/ordersHeader';
 
 function Orders() {
-    useEffect(() => {
-        window.bindAll();
-
-        return () => {
-            window.unbindAll();
-        };
-    }, []);
-
     return (
         <>
             <OrdersHeader />

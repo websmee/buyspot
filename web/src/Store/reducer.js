@@ -1,5 +1,8 @@
-import { createAction, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
+
 import { apiCallBegan } from "Store/api";
+
+import stickymobile from "Utils/stickymobile";
 
 export const NEWS_ARTICLE_SENTIMENT = {
     NEUTRAL: "NEUTRAL",
@@ -68,17 +71,17 @@ const slice = createSlice({
         },
 
         nextSpotRequested: (state, action) => {
-            window.showPreloader();
+            stickymobile.showPreloader();
         },
 
         nextSpotReceived: (state, action) => {
             state.spot = action.payload;
-            window.hidePreloader();
+            stickymobile.hidePreloader();
         },
 
         nextSpotRequestFailed: (state, action) => {
             state.errorMessage = action.payload;
-            window.hidePreloader();
+            stickymobile.hidePreloader();
         },
 
         buySpotRequested: (state, action) => {
