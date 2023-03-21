@@ -9,22 +9,31 @@ import NewsArticle from "Components/newsArticle"
 import SpotBuyModal from "Components/spotBuyModal"
 import NewsArticleModal from "Components/newsArticleModal"
 import ErrorMessage from 'Components/errorMessage';
-import { getNextSpot } from 'Store/reducer';
+import { getCurrentSpotsData, getSpotByIndex } from 'Store/reducer';
 
 function Spot() {
     const dispatch = useDispatch();
     const balance = useSelector((state) => state.balance);
     const spot = useSelector((state) => state.spot);
+    const currentSpotsIndex = useSelector((state) => state.currentSpotsIndex);
 
     useEffect(() => {
-        dispatch(getNextSpot());
+        dispatch(getCurrentSpotsData());
+        currentSpotsIndex > 0 && dispatch(getSpotByIndex(currentSpotsIndex));
     }, [dispatch]);
 
     return (
         <>
-            <SpotHeader spotsCount={spot.currentSpotsTotal} />
+            <SpotHeader />
 
-            <div className="page-content header-clear-medium">
+            {currentSpotsIndex == 0 && <div className="page-content header-clear-medium">
+                <div className="ms-3 me-3 mb-4 alert alert-small shadow-xl bg-fade-gray-dark" role="alert" style={{borderRadius: "15px"}}>
+                    <span style={{borderRadius: "15px 0 0 15px", left: "0", top: "0", bottom: "0"}}><i className="fa fa-times"></i></span>
+                    <strong>No spots found at the moment.</strong>
+                </div>
+            </div>}
+
+            {currentSpotsIndex > 0 && <div className="page-content header-clear-medium">
                 <ErrorMessage />
 
                 <SpotCharts
@@ -39,10 +48,8 @@ function Spot() {
                 />
 
                 <SpotButtons
-                    activeOrdersCount={spot.asset.activeOrders}
+                    activeOrdersCount={spot.activeOrders}
                     assetTicker={spot.asset.ticker}
-                    currentSpot={spot.currentSpotsIndex}
-                    spotCount={spot.currentSpotsTotal}
                     buyModalId="buy-modal"
                 />
 
@@ -51,7 +58,7 @@ function Spot() {
                         {article.title}
                     </NewsArticle>
                 )}
-            </div>
+            </div>}
 
             <AssetDescriptionModal id="asset-desc-modal" assetName={spot.asset.name} assetTicker={spot.asset.ticker}>
                 {spot.asset.description}

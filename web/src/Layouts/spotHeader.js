@@ -1,10 +1,10 @@
 import HeaderSpots from 'Components/headerSpots';
 import HeaderBalance from 'Components/headerBalance';
 
-function SpotHeader(props) {
+function SpotHeader() {
     return (
         <div className="header header-fixed header-logo-left">
-            <HeaderSpots count={props.spotsCount} />
+            <HeaderSpots />
             <HeaderBalance />
         </div>
     );

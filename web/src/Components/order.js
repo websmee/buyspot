@@ -7,11 +7,9 @@ function Order(props) {
         const menuOpenListener = stickymobile.getMenuOpenListener(props.modalId);
         const menuCloseListener = stickymobile.getMenuCloseListener();
         stickymobile.bindMenu(props.modalId, menuOpenListener, menuCloseListener);
-        stickymobile.bindEmptyLinks();
 
         return () => {
             stickymobile.unbindMenu(props.modalId, menuOpenListener, menuCloseListener);
-            stickymobile.unbindEmptyLinks();
         }
     }, [])
 
@@ -29,7 +27,7 @@ function Order(props) {
                     <div className="align-self-center ms-auto ps-3">
                         <h5 className="mb-n2">
                             <span className="opacity-30 font-200" style={{marginRight: "3px"}}>{props.amountTicker}</span>
-                            <a href="#" className={props.pnl[0] == "-" ? "color-red-light" : "color-sunny-light"}>{props.amount}</a>
+                            <a className={props.pnl[0] == "-" ? "color-red-light" : "color-sunny-light"}>{props.amount}</a>
                         </h5>
                         <p className="mt-n1 mb-0 font-10" style={{textAlign: "right"}}>{props.pnl}</p>
                     </div>

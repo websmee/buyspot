@@ -11,7 +11,7 @@ function NewsArticleModal(props) {
                     <i className="far fa-clock fa-fw pe-2"></i><ReactTimeAgo date={Date.parse(props.created)} locale="en-US" />
                     <i className="far fa-eye fa-fw px-3"></i>{numbers.pretty(props.views, 1)}
                 </span>
-                <a href="#" className="close-menu"><i className="fa fa-times"></i></a>
+                <a className="close-menu"><i className="fa fa-times"></i></a>
             </div>
             <div className="content">
                 <div className="divider mb-4"></div>
@@ -19,7 +19,7 @@ function NewsArticleModal(props) {
                     {props.children}
                 </p>
                 <div className="divider mb-4"></div>
-                <a href="#" className="close-menu btn btn-full btn-m rounded-sm bg-highlight font-800 text-uppercase mb-4">Close Article</a>
+                <a className="close-menu btn btn-full btn-m rounded-sm bg-highlight font-800 text-uppercase mb-4">Close Article</a>
             </div>
         </div>
     )

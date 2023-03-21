@@ -33,11 +33,9 @@ function SpotCharts(props) {
         const menuOpenListener = stickymobile.getMenuOpenListener(props.assetDescriptionModalId);
         const menuCloseListener = stickymobile.getMenuCloseListener();
         stickymobile.bindMenu(props.assetDescriptionModalId, menuOpenListener, menuCloseListener);
-        stickymobile.bindEmptyLinks();
 
         return () => {
             stickymobile.unbindMenu(props.assetDescriptionModalId, menuOpenListener, menuCloseListener);
-            stickymobile.unbindEmptyLinks();
         }
     }, [])
 
@@ -67,8 +65,8 @@ function SpotCharts(props) {
                         </h1>
                         <h4 className="font-400 text-uppercase mt-n2 font-16 opacity-30">
                             <a style={{ marginRight: "12px" }}>1d</a>
-                            <a href="#" style={{ marginRight: "12px" }}>1w</a>
-                            <a href="#" style={{ marginRight: "12px" }}>1m</a>
+                            <a style={{ marginRight: "12px" }} className="text-info">1w</a>
+                            <a style={{ marginRight: "12px" }} className="text-info">1m</a>
                         </h4>
                     </div>
                     <div className="ms-auto">

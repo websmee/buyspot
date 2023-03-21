@@ -19,6 +19,8 @@ const slice = createSlice({
             amount: 0,
             ticker: "",
         },
+        currentSpotsIndex: 1,
+        currentSpotsTotal: 0,
         spot: {
             asset: {
                 name: "",
@@ -33,8 +35,6 @@ const slice = createSlice({
                 forecast: [],
                 volumes: [],
             },
-            currentSpotsIndex: 0,
-            currentSpotsTotal: 0,
             news: [
                 // {
                 //     sentiment: NEWS_ARTICLE_SENTIMENT.NEUTRAL,
@@ -64,22 +64,37 @@ const slice = createSlice({
 
         currentBalanceReceived: (state, action) => {
             state.balance = action.payload;
+            state.errorMessage = "";
         },
 
         currentBalanceRequestFailed: (state, action) => {
             state.errorMessage = action.payload;
         },
 
-        nextSpotRequested: (state, action) => {
+        currentSpotsDataRequested: (state, action) => {
+        },
+
+        currentSpotsDataReceived: (state, action) => {
+            state.currentSpotsTotal = action.payload.currentSpotsTotal;
+            state.currentSpotsIndex = action.payload.currentSpotsTotal > 0 ? 1 : 0;
+            state.errorMessage = "";
+        },
+
+        currentSpotsDataRequestFailed: (state, action) => {
+            state.errorMessage = action.payload;
+        },
+
+        spotRequested: (state, action) => {
             stickymobile.showPreloader();
         },
 
-        nextSpotReceived: (state, action) => {
+        spotReceived: (state, action) => {
             state.spot = action.payload;
             stickymobile.hidePreloader();
+            state.errorMessage = "";
         },
 
-        nextSpotRequestFailed: (state, action) => {
+        spotRequestFailed: (state, action) => {
             state.errorMessage = action.payload;
             stickymobile.hidePreloader();
         },
@@ -88,8 +103,9 @@ const slice = createSlice({
         },
 
         buySpotRequestSucceded: (state, action) => {
-            state.spot.asset.activeOrders++;
+            state.spot.activeOrders++;
             state.balance = action.payload.updatedBalance;
+            state.errorMessage = "";
         },
 
         buySpotRequestFailed: (state, action) => {
@@ -106,7 +122,8 @@ export default slice.reducer;
 
 const {
     currentBalanceRequested, currentBalanceReceived, currentBalanceRequestFailed,
-    nextSpotRequested, nextSpotReceived, nextSpotRequestFailed,
+    currentSpotsDataRequested, currentSpotsDataReceived, currentSpotsDataRequestFailed,
+    spotRequested, spotReceived, spotRequestFailed,
     buySpotRequested, buySpotRequestSucceded, buySpotRequestFailed,
     clearErrorMessageRequested,
 } = slice.actions;
@@ -123,14 +140,26 @@ export const getCurrentBalance = () => (dispatch) => {
     );
 };
 
-export const getNextSpot = () => (dispatch) => {
+export const getCurrentSpotsData = () => (dispatch) => {
     return dispatch(
         apiCallBegan({
-            url: "/api/v1/spots/next",
+            url: "/api/v1/spots/data",
             method: "get",
-            onStart: nextSpotRequested.type,
-            onSuccess: nextSpotReceived.type,
-            onError: nextSpotRequestFailed.type,
+            onStart: currentSpotsDataRequested.type,
+            onSuccess: currentSpotsDataReceived.type,
+            onError: currentSpotsDataRequestFailed.type,
+        })
+    );
+};
+
+export const getSpotByIndex = (index) => (dispatch) => {
+    return dispatch(
+        apiCallBegan({
+            url: "/api/v1/spots/" + index,
+            method: "get",
+            onStart: spotRequested.type,
+            onSuccess: spotReceived.type,
+            onError: spotRequestFailed.type,
         })
     );
 };
@@ -149,5 +178,5 @@ export const buySpot = (assetTicker, balanceTicker, amount, takeProfit, stopLoss
 };
 
 export const clearErrorMessage = () => (dispatch) => {
-    return dispatch({type: clearErrorMessageRequested.type});
+    return dispatch({ type: clearErrorMessageRequested.type });
 };
