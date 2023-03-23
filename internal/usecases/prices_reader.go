@@ -1,0 +1,37 @@
+package usecases
+
+import (
+	"context"
+	"fmt"
+
+	"websmee/buyspot/internal/domain"
+)
+
+type PricesReader struct {
+	pricesRepository PricesRepository
+	balanceService   BalanceService
+}
+
+func NewPricesReader(
+	pricesRepository PricesRepository,
+	balanceService BalanceService,
+) *PricesReader {
+	return &PricesReader{
+		pricesRepository,
+		balanceService,
+	}
+}
+
+func (r *PricesReader) GetCurrentPrices(ctx context.Context) (*domain.Prices, error) {
+	user := domain.GetCtxUser(ctx)
+	if user == nil {
+		return nil, domain.ErrUnauthorized
+	}
+
+	balance, err := r.balanceService.GetUserBalance(ctx, user)
+	if err != nil {
+		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", user.ID, err)
+	}
+
+	return r.pricesRepository.GetCurrentPrices(ctx, balance.Ticker)
+}

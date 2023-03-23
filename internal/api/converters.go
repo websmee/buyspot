@@ -6,6 +6,22 @@ import (
 	"websmee/buyspot/internal/domain"
 )
 
+func ConvertOrderToMessages(order *domain.Order) *Order {
+	return &Order{
+		ID:           order.ID.Hex(),
+		Amount:       order.FromAmount,
+		AmountTicker: order.FromTicker,
+		Asset: &Asset{
+			Name:   order.ToAssetName,
+			Ticker: order.ToTicker,
+		},
+		PnL:        order.PnL,
+		TakeProfit: order.TakeProfit,
+		StopLoss:   order.StopLoss,
+		Created:    order.Created,
+	}
+}
+
 func ConvertSpotToMessage(spot *domain.Spot) *Spot {
 	chartsData := buildChartsData(spot.HistoryMarketData, spot.ForecastMarketData)
 
@@ -21,18 +37,18 @@ func ConvertSpotToMessage(spot *domain.Spot) *Spot {
 	}
 
 	var takeProfitOptions []Option
-	for i := range spot.BuyOrderSettings.TakeProfitOptions {
+	for i := range spot.Advice.BuyOrderSettings.TakeProfitOptions {
 		takeProfitOptions = append(takeProfitOptions, Option{
-			Value: spot.BuyOrderSettings.TakeProfitOptions[i],
-			Text:  fmt.Sprintf("%.2f", spot.BuyOrderSettings.TakeProfitOptions[i]),
+			Value: spot.Advice.BuyOrderSettings.TakeProfitOptions[i],
+			Text:  fmt.Sprintf("%.2f", spot.Advice.BuyOrderSettings.TakeProfitOptions[i]),
 		})
 	}
 
 	var stopLossOptions []Option
-	for i := range spot.BuyOrderSettings.StopLossOptions {
+	for i := range spot.Advice.BuyOrderSettings.StopLossOptions {
 		stopLossOptions = append(stopLossOptions, Option{
-			Value: spot.BuyOrderSettings.StopLossOptions[i],
-			Text:  fmt.Sprintf("%.2f", spot.BuyOrderSettings.StopLossOptions[i]),
+			Value: spot.Advice.BuyOrderSettings.StopLossOptions[i],
+			Text:  fmt.Sprintf("%.2f", spot.Advice.BuyOrderSettings.StopLossOptions[i]),
 		})
 	}
 
@@ -43,14 +59,14 @@ func ConvertSpotToMessage(spot *domain.Spot) *Spot {
 			Description: spot.Asset.Description,
 		},
 		ActiveOrders:  spot.ActiveOrders,
-		PriceForecast: spot.PriceForecast,
+		PriceForecast: spot.Advice.PriceForecast,
 		ChartsData:    chartsData,
 		News:          news,
 		BuyOrderSettings: BuyOrderSettings{
-			Amount:            spot.BuyOrderSettings.Amount,
-			TakeProfit:        spot.BuyOrderSettings.TakeProfit,
+			Amount:            spot.Advice.BuyOrderSettings.Amount,
+			TakeProfit:        spot.Advice.BuyOrderSettings.TakeProfit,
 			TakeProfitOptions: takeProfitOptions,
-			StopLoss:          spot.BuyOrderSettings.StopLoss,
+			StopLoss:          spot.Advice.BuyOrderSettings.StopLoss,
 			StopLossOptions:   stopLossOptions,
 		},
 	}

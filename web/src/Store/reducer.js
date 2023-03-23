@@ -56,6 +56,22 @@ const slice = createSlice({
                 ],
             },
         },
+        orders: [
+            // {
+            //     id: "test123",
+            //     amount: 0,
+            //     amountTicker: "USDT",
+            //     asset: {
+            //         name: "BTC",
+            //         ticker: "Bitcoin",
+            //         description: "",
+            //     },
+            //     pnl: 0,
+            //     takeProfit: 0,
+            //     stopLoss: 0,
+            //     created: "2023-03-04T15:16:34.2960596+06:00",
+            // }
+        ],
     },
 
     reducers: {
@@ -112,6 +128,21 @@ const slice = createSlice({
             state.errorMessage = action.payload;
         },
 
+        ordersRequested: (state, action) => {
+            stickymobile.showPreloader();
+        },
+
+        ordersReceived: (state, action) => {
+            state.orders = action.payload;
+            stickymobile.hidePreloader();
+            state.errorMessage = "";
+        },
+
+        ordersRequestFailed: (state, action) => {
+            state.errorMessage = action.payload;
+            stickymobile.hidePreloader();
+        },
+
         clearErrorMessageRequested: (state, action) => {
             state.errorMessage = "";
         },
@@ -125,6 +156,7 @@ const {
     currentSpotsDataRequested, currentSpotsDataReceived, currentSpotsDataRequestFailed,
     spotRequested, spotReceived, spotRequestFailed,
     buySpotRequested, buySpotRequestSucceded, buySpotRequestFailed,
+    ordersRequested, ordersReceived, ordersRequestFailed,
     clearErrorMessageRequested,
 } = slice.actions;
 
@@ -173,6 +205,18 @@ export const buySpot = (assetTicker, balanceTicker, amount, takeProfit, stopLoss
             onStart: buySpotRequested.type,
             onSuccess: buySpotRequestSucceded.type,
             onError: buySpotRequestFailed.type,
+        })
+    );
+};
+
+export const getOrders = () => (dispatch) => {
+    return dispatch(
+        apiCallBegan({
+            url: "/api/v1/orders",
+            method: "get",
+            onStart: ordersRequested.type,
+            onSuccess: ordersReceived.type,
+            onError: ordersRequestFailed.type,
         })
     );
 };

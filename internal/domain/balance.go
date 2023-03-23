@@ -1,6 +1,6 @@
 package domain
 
 type Balance struct {
-	Amount      float64
-	AssetTicker string
+	Amount float64
+	Ticker string
 }

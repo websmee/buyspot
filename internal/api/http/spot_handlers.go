@@ -1,10 +1,8 @@
 package http
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -16,15 +14,13 @@ import (
 )
 
 func AddSpotHandlers(
-	ctx context.Context,
 	router *gin.Engine,
 	spotReader *usecases.SpotReader,
-	logger *log.Logger,
 ) {
 	router.GET("/api/v1/spots/data", func(c *gin.Context) {
-		count, err := spotReader.GetSpotsCount(ctx)
+		count, err := spotReader.GetSpotsCount(c)
 		if err != nil {
-			logger.Println(fmt.Errorf("could get spots count, err: %w", err))
+			c.Error(fmt.Errorf("could get spots count, err: %w", err))
 			c.Status(http.StatusInternalServerError)
 			return
 		}
@@ -39,14 +35,14 @@ func AddSpotHandlers(
 			return
 		}
 
-		spot, err := spotReader.GetSpotByIndex(ctx, index)
+		spot, err := spotReader.GetSpotByIndex(c, index)
 		if err != nil {
 			if errors.Is(err, domain.ErrSpotNotFound) {
 				c.Status(http.StatusNotFound)
 				return
 			}
 
-			logger.Println(fmt.Errorf("could get spot by index %d, err: %w", index, err))
+			c.Error(fmt.Errorf("could get spot by index %d, err: %w", index, err))
 			c.Status(http.StatusInternalServerError)
 			return
 		}

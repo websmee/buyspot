@@ -1,13 +1,20 @@
 package domain
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Order struct {
 	ID          primitive.ObjectID
-	Amount      float64
-	AssetTicker string
+	FromAmount  float64
+	FromTicker  string
+	ToAmount    float64
+	ToTicker    string
+	ToAssetName string
+	PnL         float64 // todo: remove
+	TakeProfit  float64
+	StopLoss    float64
 	Created     time.Time
 }

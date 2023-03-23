@@ -1,6 +1,8 @@
 package api
 
-import "time"
+import (
+	"time"
+)
 
 type Balance struct {
 	Ticker string  `json:"ticker"`
@@ -51,7 +53,7 @@ type BuyOrderSettings struct {
 
 type Spot struct {
 	Asset             Asset            `json:"asset"`
-	ActiveOrders      int64            `json:"activeOrders"`
+	ActiveOrders      int              `json:"activeOrders"`
 	PriceForecast     float64          `json:"priceForecast"`
 	ChartsData        ChartsData       `json:"chartsData"`
 	CurrentSpotsIndex int              `json:"currentSpotsIndex"`
@@ -66,4 +68,15 @@ type BuySpotResponse struct {
 
 type SpotsData struct {
 	CurrentSpotsTotal int `json:"currentSpotsTotal"`
+}
+
+type Order struct {
+	ID           string    `json:"id"`
+	Amount       float64   `json:"amount"`
+	AmountTicker string    `json:"amountTicker"`
+	Asset        *Asset    `json:"asset"`
+	PnL          float64   `json:"pnl"`
+	TakeProfit   float64   `json:"takeProfit"`
+	StopLoss     float64   `json:"stopLoss"`
+	Created      time.Time `json:"created"`
 }

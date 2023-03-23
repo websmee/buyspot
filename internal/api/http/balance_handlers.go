@@ -1,7 +1,6 @@
 package http
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +9,6 @@ import (
 )
 
 func AddBalanceHandlers(
-	_ context.Context,
 	router *gin.Engine,
 ) {
 	router.GET("/api/v1/balances/current", func(c *gin.Context) {

@@ -10,37 +10,66 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	httpAPI "websmee/buyspot/internal/api/http"
-	"websmee/buyspot/internal/infrastructure/mock"
+	"websmee/buyspot/internal/infrastructure/example"
+	mongoInfra "websmee/buyspot/internal/infrastructure/mongo"
 	redisInfra "websmee/buyspot/internal/infrastructure/redis"
 	"websmee/buyspot/internal/usecases"
+	"websmee/buyspot/internal/usecases/background"
 )
 
 func main() {
 	ctx := context.Background()
 
+	// dependencies
 	logger := newLogger("[MAIN]")
-	client := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
-	})
 
-	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(client)
+	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
+	defer func() {
+		if err := redisClient.Close(); err != nil {
+			logger.Fatalln(err)
+		}
+	}()
+
+	mongoClient, err := mongoInfra.Connect(ctx, "mongodb://localhost:27017")
+	if err != nil {
+		logger.Fatalln(err)
+	}
+	defer func() {
+		if err := mongoClient.Disconnect(ctx); err != nil {
+			logger.Fatalln(err)
+		}
+	}()
+
+	marketDataRepository := example.NewMarketDataRepository()
+	newsRepository := example.NewNewsRepository()
+	assetRepository := example.NewAssetRepository()
+	adviser := example.NewAdviser()
+	orderRepository := example.NewOrderRepository()
+	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
 	spotReader := usecases.NewSpotReader(currentSpotsRepository)
-	spotMaker := usecases.NewSpotMaker(
+	orderReader := usecases.NewOrderReader(orderRepository)
+
+	// background processed
+	spotMaker := background.NewSpotMaker(
 		currentSpotsRepository,
-		mock.NewMarketDataRepository(),
+		marketDataRepository,
+		newsRepository,
+		assetRepository,
+		adviser,
+		orderRepository,
 		newLogger("[SPOT MAKER]"),
 	)
-
-	router := gin.Default()
-	router.Use(httpAPI.CORSMiddleware())
-	httpHandlersLogger := newLogger("[HTTP HANDLER]")
-	httpAPI.AddBalanceHandlers(ctx, router)
-	httpAPI.AddSpotHandlers(ctx, router, spotReader, httpHandlersLogger)
-
 	if err := spotMaker.Run(ctx); err != nil {
 		logger.Fatalln(fmt.Errorf("could not run spot maker, err: %w", err))
 	}
 
+	// web server
+	router := gin.Default()
+	router.Use(httpAPI.CORSMiddleware())
+	router.Use(httpAPI.AuthMiddleware())
+	httpAPI.AddBalanceHandlers(router)
+	httpAPI.AddSpotHandlers(router, spotReader)
+	httpAPI.AddOrderHandlers(router, orderReader)
 	_ = router.Run("localhost:8080")
 }
 
