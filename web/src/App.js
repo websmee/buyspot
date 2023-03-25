@@ -1,4 +1,7 @@
 import { useRoutes } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { getCurrentPrices } from 'Store/reducer';
+import { useEffect } from 'react';
 
 import Spot from 'Pages/spot';
 import Orders from 'Pages/orders';
@@ -7,6 +10,19 @@ import Profile from 'Pages/profile';
 import Layout from 'Layouts/layout';
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getCurrentPrices());
+    const intervalId = setInterval(() => {
+        dispatch(getCurrentPrices());
+    }, 60000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [dispatch]);
+
   const routes = [
     {
       path: '/',

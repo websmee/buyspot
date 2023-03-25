@@ -19,46 +19,46 @@ function Spot() {
 
     useEffect(() => {
         dispatch(getCurrentSpotsData());
-        currentSpotsIndex > 0 && dispatch(getSpotByIndex(currentSpotsIndex));
+        dispatch(getSpotByIndex(currentSpotsIndex ?? 1));
     }, [dispatch]);
 
     return (
         <>
             <SpotHeader />
 
-            {currentSpotsIndex == 0 && <div className="page-content header-clear-medium">
-                <div className="ms-3 me-3 mb-4 alert alert-small shadow-xl bg-fade-gray-dark" role="alert" style={{borderRadius: "15px"}}>
-                    <span style={{borderRadius: "15px 0 0 15px", left: "0", top: "0", bottom: "0"}}><i className="fa fa-times"></i></span>
-                    <strong>No spots found at the moment.</strong>
-                </div>
-            </div>}
-
-            {currentSpotsIndex > 0 && <div className="page-content header-clear-medium">
+            <div className="page-content header-clear-medium">
                 <ErrorMessage />
 
-                <SpotCharts
-                    assetName={spot.asset.name}
-                    assetTicker={spot.asset.ticker}
-                    forecast={spot.priceForecast}
-                    chartTimes={spot.chartsData.times}
-                    chartPrices={spot.chartsData.prices}
-                    chartForecast={spot.chartsData.forecast}
-                    chartVolumes={spot.chartsData.volumes}
-                    assetDescriptionModalId="asset-desc-modal"
-                />
+                {currentSpotsIndex == 0 && <div className="ms-3 me-3 mb-4 alert alert-small shadow-xl bg-fade-gray-dark" role="alert" style={{borderRadius: "15px"}}>
+                    <span style={{borderRadius: "15px 0 0 15px", left: "0", top: "0", bottom: "0"}}><i className="fa fa-times"></i></span>
+                    <strong>No spots found at the moment.</strong>
+                </div>}
 
-                <SpotButtons
-                    activeOrdersCount={spot.activeOrders}
-                    assetTicker={spot.asset.ticker}
-                    buyModalId="buy-modal"
-                />
+                {currentSpotsIndex > 0 && <>
+                    <SpotCharts
+                        assetName={spot.asset.name}
+                        assetTicker={spot.asset.ticker}
+                        forecast={spot.priceForecast}
+                        chartTimes={spot.chartsData.times}
+                        chartPrices={spot.chartsData.prices}
+                        chartForecast={spot.chartsData.forecast}
+                        chartVolumes={spot.chartsData.volumes}
+                        assetDescriptionModalId="asset-desc-modal"
+                    />
 
-                {spot.news.map((article, i) =>
-                    <NewsArticle key={i} modalId={"article-modal-" + i} created={article.created} views={article.views} sentiment={article.sentiment}>
-                        {article.title}
-                    </NewsArticle>
-                )}
-            </div>}
+                    <SpotButtons
+                        activeOrdersCount={spot.activeOrders}
+                        assetTicker={spot.asset.ticker}
+                        buyModalId="buy-modal"
+                    />
+
+                    {spot.news.map((article, i) =>
+                        <NewsArticle key={i} modalId={"article-modal-" + i} created={article.created} views={article.views} sentiment={article.sentiment}>
+                            {article.title}
+                        </NewsArticle>
+                    )}
+                </>}
+            </div>
 
             <AssetDescriptionModal id="asset-desc-modal" assetName={spot.asset.name} assetTicker={spot.asset.ticker}>
                 {spot.asset.description}

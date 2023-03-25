@@ -13,7 +13,6 @@ type Order struct {
 	ToAmount    float64
 	ToTicker    string
 	ToAssetName string
-	PnL         float64 // todo: remove
 	TakeProfit  float64
 	StopLoss    float64
 	Created     time.Time

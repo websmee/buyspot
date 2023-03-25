@@ -45,9 +45,13 @@ func main() {
 	assetRepository := example.NewAssetRepository()
 	adviser := example.NewAdviser()
 	orderRepository := example.NewOrderRepository()
+	balanceService := example.NewBalanceService()
+	pricesService := example.NewPricesService()
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
+	currentPricesRepository := redisInfra.NewCurrentPricesRepository(redisClient)
 	spotReader := usecases.NewSpotReader(currentSpotsRepository)
 	orderReader := usecases.NewOrderReader(orderRepository)
+	pricesReader := usecases.NewPricesReader(currentPricesRepository, balanceService)
 
 	// background processed
 	spotMaker := background.NewSpotMaker(
@@ -63,6 +67,16 @@ func main() {
 		logger.Fatalln(fmt.Errorf("could not run spot maker, err: %w", err))
 	}
 
+	currentPricesUpdater := background.NewCurrentPricesUpdater(
+		currentPricesRepository,
+		balanceService,
+		pricesService,
+		newLogger("[CURRENT PRICES UPDATER]"),
+	)
+	if err := currentPricesUpdater.Run(ctx); err != nil {
+		logger.Fatalln(fmt.Errorf("could not run current prices updater, err: %w", err))
+	}
+
 	// web server
 	router := gin.Default()
 	router.Use(httpAPI.CORSMiddleware())
@@ -70,6 +84,7 @@ func main() {
 	httpAPI.AddBalanceHandlers(router)
 	httpAPI.AddSpotHandlers(router, spotReader)
 	httpAPI.AddOrderHandlers(router, orderReader)
+	httpAPI.AddPricesHandlers(router, pricesReader)
 	_ = router.Run("localhost:8080")
 }
 

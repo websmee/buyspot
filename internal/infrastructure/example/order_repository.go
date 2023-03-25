@@ -25,7 +25,6 @@ func (r *OrderRepository) GetUserOrders(_ context.Context, _ string) ([]domain.O
 			ToAmount:    0.0043,
 			ToTicker:    "BTC",
 			ToAssetName: "Bitcoin",
-			PnL:         2.34,
 			TakeProfit:  3,
 			StopLoss:    -1,
 			Created:     time.Now().Add(-1 * time.Hour),
@@ -37,7 +36,6 @@ func (r *OrderRepository) GetUserOrders(_ context.Context, _ string) ([]domain.O
 			ToAmount:    0.061,
 			ToTicker:    "ETH",
 			ToAssetName: "Ethereum",
-			PnL:         -1.23,
 			TakeProfit:  4,
 			StopLoss:    -2,
 			Created:     time.Now().Add(-24 * time.Hour),
@@ -47,4 +45,8 @@ func (r *OrderRepository) GetUserOrders(_ context.Context, _ string) ([]domain.O
 
 func (r *OrderRepository) GetActiveOrdersCountByTicker(ctx context.Context, ticker string) (int, error) {
 	return 3, nil
+}
+
+func (r *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order) error {
+	return nil
 }

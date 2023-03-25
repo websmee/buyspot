@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { apiCallBegan } from "Store/api";
+import converter from "Utils/converter";
 
 import stickymobile from "Utils/stickymobile";
 
@@ -15,6 +16,12 @@ const slice = createSlice({
     initialState: {
         loading: false,
         errorMessage: "",
+        currentPrices: {
+            inTicker: "",
+            pricesByTickers: {
+                "": 0,
+            },
+        },
         balance: {
             amount: 0,
             ticker: "",
@@ -59,14 +66,11 @@ const slice = createSlice({
         orders: [
             // {
             //     id: "test123",
-            //     amount: 0,
-            //     amountTicker: "USDT",
-            //     asset: {
-            //         name: "BTC",
-            //         ticker: "Bitcoin",
-            //         description: "",
-            //     },
-            //     pnl: 0,
+            //     fromAmount: 0,
+            //     fromTicker: "",
+            //     toAmount: 0,
+            //     toTicker: "USDT",
+            //     toAssetName: "",
             //     takeProfit: 0,
             //     stopLoss: 0,
             //     created: "2023-03-04T15:16:34.2960596+06:00",
@@ -75,6 +79,18 @@ const slice = createSlice({
     },
 
     reducers: {
+        currentPricesRequested: (state, action) => {
+        },
+
+        currentPricesReceived: (state, action) => {
+            state.currentPrices = action.payload;
+            state.errorMessage = "";
+        },
+
+        currentPricesRequestFailed: (state, action) => {
+            state.errorMessage = action.payload;
+        },
+
         currentBalanceRequested: (state, action) => {
         },
 
@@ -97,6 +113,8 @@ const slice = createSlice({
         },
 
         currentSpotsDataRequestFailed: (state, action) => {
+            state.currentSpotsTotal = 0;
+            state.currentSpotsIndex = 0;
             state.errorMessage = action.payload;
         },
 
@@ -134,6 +152,7 @@ const slice = createSlice({
 
         ordersReceived: (state, action) => {
             state.orders = action.payload;
+            updateOrders(state);
             stickymobile.hidePreloader();
             state.errorMessage = "";
         },
@@ -146,19 +165,55 @@ const slice = createSlice({
         clearErrorMessageRequested: (state, action) => {
             state.errorMessage = "";
         },
+
+        updateOrdersDataRequested: (state, action) => {
+            updateOrders(state);
+        },
     },
 });
+
+const updateOrders = state => {
+    state.orders.forEach(order => {
+        order.pnl = converter.calculatePNL(
+            order.fromAmount,
+            order.fromTicker,
+            order.toAmount,
+            order.toTicker,
+            state.currentPrices.pricesByTickers,
+        );
+        order.amountInBalanceTicker = converter.convert(
+            order.toAmount,
+            order.toTicker,
+            state.balance.ticker,
+            state.currentPrices.pricesByTickers,
+        );
+    });
+};
 
 export default slice.reducer;
 
 const {
+    currentPricesRequested, currentPricesReceived, currentPricesRequestFailed,
     currentBalanceRequested, currentBalanceReceived, currentBalanceRequestFailed,
     currentSpotsDataRequested, currentSpotsDataReceived, currentSpotsDataRequestFailed,
     spotRequested, spotReceived, spotRequestFailed,
     buySpotRequested, buySpotRequestSucceded, buySpotRequestFailed,
     ordersRequested, ordersReceived, ordersRequestFailed,
     clearErrorMessageRequested,
+    updateOrdersDataRequested,
 } = slice.actions;
+
+export const getCurrentPrices = () => (dispatch) => {
+    return dispatch(
+        apiCallBegan({
+            url: "/api/v1/prices/current",
+            method: "get",
+            onStart: currentPricesRequested.type,
+            onSuccess: currentPricesReceived.type,
+            onError: currentPricesRequestFailed.type,
+        })
+    );
+};
 
 export const getCurrentBalance = () => (dispatch) => {
     return dispatch(
@@ -223,4 +278,8 @@ export const getOrders = () => (dispatch) => {
 
 export const clearErrorMessage = () => (dispatch) => {
     return dispatch({ type: clearErrorMessageRequested.type });
+};
+
+export const updateOrdersData = () => (dispatch) => {
+    return dispatch({ type: updateOrdersDataRequested.type });
 };

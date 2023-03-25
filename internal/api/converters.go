@@ -8,17 +8,22 @@ import (
 
 func ConvertOrderToMessages(order *domain.Order) *Order {
 	return &Order{
-		ID:           order.ID.Hex(),
-		Amount:       order.FromAmount,
-		AmountTicker: order.FromTicker,
-		Asset: &Asset{
-			Name:   order.ToAssetName,
-			Ticker: order.ToTicker,
-		},
-		PnL:        order.PnL,
-		TakeProfit: order.TakeProfit,
-		StopLoss:   order.StopLoss,
-		Created:    order.Created,
+		ID:          order.ID.Hex(),
+		FromAmount:  order.FromAmount,
+		FromTicker:  order.FromTicker,
+		ToAmount:    order.ToAmount,
+		ToTicker:    order.ToTicker,
+		ToAssetName: order.ToAssetName,
+		TakeProfit:  order.TakeProfit,
+		StopLoss:    order.StopLoss,
+		Created:     order.Created,
+	}
+}
+
+func ConvertPricesToMessage(prices *domain.Prices) *Prices {
+	return &Prices{
+		InTicker:        prices.InTicker,
+		PricesByTickers: prices.PricesByTickers,
 	}
 }
 

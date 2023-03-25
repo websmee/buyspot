@@ -8,16 +8,16 @@ import (
 )
 
 type PricesReader struct {
-	pricesRepository PricesRepository
-	balanceService   BalanceService
+	currentPricesRepository CurrentPricesRepository
+	balanceService          BalanceService
 }
 
 func NewPricesReader(
-	pricesRepository PricesRepository,
+	currentPricesRepository CurrentPricesRepository,
 	balanceService BalanceService,
 ) *PricesReader {
 	return &PricesReader{
-		pricesRepository,
+		currentPricesRepository,
 		balanceService,
 	}
 }
@@ -33,5 +33,5 @@ func (r *PricesReader) GetCurrentPrices(ctx context.Context) (*domain.Prices, er
 		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", user.ID, err)
 	}
 
-	return r.pricesRepository.GetCurrentPrices(ctx, balance.Ticker)
+	return r.currentPricesRepository.GetCurrentPrices(ctx, balance.Ticker)
 }

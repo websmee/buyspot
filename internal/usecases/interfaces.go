@@ -44,12 +44,17 @@ type (
 		) (float64, error)
 	}
 
-	PricesRepository interface {
+	CurrentPricesRepository interface {
 		GetCurrentPrices(ctx context.Context, inTicker string) (*domain.Prices, error)
-		SaveCurrentPrices(ctx context.Context, prices *domain.Prices) error
+		SaveCurrentPrices(ctx context.Context, prices *domain.Prices, inTicker string) error
 	}
 
 	BalanceService interface {
 		GetUserBalance(ctx context.Context, user *domain.User) (*domain.Balance, error)
+		GetAvailableTickers(ctx context.Context) ([]string, error)
+	}
+
+	PricesService interface {
+		GetCurrentPrices(ctx context.Context, inTicker string) (*domain.Prices, error)
 	}
 )

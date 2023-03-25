@@ -5,8 +5,8 @@ function OrderSellModal(props) {
         <div id={props.id} className="menu menu-box-modal menu-box-detached">
             <div className="menu-title">
                 <h1>
-                    {props.order.asset.name}
-                    <span className="opacity-30 font-200" style={{marginLeft: "5px"}}>{props.order.asset.ticker}</span>
+                    {props.order.toAssetName}
+                    <span className="opacity-30 font-200" style={{marginLeft: "5px"}}>{props.order.toTicker}</span>
                 </h1>
                 <p><ReactTimeAgo date={Date.parse(props.order.created)} locale="en-US" /></p>
                 <a className="close-menu"><i className="fa fa-times"></i></a>

@@ -71,12 +71,18 @@ type SpotsData struct {
 }
 
 type Order struct {
-	ID           string    `json:"id"`
-	Amount       float64   `json:"amount"`
-	AmountTicker string    `json:"amountTicker"`
-	Asset        *Asset    `json:"asset"`
-	PnL          float64   `json:"pnl"`
-	TakeProfit   float64   `json:"takeProfit"`
-	StopLoss     float64   `json:"stopLoss"`
-	Created      time.Time `json:"created"`
+	ID          string    `json:"id"`
+	FromAmount  float64   `json:"fromAmount"`
+	FromTicker  string    `json:"fromTicker"`
+	ToAmount    float64   `json:"toAmount"`
+	ToTicker    string    `json:"toTicker"`
+	ToAssetName string    `json:"toAssetName"`
+	TakeProfit  float64   `json:"takeProfit"`
+	StopLoss    float64   `json:"stopLoss"`
+	Created     time.Time `json:"created"`
+}
+
+type Prices struct {
+	InTicker        string             `json:"inTicker"`
+	PricesByTickers map[string]float64 `json:"pricesByTickers"`
 }

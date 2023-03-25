@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { getOrders } from "Store/reducer";
+import { getOrders, updateOrdersData } from "Store/reducer";
 import { useEffect } from "react";
 
 import Order from "Components/order"
@@ -11,7 +11,14 @@ function Orders() {
     const orders = useSelector((state) => state.orders);
 
     useEffect(() => {
+        const intervalId = setInterval(() => {
+            dispatch(updateOrdersData());
+        }, 1000);
         dispatch(getOrders());
+
+        return () => {
+          clearInterval(intervalId);
+        };
     }, [dispatch]);
 
     return (
