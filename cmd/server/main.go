@@ -58,6 +58,11 @@ func main() {
 		assetRepository,
 	)
 	orderReader := usecases.NewOrderReader(orderRepository)
+	orderSeller := usecases.NewOrderSeller(
+		orderRepository,
+		converterService,
+		balanceService,
+	)
 	pricesReader := usecases.NewPricesReader(currentPricesRepository, balanceService)
 
 	// background processed
@@ -90,7 +95,7 @@ func main() {
 	router.Use(httpAPI.AuthMiddleware())
 	httpAPI.AddBalanceHandlers(router)
 	httpAPI.AddSpotHandlers(router, spotReader, spotBuyer)
-	httpAPI.AddOrderHandlers(router, orderReader)
+	httpAPI.AddOrderHandlers(router, orderReader, orderSeller)
 	httpAPI.AddPricesHandlers(router, pricesReader)
 	_ = router.Run("localhost:8080")
 }

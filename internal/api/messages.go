@@ -73,6 +73,11 @@ type BuySpotResponse struct {
 	UpdatedBalance Balance `json:"updatedBalance"`
 }
 
+type SellOrderResponse struct {
+	OrderID        string  `json:"orderID"`
+	UpdatedBalance Balance `json:"updatedBalance"`
+}
+
 type SpotsData struct {
 	CurrentSpotsTotal int `json:"currentSpotsTotal"`
 }

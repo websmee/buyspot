@@ -146,6 +146,19 @@ const slice = createSlice({
             state.errorMessage = action.payload;
         },
 
+        sellOrderRequested: (state, action) => {
+        },
+
+        sellOrderRequestSucceded: (state, action) => {
+            state.balance = action.payload.updatedBalance;
+            state.orders = state.orders.filter(order => order.id != action.payload.orderID)
+            state.errorMessage = "";
+        },
+
+        sellOrderRequestFailed: (state, action) => {
+            state.errorMessage = action.payload;
+        },
+
         ordersRequested: (state, action) => {
             stickymobile.showPreloader();
         },
@@ -198,6 +211,7 @@ const {
     currentSpotsDataRequested, currentSpotsDataReceived, currentSpotsDataRequestFailed,
     spotRequested, spotReceived, spotRequestFailed,
     buySpotRequested, buySpotRequestSucceded, buySpotRequestFailed,
+    sellOrderRequested, sellOrderRequestSucceded, sellOrderRequestFailed,
     ordersRequested, ordersReceived, ordersRequestFailed,
     clearErrorMessageRequested,
     updateOrdersDataRequested,
@@ -272,6 +286,18 @@ export const getOrders = () => (dispatch) => {
             onStart: ordersRequested.type,
             onSuccess: ordersReceived.type,
             onError: ordersRequestFailed.type,
+        })
+    );
+};
+
+export const sellOrder = (orderID) => (dispatch) => {
+    return dispatch(
+        apiCallBegan({
+            url: "/api/v1/orders/" + orderID + "/sell",
+            method: "post",
+            onStart: sellOrderRequested.type,
+            onSuccess: sellOrderRequestSucceded.type,
+            onError: sellOrderRequestFailed.type,
         })
     );
 };

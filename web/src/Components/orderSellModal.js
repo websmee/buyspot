@@ -1,6 +1,12 @@
+import { useDispatch } from "react-redux";
+
 import ReactTimeAgo from "react-time-ago"
 
+import { sellOrder } from "Store/reducer";
+
 function OrderSellModal(props) {
+    const dispatch = useDispatch();
+
     return (
         <div id={props.id} className="menu menu-box-modal menu-box-detached">
             <div className="menu-title">
@@ -20,7 +26,12 @@ function OrderSellModal(props) {
                     <br />
                     Will be sold automatically at {props.order.takeProfit > 0 && "+"}{props.order.takeProfit}% or {props.order.stopLoss}%
                 </p>
-                <a className="close-menu btn btn-full btn-m bg-theme color-theme gradient-sunny rounded-sm text-uppercase font-800 mb-3">Sell Now</a>
+                <a
+                    className="close-menu btn btn-full btn-m bg-theme color-theme gradient-sunny rounded-sm text-uppercase font-800 mb-3"
+                    onClick={() => {
+                        dispatch(sellOrder(props.order.id));
+                    }}
+                >Sell Now</a>
             </div>
         </div>
     )

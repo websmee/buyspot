@@ -30,6 +30,7 @@ type (
 	}
 
 	OrderRepository interface {
+		GetUserOrderByID(ctx context.Context, userID, orderID string) (*domain.Order, error)
 		GetUserActiveOrders(ctx context.Context, userID string) ([]domain.Order, error)
 		GetUserActiveOrdersCountByTicker(ctx context.Context, ticker string) (int, error)
 		SaveOrder(ctx context.Context, order *domain.Order) error

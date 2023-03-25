@@ -45,6 +45,23 @@ func (r *OrderRepository) GetUserActiveOrders(_ context.Context, _ string) ([]do
 	}, nil
 }
 
+func (r *OrderRepository) GetUserOrderByID(ctx context.Context, userID, orderID string) (*domain.Order, error) {
+	id, _ := primitive.ObjectIDFromHex(orderID)
+
+	return &domain.Order{
+		ID:          id,
+		FromAmount:  123.45,
+		FromTicker:  "USDT",
+		ToAmount:    0.0043,
+		ToTicker:    "BTC",
+		ToAssetName: "Bitcoin",
+		TakeProfit:  3,
+		StopLoss:    -1,
+		Created:     time.Now().Add(-1 * time.Hour),
+		Status:      domain.OrderStatusActive,
+	}, nil
+}
+
 func (r *OrderRepository) GetUserActiveOrdersCountByTicker(ctx context.Context, ticker string) (int, error) {
 	return 3, nil
 }
