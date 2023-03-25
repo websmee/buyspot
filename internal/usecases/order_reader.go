@@ -21,7 +21,7 @@ func (r *OrderReader) GetUserOrders(ctx context.Context) ([]domain.Order, error)
 		return nil, domain.ErrUnauthorized
 	}
 
-	orders, err := r.orderRepository.GetUserOrders(ctx, user.ID)
+	orders, err := r.orderRepository.GetUserActiveOrders(ctx, user.ID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get orders for user ID = '%s', err: %w", user.ID, err)
 	}

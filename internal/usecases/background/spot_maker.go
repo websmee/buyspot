@@ -97,7 +97,7 @@ func (m *SpotMaker) makeSpots(ctx context.Context) ([]domain.Spot, error) {
 			continue
 		}
 
-		activeOrdersCount, err := m.orderRepository.GetActiveOrdersCountByTicker(ctx, assets[i].Ticker)
+		activeOrdersCount, err := m.orderRepository.GetUserActiveOrdersCountByTicker(ctx, assets[i].Ticker)
 		if err != nil {
 			m.logger.Println(
 				fmt.Errorf(

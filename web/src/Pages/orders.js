@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import Order from "Components/order"
 import OrderSellModal from "Components/orderSellModal"
 import OrdersHeader from 'Layouts/ordersHeader';
+import ErrorMessage from "Components/errorMessage";
 
 function Orders() {
     const dispatch = useDispatch();
@@ -26,6 +27,8 @@ function Orders() {
             <OrdersHeader />
 
             <div className="page-content header-clear-medium">
+                <ErrorMessage />
+
                 {orders.map((order, i) =>
                     <Order key={i} modalId={"sell-modal-" + i} order={order} />
                 )}

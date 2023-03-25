@@ -16,11 +16,12 @@ import (
 func AddSpotHandlers(
 	router *gin.Engine,
 	spotReader *usecases.SpotReader,
+	spotBuyer *usecases.SpotBuyer,
 ) {
 	router.GET("/api/v1/spots/data", func(c *gin.Context) {
 		count, err := spotReader.GetSpotsCount(c)
 		if err != nil {
-			c.Error(fmt.Errorf("could get spots count, err: %w", err))
+			c.Error(fmt.Errorf("could not get spots count, err: %w", err))
 			c.Status(http.StatusInternalServerError)
 			return
 		}
@@ -42,7 +43,7 @@ func AddSpotHandlers(
 				return
 			}
 
-			c.Error(fmt.Errorf("could get spot by index %d, err: %w", index, err))
+			c.Error(fmt.Errorf("could not get spot by index %d, err: %w", index, err))
 			c.Status(http.StatusInternalServerError)
 			return
 		}
@@ -51,10 +52,33 @@ func AddSpotHandlers(
 	})
 
 	router.POST("/api/v1/spots/buy", func(c *gin.Context) {
+		var buySpotRequest api.BuySpotRequest
+		if err := c.BindJSON(&buySpotRequest); err != nil {
+			return
+		}
+
+		updatedBalance, err := spotBuyer.BuySpot(
+			c,
+			buySpotRequest.Amount,
+			buySpotRequest.Ticker,
+			buySpotRequest.TakeProfit,
+			buySpotRequest.StopLoss,
+		)
+		if err != nil {
+			if errors.Is(err, domain.ErrUnauthorized) {
+				c.Status(http.StatusUnauthorized)
+				return
+			}
+
+			c.Error(fmt.Errorf("could not buy spot, err: %w", err))
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
 		c.IndentedJSON(http.StatusOK, api.BuySpotResponse{
 			UpdatedBalance: api.Balance{
-				Ticker: "USDT",
-				Amount: 1134.56,
+				Ticker: updatedBalance.Ticker,
+				Amount: updatedBalance.Amount,
 			},
 		})
 	})

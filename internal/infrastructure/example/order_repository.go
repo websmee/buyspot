@@ -16,7 +16,7 @@ func NewOrderRepository() *OrderRepository {
 	return &OrderRepository{}
 }
 
-func (r *OrderRepository) GetUserOrders(_ context.Context, _ string) ([]domain.Order, error) {
+func (r *OrderRepository) GetUserActiveOrders(_ context.Context, _ string) ([]domain.Order, error) {
 	return []domain.Order{
 		{
 			ID:          primitive.NewObjectID(),
@@ -28,6 +28,7 @@ func (r *OrderRepository) GetUserOrders(_ context.Context, _ string) ([]domain.O
 			TakeProfit:  3,
 			StopLoss:    -1,
 			Created:     time.Now().Add(-1 * time.Hour),
+			Status:      domain.OrderStatusActive,
 		},
 		{
 			ID:          primitive.NewObjectID(),
@@ -39,11 +40,12 @@ func (r *OrderRepository) GetUserOrders(_ context.Context, _ string) ([]domain.O
 			TakeProfit:  4,
 			StopLoss:    -2,
 			Created:     time.Now().Add(-24 * time.Hour),
+			Status:      domain.OrderStatusActive,
 		},
 	}, nil
 }
 
-func (r *OrderRepository) GetActiveOrdersCountByTicker(ctx context.Context, ticker string) (int, error) {
+func (r *OrderRepository) GetUserActiveOrdersCountByTicker(ctx context.Context, ticker string) (int, error) {
 	return 3, nil
 }
 

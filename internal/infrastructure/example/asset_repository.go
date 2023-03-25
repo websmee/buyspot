@@ -65,3 +65,18 @@ func (r *AssetRepository) GetAvailableAssets(ctx context.Context) ([]domain.Asse
 		},
 	}, nil
 }
+
+func (r *AssetRepository) GetAssetByTicket(ctx context.Context, ticker string) (*domain.Asset, error) {
+	assets, err := r.GetAvailableAssets(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range assets {
+		if assets[i].Ticker == ticker {
+			return &assets[i], nil
+		}
+	}
+
+	return nil, nil
+}

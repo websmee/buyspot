@@ -24,7 +24,7 @@ func AddPricesHandlers(
 				return
 			}
 
-			c.Error(fmt.Errorf("could get current prices, err: %w", err))
+			c.Error(fmt.Errorf("could not get current prices, err: %w", err))
 			c.Status(http.StatusInternalServerError)
 			return
 		}

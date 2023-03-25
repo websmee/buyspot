@@ -47,9 +47,16 @@ func main() {
 	orderRepository := example.NewOrderRepository()
 	balanceService := example.NewBalanceService()
 	pricesService := example.NewPricesService()
+	converterService := example.NewConverterService()
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
 	currentPricesRepository := redisInfra.NewCurrentPricesRepository(redisClient)
 	spotReader := usecases.NewSpotReader(currentSpotsRepository)
+	spotBuyer := usecases.NewSpotBuyer(
+		orderRepository,
+		converterService,
+		balanceService,
+		assetRepository,
+	)
 	orderReader := usecases.NewOrderReader(orderRepository)
 	pricesReader := usecases.NewPricesReader(currentPricesRepository, balanceService)
 
@@ -82,7 +89,7 @@ func main() {
 	router.Use(httpAPI.CORSMiddleware())
 	router.Use(httpAPI.AuthMiddleware())
 	httpAPI.AddBalanceHandlers(router)
-	httpAPI.AddSpotHandlers(router, spotReader)
+	httpAPI.AddSpotHandlers(router, spotReader, spotBuyer)
 	httpAPI.AddOrderHandlers(router, orderReader)
 	httpAPI.AddPricesHandlers(router, pricesReader)
 	_ = router.Run("localhost:8080")

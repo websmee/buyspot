@@ -24,7 +24,7 @@ func AddOrderHandlers(
 				return
 			}
 
-			c.Error(fmt.Errorf("could get orders, err: %w", err))
+			c.Error(fmt.Errorf("could not get orders, err: %w", err))
 			c.Status(http.StatusInternalServerError)
 			return
 		}

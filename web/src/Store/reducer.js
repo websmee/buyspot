@@ -251,12 +251,12 @@ export const getSpotByIndex = (index) => (dispatch) => {
     );
 };
 
-export const buySpot = (assetTicker, balanceTicker, amount, takeProfit, stopLoss) => (dispatch) => {
+export const buySpot = (amount, ticker, takeProfit, stopLoss) => (dispatch) => {
     return dispatch(
         apiCallBegan({
             url: "/api/v1/spots/buy",
             method: "post",
-            data: { assetTicker, balanceTicker, amount, takeProfit, stopLoss },
+            data: { amount, ticker, takeProfit, stopLoss },
             onStart: buySpotRequested.type,
             onSuccess: buySpotRequestSucceded.type,
             onError: buySpotRequestFailed.type,

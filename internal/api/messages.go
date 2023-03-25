@@ -62,6 +62,13 @@ type Spot struct {
 	BuyOrderSettings  BuyOrderSettings `json:"buyOrderSettings"`
 }
 
+type BuySpotRequest struct {
+	Amount     float64 `json:"amount"`
+	Ticker     string  `json:"ticker"`
+	TakeProfit float64 `json:"takeProfit"`
+	StopLoss   float64 `json:"stopLoss"`
+}
+
 type BuySpotResponse struct {
 	UpdatedBalance Balance `json:"updatedBalance"`
 }

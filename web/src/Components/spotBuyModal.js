@@ -53,7 +53,7 @@ function SpotBuyModal(props) {
                 <a
                     className="close-menu btn btn-full btn-m bg-theme color-theme gradient-sunny rounded-sm text-uppercase font-800 mb-3"
                     onClick={() => {
-                        dispatch(buySpot(props.assetTicker, props.balanceTicker, orderAmount, orderTakeProfit, orderStopLoss));
+                        dispatch(buySpot(orderAmount, props.assetTicker, orderTakeProfit, orderStopLoss));
                     }}
                 >Create Order</a>
             </div>

@@ -16,4 +16,13 @@ type Order struct {
 	TakeProfit  float64
 	StopLoss    float64
 	Created     time.Time
+	Status      OrderStatus
 }
+
+type OrderStatus string
+
+const (
+	OrderStatusNew       OrderStatus = "new"
+	OrderStatusActive    OrderStatus = "active"
+	OrderStatusCompleted OrderStatus = "completed"
+)

@@ -14,7 +14,7 @@ function OrderSellModal(props) {
             <div className="divider divider-margins mb-1 mt-3"></div>
             <div className="content px-1">
                 <p>
-                    Current value: {props.order.amountTicker} <strong className={props.order.pnl < 0 ? "color-red-light" : "color-sunny-light"}>{props.order.amount}</strong>
+                    Current value: {props.order.amountTicker} <strong className={props.order.pnl < 0 ? "color-red-light" : "color-sunny-light"}>{props.order.amountInBalanceTicker}</strong>
                     <br />
                     PNL: <strong className={props.order.pnl < 0 ? "color-red-light" : "color-sunny-light"}>{props.order.pnl > 0 && "+"}{props.order.pnl}%</strong>
                     <br />

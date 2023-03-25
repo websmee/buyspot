@@ -22,6 +22,7 @@ type (
 
 	AssetRepository interface {
 		GetAvailableAssets(ctx context.Context) ([]domain.Asset, error)
+		GetAssetByTicket(ctx context.Context, ticker string) (*domain.Asset, error)
 	}
 
 	Adviser interface {
@@ -29,8 +30,8 @@ type (
 	}
 
 	OrderRepository interface {
-		GetUserOrders(ctx context.Context, userID string) ([]domain.Order, error)
-		GetActiveOrdersCountByTicker(ctx context.Context, ticker string) (int, error)
+		GetUserActiveOrders(ctx context.Context, userID string) ([]domain.Order, error)
+		GetUserActiveOrdersCountByTicker(ctx context.Context, ticker string) (int, error)
 		SaveOrder(ctx context.Context, order *domain.Order) error
 	}
 
@@ -56,5 +57,9 @@ type (
 
 	PricesService interface {
 		GetCurrentPrices(ctx context.Context, inTicker string) (*domain.Prices, error)
+	}
+
+	ConverterService interface {
+		Convert(ctx context.Context, amount float64, fromTicker, toTicker string) (float64, error)
 	}
 )
