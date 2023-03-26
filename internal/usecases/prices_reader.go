@@ -28,7 +28,7 @@ func (r *PricesReader) GetCurrentPrices(ctx context.Context) (*domain.Prices, er
 		return nil, domain.ErrUnauthorized
 	}
 
-	balance, err := r.balanceService.GetUserBalance(ctx, user)
+	balance, err := r.balanceService.GetUserActiveBalance(ctx, user)
 	if err != nil {
 		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", user.ID, err)
 	}

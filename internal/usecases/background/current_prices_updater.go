@@ -35,6 +35,8 @@ func NewCurrentPricesUpdater(
 func (u *CurrentPricesUpdater) Run(ctx context.Context) error {
 	s := gocron.NewScheduler(time.UTC)
 	_, err := s.Every(time.Minute).Do(func() {
+		u.logger.Println("updating current prices")
+
 		tickers, err := u.balanceService.GetAvailableTickers(ctx)
 		if err != nil {
 			u.logger.Println(fmt.Errorf("could not get available tickers, err: %w", err))
@@ -62,6 +64,8 @@ func (u *CurrentPricesUpdater) Run(ctx context.Context) error {
 				)
 			}
 		}
+
+		u.logger.Println("current prices updated")
 	})
 
 	s.StartAsync()

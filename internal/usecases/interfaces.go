@@ -32,7 +32,13 @@ type (
 	OrderRepository interface {
 		GetUserOrderByID(ctx context.Context, userID, orderID string) (*domain.Order, error)
 		GetUserActiveOrders(ctx context.Context, userID string) ([]domain.Order, error)
-		GetUserActiveOrdersCountByTicker(ctx context.Context, ticker string) (int, error)
+		GetUserActiveOrdersCountByTicker(ctx context.Context, userID string, ticker string) (int, error)
+		GetActiveOrdersToSell(
+			ctx context.Context,
+			fromTicker string,
+			toTicker string,
+			toTickerCurrentPrice float64,
+		) ([]domain.Order, error)
 		SaveOrder(ctx context.Context, order *domain.Order) error
 	}
 
@@ -52,7 +58,8 @@ type (
 	}
 
 	BalanceService interface {
-		GetUserBalance(ctx context.Context, user *domain.User) (*domain.Balance, error)
+		GetUserActiveBalance(ctx context.Context, user *domain.User) (*domain.Balance, error)
+		GetUserBalances(ctx context.Context, user *domain.User) ([]domain.Balance, error)
 		GetAvailableTickers(ctx context.Context) ([]string, error)
 	}
 
@@ -61,6 +68,10 @@ type (
 	}
 
 	ConverterService interface {
-		Convert(ctx context.Context, amount float64, fromTicker, toTicker string) (float64, error)
+		Convert(ctx context.Context, user *domain.User, amount float64, fromTicker, toTicker string) (float64, error)
+	}
+
+	UserRepository interface {
+		GetUserByID(ctx context.Context, userID string) (*domain.User, error)
 	}
 )

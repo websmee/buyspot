@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"fmt"
 
 	"websmee/buyspot/internal/domain"
 )
@@ -13,14 +14,43 @@ type CurrentSpotsReader interface {
 
 type SpotReader struct {
 	currentSpotsReader CurrentSpotsReader
+	orderRepository    OrderRepository
 }
 
-func NewSpotReader(currentSpotsReader CurrentSpotsReader) *SpotReader {
-	return &SpotReader{currentSpotsReader}
+func NewSpotReader(
+	currentSpotsReader CurrentSpotsReader,
+	orderRepository OrderRepository,
+) *SpotReader {
+	return &SpotReader{
+		currentSpotsReader,
+		orderRepository,
+	}
 }
 
 func (r *SpotReader) GetSpotByIndex(ctx context.Context, index int) (*domain.Spot, error) {
-	return r.currentSpotsReader.GetSpotByIndex(ctx, index)
+	user := domain.GetCtxUser(ctx)
+	if user == nil {
+		return nil, domain.ErrUnauthorized
+	}
+
+	spot, err := r.currentSpotsReader.GetSpotByIndex(ctx, index)
+	if err != nil {
+		return nil, fmt.Errorf("could not get spot by index %d, err: %w", index, err)
+	}
+
+	activeOrdersCount, err := r.orderRepository.GetUserActiveOrdersCountByTicker(ctx, user.ID, spot.Asset.Ticker)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"could not get user (ID = '%s') active orders count by ticker %s, err: %w",
+			user.ID,
+			spot.Asset.Ticker,
+			err,
+		)
+	}
+
+	spot.ActiveOrders = activeOrdersCount
+
+	return spot, nil
 }
 
 func (r *SpotReader) GetSpotsCount(ctx context.Context) (int, error) {

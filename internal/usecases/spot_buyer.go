@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	"websmee/buyspot/internal/domain"
 )
 
@@ -37,7 +35,7 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, ticker string, 
 		return nil, domain.ErrUnauthorized
 	}
 
-	balance, err := b.balanceService.GetUserBalance(ctx, user)
+	balance, err := b.balanceService.GetUserActiveBalance(ctx, user)
 	if err != nil {
 		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", user.ID, err)
 	}
@@ -51,7 +49,7 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, ticker string, 
 	}
 
 	order := &domain.Order{
-		ID:          primitive.NewObjectID(),
+		UserID:      user.ID,
 		FromAmount:  amount,
 		FromTicker:  balance.Ticker,
 		ToAmount:    0,
@@ -60,6 +58,7 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, ticker string, 
 		TakeProfit:  takeProfit,
 		StopLoss:    stopLoss,
 		Created:     time.Now(),
+		Updated:     time.Now(),
 		Status:      domain.OrderStatusNew,
 	}
 
@@ -67,7 +66,7 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, ticker string, 
 		return nil, fmt.Errorf("could not save new order, err: %w", err)
 	}
 
-	boughtAmount, err := b.converterService.Convert(ctx, amount, balance.Ticker, ticker)
+	boughtAmount, err := b.converterService.Convert(ctx, user, amount, balance.Ticker, ticker)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"could not convert %s to %s for user ID = '%s', err: %w",
@@ -79,12 +78,14 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, ticker string, 
 	}
 
 	order.ToAmount = boughtAmount
+	order.ToTickerPrice = amount / boughtAmount
+	order.Updated = time.Now()
 	order.Status = domain.OrderStatusActive
 	if err := b.orderRepository.SaveOrder(ctx, order); err != nil {
 		return nil, fmt.Errorf("could not save order after conversion, err: %w", err)
 	}
 
-	balance, err = b.balanceService.GetUserBalance(ctx, user)
+	balance, err = b.balanceService.GetUserActiveBalance(ctx, user)
 	if err != nil {
 		return nil, fmt.Errorf("could not get balance for user ID = '%s' after conversion, err: %w", user.ID, err)
 	}

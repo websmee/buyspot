@@ -40,17 +40,18 @@ func main() {
 		}
 	}()
 
+	userRepository := example.NewUserRepository()
 	marketDataRepository := example.NewMarketDataRepository()
 	newsRepository := example.NewNewsRepository()
 	assetRepository := example.NewAssetRepository()
 	adviser := example.NewAdviser()
-	orderRepository := example.NewOrderRepository()
+	orderRepository := mongoInfra.NewOrderRepository(mongoClient)
 	balanceService := example.NewBalanceService()
 	pricesService := example.NewPricesService()
 	converterService := example.NewConverterService()
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
 	currentPricesRepository := redisInfra.NewCurrentPricesRepository(redisClient)
-	spotReader := usecases.NewSpotReader(currentSpotsRepository)
+	spotReader := usecases.NewSpotReader(currentSpotsRepository, orderRepository)
 	spotBuyer := usecases.NewSpotBuyer(
 		orderRepository,
 		converterService,
@@ -87,6 +88,19 @@ func main() {
 	)
 	if err := currentPricesUpdater.Run(ctx); err != nil {
 		logger.Fatalln(fmt.Errorf("could not run current prices updater, err: %w", err))
+	}
+
+	orderBackgroundSeller := background.NewOrderSeller(
+		userRepository,
+		balanceService,
+		assetRepository,
+		pricesService,
+		orderRepository,
+		converterService,
+		newLogger("[ORDER SELLER]"),
+	)
+	if err := orderBackgroundSeller.Run(ctx); err != nil {
+		logger.Fatalln(fmt.Errorf("could not run order seller, err: %w", err))
 	}
 
 	// web server

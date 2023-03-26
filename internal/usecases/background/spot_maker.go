@@ -18,7 +18,6 @@ type SpotMaker struct {
 	newsRepository         usecases.NewsRepository
 	assetRepository        usecases.AssetRepository
 	adviser                usecases.Adviser
-	orderRepository        usecases.OrderRepository
 	logger                 *log.Logger
 }
 
@@ -37,25 +36,28 @@ func NewSpotMaker(
 		newsRepository,
 		assetRepository,
 		adviser,
-		orderRepository,
 		logger,
 	}
 }
 
 func (m *SpotMaker) Run(ctx context.Context) error {
 	s := gocron.NewScheduler(time.UTC)
-	_, err := s.Every(time.Minute).Do(func() {
+	_, err := s.Every(time.Hour).Do(func() {
+		m.logger.Println("making new spots")
+
 		spots, err := m.makeSpots(ctx)
 		if err != nil {
 			m.logger.Println(fmt.Errorf("could not get new spots, err: %w", err))
 			return
 		}
 
-		err = m.currentSpotsRepository.SaveSpots(ctx, spots, time.Minute)
+		err = m.currentSpotsRepository.SaveSpots(ctx, spots, time.Hour)
 		if err != nil {
 			m.logger.Println(fmt.Errorf("could not save new spots, err: %w", err))
 			return
 		}
+
+		m.logger.Println("new spots saved")
 	})
 
 	s.StartAsync()
@@ -97,20 +99,8 @@ func (m *SpotMaker) makeSpots(ctx context.Context) ([]domain.Spot, error) {
 			continue
 		}
 
-		activeOrdersCount, err := m.orderRepository.GetUserActiveOrdersCountByTicker(ctx, assets[i].Ticker)
-		if err != nil {
-			m.logger.Println(
-				fmt.Errorf(
-					"could not get active orders count by ticker %s, err: %w",
-					assets[i].Ticker,
-					err,
-				))
-			continue
-		}
-
 		spots = append(spots, domain.Spot{
 			Asset:              &assets[i],
-			ActiveOrders:       activeOrdersCount,
 			Advice:             advice,
 			HistoryMarketData:  historyMarketData,
 			ForecastMarketData: forecastMarketData,
