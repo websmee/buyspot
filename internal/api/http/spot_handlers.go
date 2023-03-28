@@ -48,7 +48,9 @@ func AddSpotHandlers(
 			return
 		}
 
-		c.IndentedJSON(http.StatusOK, api.ConvertSpotToMessage(spot))
+		msg := api.ConvertSpotToMessage(spot)
+		msg.Index = index
+		c.IndentedJSON(http.StatusOK, msg)
 	})
 
 	router.POST("/api/v1/spots/buy", func(c *gin.Context) {

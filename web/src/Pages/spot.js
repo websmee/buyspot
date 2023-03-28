@@ -16,11 +16,15 @@ function Spot() {
     const balance = useSelector((state) => state.balance);
     const spot = useSelector((state) => state.spot);
     const currentSpotsIndex = useSelector((state) => state.currentSpotsIndex);
+    const currentSpotsTotal = useSelector((state) => state.currentSpotsTotal);
+
+    useEffect(() => {        
+        dispatch(getCurrentSpotsData());
+    }, [dispatch]);
 
     useEffect(() => {
-        dispatch(getCurrentSpotsData());
-        dispatch(getSpotByIndex(currentSpotsIndex ?? 1));
-    }, [dispatch]);
+        currentSpotsIndex != 0 && dispatch(getSpotByIndex(currentSpotsIndex));
+    }, [currentSpotsIndex]);
 
     return (
         <>
@@ -29,12 +33,12 @@ function Spot() {
             <div className="page-content header-clear-medium">
                 <ErrorMessage />
 
-                {currentSpotsIndex == 0 && <div className="ms-3 me-3 mb-4 alert alert-small shadow-xl bg-fade-gray-dark" role="alert" style={{borderRadius: "15px"}}>
-                    <span style={{borderRadius: "15px 0 0 15px", left: "0", top: "0", bottom: "0"}}><i className="fa fa-times"></i></span>
+                {currentSpotsTotal == 0 && <div className="ms-3 me-3 mb-4 alert alert-small shadow-xl bg-fade-gray-dark" role="alert" style={{borderRadius: "15px"}}>
+                    <span style={{borderRadius: "15px 0 0 15px", left: "0", top: "0", bottom: "0"}}><i className="fa fa-circle-info"></i></span>
                     <strong>No spots found at the moment.</strong>
                 </div>}
 
-                {currentSpotsIndex > 0 && <>
+                {currentSpotsTotal > 0 && <>
                     <SpotCharts
                         assetName={spot.asset.name}
                         assetTicker={spot.asset.ticker}

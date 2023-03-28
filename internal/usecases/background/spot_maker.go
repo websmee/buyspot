@@ -42,7 +42,7 @@ func NewSpotMaker(
 
 func (m *SpotMaker) Run(ctx context.Context) error {
 	s := gocron.NewScheduler(time.UTC)
-	_, err := s.Every(time.Hour).Do(func() {
+	_, err := s.Every(time.Minute).Do(func() {
 		m.logger.Println("making new spots")
 
 		spots, err := m.makeSpots(ctx)
@@ -51,7 +51,7 @@ func (m *SpotMaker) Run(ctx context.Context) error {
 			return
 		}
 
-		err = m.currentSpotsRepository.SaveSpots(ctx, spots, time.Hour)
+		err = m.currentSpotsRepository.SaveSpots(ctx, spots, time.Minute)
 		if err != nil {
 			m.logger.Println(fmt.Errorf("could not save new spots, err: %w", err))
 			return

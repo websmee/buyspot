@@ -52,6 +52,7 @@ type BuyOrderSettings struct {
 }
 
 type Spot struct {
+	Index             int              `json:"index"`
 	Asset             Asset            `json:"asset"`
 	ActiveOrders      int              `json:"activeOrders"`
 	PriceForecast     float64          `json:"priceForecast"`

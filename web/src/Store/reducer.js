@@ -2,7 +2,6 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import { apiCallBegan } from "Store/api";
 import converter from "Utils/converter";
-
 import stickymobile from "Utils/stickymobile";
 
 export const NEWS_ARTICLE_SENTIMENT = {
@@ -26,7 +25,8 @@ const slice = createSlice({
             amount: 0,
             ticker: "",
         },
-        currentSpotsIndex: 1,
+        currentSpotsIndex: 0,
+        currentSpotsNext: 0,
         currentSpotsTotal: 0,
         spot: {
             asset: {
@@ -108,13 +108,33 @@ const slice = createSlice({
 
         currentSpotsDataReceived: (state, action) => {
             state.currentSpotsTotal = action.payload.currentSpotsTotal;
-            state.currentSpotsIndex = action.payload.currentSpotsTotal > 0 ? 1 : 0;
+
+            if (action.payload.currentSpotsTotal == 0) {
+                state.currentSpotsIndex = 0;
+                state.currentSpotsNext = 0;
+            }
+
+            if (action.payload.currentSpotsTotal > 0 && state.currentSpotsIndex == 0) {
+                state.currentSpotsIndex = 1;
+                state.currentSpotsNext = 2;
+            }
+
+            if (action.payload.currentSpotsTotal < state.currentSpotsNext) {
+                state.currentSpotsNext = 1;
+            };
+
+            if (action.payload.spot) {
+                state.spot = action.payload.spot;
+            }
+
+            stickymobile.hidePreloader();
             state.errorMessage = "";
         },
 
         currentSpotsDataRequestFailed: (state, action) => {
             state.currentSpotsTotal = 0;
             state.currentSpotsIndex = 0;
+            state.currentSpotsNext = 0;
             state.errorMessage = action.payload;
         },
 
@@ -123,6 +143,8 @@ const slice = createSlice({
         },
 
         spotReceived: (state, action) => {
+            state.currentSpotsIndex = action.payload.index;
+            state.currentSpotsNext = action.payload.index < state.currentSpotsTotal ? action.payload.index + 1 : 1;
             state.spot = action.payload;
             stickymobile.hidePreloader();
             state.errorMessage = "";
