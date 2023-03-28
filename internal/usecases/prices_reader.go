@@ -33,5 +33,5 @@ func (r *PricesReader) GetCurrentPrices(ctx context.Context) (*domain.Prices, er
 		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", user.ID, err)
 	}
 
-	return r.currentPricesRepository.GetCurrentPrices(ctx, balance.Ticker)
+	return r.currentPricesRepository.GetCurrentPrices(ctx, balance.Symbol)
 }

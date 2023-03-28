@@ -55,7 +55,7 @@ func AddOrderHandlers(
 		c.IndentedJSON(http.StatusOK, api.SellOrderResponse{
 			OrderID: orderID,
 			UpdatedBalance: api.Balance{
-				Ticker: updatedBalance.Ticker,
+				Symbol: updatedBalance.Symbol,
 				Amount: updatedBalance.Amount,
 			},
 		})

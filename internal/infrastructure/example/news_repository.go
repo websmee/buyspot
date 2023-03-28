@@ -14,7 +14,7 @@ func NewNewsRepository() *NewsRepository {
 	return &NewsRepository{}
 }
 
-func (r *NewsRepository) GetFreshNewsByTicker(_ context.Context, _ string, _ time.Time) ([]domain.NewsArticle, error) {
+func (r *NewsRepository) GetFreshNewsBySymbol(_ context.Context, _ string, _ time.Time) ([]domain.NewsArticle, error) {
 	return []domain.NewsArticle{
 		{
 			Sentiment: domain.NewsArticleSentimentNeutral,

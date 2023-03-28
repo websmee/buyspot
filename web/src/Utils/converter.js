@@ -1,18 +1,18 @@
 export default {
-    convert: (amount, fromTicker, toTicker, pricesByTickers) => {
-        if (!pricesByTickers[fromTicker] || !pricesByTickers[toTicker]) return 0;
+    convert: (amount, fromSymbol, toSymbol, pricesBySymbols) => {
+        if (!pricesBySymbols[fromSymbol] || !pricesBySymbols[toSymbol]) return 0;
 
-        const paidAmount = amount * pricesByTickers[fromTicker];
-        const convertedAmount = paidAmount * pricesByTickers[toTicker];
+        const paidAmount = amount * pricesBySymbols[fromSymbol];
+        const convertedAmount = paidAmount * pricesBySymbols[toSymbol];
 
         return Math.round(convertedAmount * 2) / 2;
     },
 
-    calculatePNL: (fromAmount, fromTicker, toAmount, toTicker, pricesByTickers) => {
-        if (!pricesByTickers[fromTicker] || !pricesByTickers[toTicker]) return 0;
+    calculatePNL: (fromAmount, fromSymbol, toAmount, toSymbol, pricesBySymbols) => {
+        if (!pricesBySymbols[fromSymbol] || !pricesBySymbols[toSymbol]) return 0;
 
-        const paidAmount = fromAmount * pricesByTickers[fromTicker];
-        const currentAmount = toAmount * pricesByTickers[toTicker];
+        const paidAmount = fromAmount * pricesBySymbols[fromSymbol];
+        const currentAmount = toAmount * pricesBySymbols[toSymbol];
         const diff = currentAmount - paidAmount;
 
         return Math.round(diff / currentAmount * 100 * 2) / 2;

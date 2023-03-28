@@ -16,14 +16,14 @@ const slice = createSlice({
         loading: false,
         errorMessage: "",
         currentPrices: {
-            inTicker: "",
-            pricesByTickers: {
+            inSymbol: "",
+            pricesBySymbols: {
                 "": 0,
             },
         },
         balance: {
             amount: 0,
-            ticker: "",
+            symbol: "",
         },
         currentSpotsIndex: 0,
         currentSpotsNext: 0,
@@ -31,7 +31,7 @@ const slice = createSlice({
         spot: {
             asset: {
                 name: "",
-                ticker: "",
+                symbol: "",
                 description: "",
                 activeOrders: 0,
             },
@@ -67,9 +67,9 @@ const slice = createSlice({
             // {
             //     id: "test123",
             //     fromAmount: 0,
-            //     fromTicker: "",
+            //     fromSymbol: "",
             //     toAmount: 0,
-            //     toTicker: "USDT",
+            //     toSymbol: "USDT",
             //     toAssetName: "",
             //     takeProfit: 0,
             //     stopLoss: 0,
@@ -211,16 +211,16 @@ const updateOrders = state => {
     state.orders.forEach(order => {
         order.pnl = converter.calculatePNL(
             order.fromAmount,
-            order.fromTicker,
+            order.fromSymbol,
             order.toAmount,
-            order.toTicker,
-            state.currentPrices.pricesByTickers,
+            order.toSymbol,
+            state.currentPrices.pricesBySymbols,
         );
-        order.amountInBalanceTicker = converter.convert(
+        order.amountInBalanceSymbol = converter.convert(
             order.toAmount,
-            order.toTicker,
-            state.balance.ticker,
-            state.currentPrices.pricesByTickers,
+            order.toSymbol,
+            state.balance.symbol,
+            state.currentPrices.pricesBySymbols,
         );
     });
 };
@@ -287,12 +287,12 @@ export const getSpotByIndex = (index) => (dispatch) => {
     );
 };
 
-export const buySpot = (amount, ticker, takeProfit, stopLoss) => (dispatch) => {
+export const buySpot = (amount, symbol, takeProfit, stopLoss) => (dispatch) => {
     return dispatch(
         apiCallBegan({
             url: "/api/v1/spots/buy",
             method: "post",
-            data: { amount, ticker, takeProfit, stopLoss },
+            data: { amount, symbol, takeProfit, stopLoss },
             onStart: buySpotRequested.type,
             onSuccess: buySpotRequestSucceded.type,
             onError: buySpotRequestFailed.type,

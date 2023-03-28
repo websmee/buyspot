@@ -10,9 +10,9 @@ func ConvertOrderToMessages(order *domain.Order) *Order {
 	return &Order{
 		ID:          order.ID.Hex(),
 		FromAmount:  order.FromAmount,
-		FromTicker:  order.FromTicker,
+		FromSymbol:  order.FromSymbol,
 		ToAmount:    order.ToAmount,
-		ToTicker:    order.ToTicker,
+		ToSymbol:    order.ToSymbol,
 		ToAssetName: order.ToAssetName,
 		TakeProfit:  order.TakeProfit,
 		StopLoss:    order.StopLoss,
@@ -22,8 +22,8 @@ func ConvertOrderToMessages(order *domain.Order) *Order {
 
 func ConvertPricesToMessage(prices *domain.Prices) *Prices {
 	return &Prices{
-		InTicker:        prices.InTicker,
-		PricesByTickers: prices.PricesByTickers,
+		InSymbol:        prices.InSymbol,
+		PricesBySymbols: prices.PricesBySymbols,
 	}
 }
 
@@ -60,7 +60,7 @@ func ConvertSpotToMessage(spot *domain.Spot) *Spot {
 	return &Spot{
 		Asset: Asset{
 			Name:        spot.Asset.Name,
-			Ticker:      spot.Asset.Ticker,
+			Symbol:      spot.Asset.Symbol,
 			Description: spot.Asset.Description,
 		},
 		ActiveOrders:  spot.ActiveOrders,
@@ -77,15 +77,15 @@ func ConvertSpotToMessage(spot *domain.Spot) *Spot {
 	}
 }
 
-func buildChartsData(history []domain.Candlestick, forecast []domain.Candlestick) ChartsData {
+func buildChartsData(history []domain.Kline, forecast []domain.Kline) ChartsData {
 	var chartsData ChartsData
 	for i := range history {
-		chartsData.Times = append(chartsData.Times, history[i].Timestamp.Format("15:04"))
+		chartsData.Times = append(chartsData.Times, history[i].EndTime.Format("15:04"))
 		chartsData.Prices = append(chartsData.Prices, history[i].High)
-		chartsData.Volumes = append(chartsData.Volumes, history[i].Volume)
+		chartsData.Volumes = append(chartsData.Volumes, int64(history[i].Volume))
 	}
 	for i := range forecast {
-		chartsData.Times = append(chartsData.Times, forecast[i].Timestamp.Format("15:04"))
+		chartsData.Times = append(chartsData.Times, forecast[i].EndTime.Format("15:04"))
 		chartsData.Forecast = append(chartsData.Forecast, forecast[i].High)
 	}
 

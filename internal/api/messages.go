@@ -5,13 +5,13 @@ import (
 )
 
 type Balance struct {
-	Ticker string  `json:"ticker"`
+	Symbol string  `json:"symbol"`
 	Amount float64 `json:"amount"`
 }
 
 type Asset struct {
 	Name        string `json:"name"`
-	Ticker      string `json:"ticker"`
+	Symbol      string `json:"symbol"`
 	Description string `json:"description"`
 }
 
@@ -65,7 +65,7 @@ type Spot struct {
 
 type BuySpotRequest struct {
 	Amount     float64 `json:"amount"`
-	Ticker     string  `json:"ticker"`
+	Symbol     string  `json:"symbol"`
 	TakeProfit float64 `json:"takeProfit"`
 	StopLoss   float64 `json:"stopLoss"`
 }
@@ -86,9 +86,9 @@ type SpotsData struct {
 type Order struct {
 	ID          string    `json:"id"`
 	FromAmount  float64   `json:"fromAmount"`
-	FromTicker  string    `json:"fromTicker"`
+	FromSymbol  string    `json:"fromSymbol"`
 	ToAmount    float64   `json:"toAmount"`
-	ToTicker    string    `json:"toTicker"`
+	ToSymbol    string    `json:"toSymbol"`
 	ToAssetName string    `json:"toAssetName"`
 	TakeProfit  float64   `json:"takeProfit"`
 	StopLoss    float64   `json:"stopLoss"`
@@ -96,6 +96,6 @@ type Order struct {
 }
 
 type Prices struct {
-	InTicker        string             `json:"inTicker"`
-	PricesByTickers map[string]float64 `json:"pricesByTickers"`
+	InSymbol        string             `json:"inSymbol"`
+	PricesBySymbols map[string]float64 `json:"pricesBySymbols"`
 }

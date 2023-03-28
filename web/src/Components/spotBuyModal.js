@@ -19,13 +19,13 @@ function SpotBuyModal(props) {
     return (
         <div id={props.id} className="menu menu-box-modal menu-box-detached">
             <div className="menu-title"><h1>Buy {props.assetName}</h1>
-                <p className="color-highlight">Convert {props.balanceTicker} to {props.assetTicker}</p><a className="close-menu"><i className="fa fa-times"></i></a>
+                <p className="color-highlight">Convert {props.balanceSymbol} to {props.assetSymbol}</p><a className="close-menu"><i className="fa fa-times"></i></a>
             </div>
             <div className="divider divider-margins mb-1 mt-3"></div>
             <div className="content px-1">
                 <div className="input-style input-style-always-active validate-field no-borders no-icon">
                     <input type="number" className="form-control validate-number" id="f3ab" value={orderAmount} onChange={(e) => { setOrderAmount(e.target.value) }} />
-                    <label htmlFor="f3ab" className="color-theme opacity-30 text-uppercase font-700 font-10 mt-1">Amount in {props.balanceTicker}</label>
+                    <label htmlFor="f3ab" className="color-theme opacity-30 text-uppercase font-700 font-10 mt-1">Amount in {props.balanceSymbol}</label>
                     <i className="fa fa-times disabled invalid color-red-dark"></i>
                     <i className="fa fa-check disabled valid color-green-dark"></i>
                     <em>(required)</em>
@@ -55,7 +55,7 @@ function SpotBuyModal(props) {
                     onClick={() => {
                         dispatch(buySpot(
                             parseFloat(orderAmount),
-                            props.assetTicker,
+                            props.assetSymbol,
                             parseFloat(orderTakeProfit),
                             parseFloat(orderStopLoss),
                         ));

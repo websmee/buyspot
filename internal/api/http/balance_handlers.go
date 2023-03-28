@@ -13,7 +13,7 @@ func AddBalanceHandlers(
 ) {
 	router.GET("/api/v1/balances/current", func(c *gin.Context) {
 		c.IndentedJSON(http.StatusOK, api.Balance{
-			Ticker: "USDT",
+			Symbol: "USDT",
 			Amount: 1234.56,
 		})
 	})

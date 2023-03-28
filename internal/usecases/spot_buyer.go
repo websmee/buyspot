@@ -29,7 +29,7 @@ func NewSpotBuyer(
 	}
 }
 
-func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, ticker string, takeProfit, stopLoss float64) (*domain.Balance, error) {
+func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, symbol string, takeProfit, stopLoss float64) (*domain.Balance, error) {
 	user := domain.GetCtxUser(ctx)
 	if user == nil {
 		return nil, domain.ErrUnauthorized
@@ -40,20 +40,20 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, ticker string, 
 		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", user.ID, err)
 	}
 
-	asset, err := b.assetRepository.GetAssetByTicket(ctx, ticker)
+	asset, err := b.assetRepository.GetAssetByTicket(ctx, symbol)
 	if err != nil {
 		return nil, fmt.Errorf("could not available assets, err: %w", err)
 	}
 	if asset == nil {
-		return nil, fmt.Errorf("could not find asset by ticker %s", ticker)
+		return nil, fmt.Errorf("could not find asset by symbol %s", symbol)
 	}
 
 	order := &domain.Order{
 		UserID:      user.ID,
 		FromAmount:  amount,
-		FromTicker:  balance.Ticker,
+		FromSymbol:  balance.Symbol,
 		ToAmount:    0,
-		ToTicker:    ticker,
+		ToSymbol:    symbol,
 		ToAssetName: asset.Name,
 		TakeProfit:  takeProfit,
 		StopLoss:    stopLoss,
@@ -66,19 +66,19 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, ticker string, 
 		return nil, fmt.Errorf("could not save new order, err: %w", err)
 	}
 
-	boughtAmount, err := b.converterService.Convert(ctx, user, amount, balance.Ticker, ticker)
+	boughtAmount, err := b.converterService.Convert(ctx, user, amount, balance.Symbol, symbol)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"could not convert %s to %s for user ID = '%s', err: %w",
-			balance.Ticker,
-			ticker,
+			balance.Symbol,
+			symbol,
 			user.ID,
 			err,
 		)
 	}
 
 	order.ToAmount = boughtAmount
-	order.ToTickerPrice = amount / boughtAmount
+	order.ToSymbolPrice = amount / boughtAmount
 	order.Updated = time.Now()
 	order.Status = domain.OrderStatusActive
 	if err := b.orderRepository.SaveOrder(ctx, order); err != nil {

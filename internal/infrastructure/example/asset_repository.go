@@ -19,7 +19,7 @@ func (r *AssetRepository) GetAvailableAssets(ctx context.Context) ([]domain.Asse
 	return []domain.Asset{
 		{
 			ID:     primitive.NewObjectID(),
-			Ticker: "BTC",
+			Symbol: "BTC",
 			Name:   "Bitcoin",
 			Description: "Bitcoin (abbreviation: BTC[a] or XBT[b]; sign: ₿) " +
 				"is a protocol which implements a highly available, public, permanent, and decentralized ledger. " +
@@ -30,7 +30,7 @@ func (r *AssetRepository) GetAvailableAssets(ctx context.Context) ([]domain.Asse
 		},
 		{
 			ID:     primitive.NewObjectID(),
-			Ticker: "ETH",
+			Symbol: "ETH",
 			Name:   "Ethereum",
 			Description: "Ethereum is a decentralized, open-source blockchain with smart contract functionality. " +
 				"Ether (Abbreviation: ETH;[a] sign: Ξ) is the native cryptocurrency of the platform. " +
@@ -51,9 +51,9 @@ func (r *AssetRepository) GetAvailableAssets(ctx context.Context) ([]domain.Asse
 		},
 		{
 			ID:     primitive.NewObjectID(),
-			Ticker: "SHIB",
+			Symbol: "SHIB",
 			Name:   "Shiba Inu token",
-			Description: "Shiba Inu token (ticker: SHIB) is a decentralized cryptocurrency created in August 2020 " +
+			Description: "Shiba Inu token (symbol: SHIB) is a decentralized cryptocurrency created in August 2020 " +
 				"by an anonymous person or group known as \"Ryoshi\". It is named after the Shiba Inu (柴犬), " +
 				"a Japanese breed of dog originating in the Chūbu region, " +
 				"the same breed that is depicted in Dogecoin's symbol, " +
@@ -66,14 +66,14 @@ func (r *AssetRepository) GetAvailableAssets(ctx context.Context) ([]domain.Asse
 	}, nil
 }
 
-func (r *AssetRepository) GetAssetByTicket(ctx context.Context, ticker string) (*domain.Asset, error) {
+func (r *AssetRepository) GetAssetByTicket(ctx context.Context, symbol string) (*domain.Asset, error) {
 	assets, err := r.GetAvailableAssets(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	for i := range assets {
-		if assets[i].Ticker == ticker {
+		if assets[i].Symbol == symbol {
 			return &assets[i], nil
 		}
 	}

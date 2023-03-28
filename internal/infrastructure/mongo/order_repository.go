@@ -55,10 +55,10 @@ func (r *OrderRepository) GetUserOrderByID(ctx context.Context, userID, orderID 
 	return &order, nil
 }
 
-func (r *OrderRepository) GetUserActiveOrdersCountByTicker(ctx context.Context, userID, ticker string) (int, error) {
+func (r *OrderRepository) GetUserActiveOrdersCountBySymbol(ctx context.Context, userID, symbol string) (int, error) {
 	count, err := r.getCollection().CountDocuments(
 		ctx,
-		primitive.M{"user_id": userID, "status": domain.OrderStatusActive, "to_ticker": ticker},
+		primitive.M{"user_id": userID, "status": domain.OrderStatusActive, "to_symbol": symbol},
 	)
 	if err != nil {
 		return 0, fmt.Errorf("could not get active orders count from mongo, err: %w", err)
@@ -69,20 +69,20 @@ func (r *OrderRepository) GetUserActiveOrdersCountByTicker(ctx context.Context, 
 
 func (r *OrderRepository) GetActiveOrdersToSell(
 	ctx context.Context,
-	fromTicker string,
-	toTicker string,
-	toTickerCurrentPrice float64,
+	fromSymbol string,
+	toSymbol string,
+	toSymbolCurrentPrice float64,
 ) ([]domain.Order, error) {
 	cur, err := r.getCollection().Find(ctx, primitive.M{
 		"status":      domain.OrderStatusActive,
-		"from_ticker": fromTicker,
-		"to_ticker":   toTicker,
+		"from_symbol": fromSymbol,
+		"to_symbol":   toSymbol,
 		"$where": fmt.Sprintf(
 			"function() {"+
-				"const pnl = %f / this.to_ticker_price * 100 - 100; "+
+				"const pnl = %f / this.to_symbol_price * 100 - 100; "+
 				"return this.take_profit <= pnl || this.stop_loss >= pnl;"+
 				"}",
-			toTickerCurrentPrice,
+			toSymbolCurrentPrice,
 		),
 	})
 	if err != nil {

@@ -37,28 +37,28 @@ func (u *CurrentPricesUpdater) Run(ctx context.Context) error {
 	_, err := s.Every(time.Minute).Do(func() {
 		u.logger.Println("updating current prices")
 
-		tickers, err := u.balanceService.GetAvailableTickers(ctx)
+		symbols, err := u.balanceService.GetAvailableSymbols(ctx)
 		if err != nil {
-			u.logger.Println(fmt.Errorf("could not get available tickers, err: %w", err))
+			u.logger.Println(fmt.Errorf("could not get available symbols, err: %w", err))
 			return
 		}
 
-		for i := range tickers {
-			prices, err := u.pricesService.GetCurrentPrices(ctx, tickers[i])
+		for i := range symbols {
+			prices, err := u.pricesService.GetCurrentPrices(ctx, symbols[i])
 			if err != nil {
 				u.logger.Println(
 					fmt.Errorf("could not get current prices for %s, err: %w",
-						tickers[i],
+						symbols[i],
 						err,
 					),
 				)
 				continue
 			}
 
-			if err := u.currentPricesRepository.SaveCurrentPrices(ctx, prices, tickers[i]); err != nil {
+			if err := u.currentPricesRepository.SaveCurrentPrices(ctx, prices, symbols[i]); err != nil {
 				u.logger.Println(
 					fmt.Errorf("could not save current prices for %s, err: %w",
-						tickers[i],
+						symbols[i],
 						err,
 					),
 				)

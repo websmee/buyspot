@@ -13,7 +13,7 @@ func NewAdviser() *Adviser {
 	return &Adviser{}
 }
 
-func (r *Adviser) GetAdviceByTicker(_ context.Context, _ string) (*domain.Advice, error) {
+func (r *Adviser) GetAdviceBySymbol(_ context.Context, _ string) (*domain.Advice, error) {
 	return &domain.Advice{
 		PriceForecast: 3,
 		ForecastHours: 8,

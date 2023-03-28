@@ -15,8 +15,8 @@ func NewPricesService() *PricesService {
 
 func (r *PricesService) GetCurrentPrices(_ context.Context, _ string) (*domain.Prices, error) {
 	return &domain.Prices{
-		InTicker: "USDT",
-		PricesByTickers: map[string]float64{
+		InSymbol: "USDT",
+		PricesBySymbols: map[string]float64{
 			"USDT": 1,
 			"BTC":  27506.60,
 			"ETH":  1749.46,

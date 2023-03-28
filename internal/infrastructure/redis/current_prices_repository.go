@@ -18,8 +18,8 @@ func NewCurrentPricesRepository(client *redis.Client) *CurrentPricesRepository {
 	return &CurrentPricesRepository{client}
 }
 
-func (r *CurrentPricesRepository) GetCurrentPrices(ctx context.Context, inTicker string) (*domain.Prices, error) {
-	if cmd := r.client.Get(ctx, getRedisKeyCurrentPricesInTicker(inTicker)); cmd != nil {
+func (r *CurrentPricesRepository) GetCurrentPrices(ctx context.Context, inSymbol string) (*domain.Prices, error) {
+	if cmd := r.client.Get(ctx, getRedisKeyCurrentPricesInSymbol(inSymbol)); cmd != nil {
 		data, err := cmd.Bytes()
 		if err != nil {
 			if err == redis.Nil {
@@ -40,13 +40,13 @@ func (r *CurrentPricesRepository) GetCurrentPrices(ctx context.Context, inTicker
 	return nil, domain.ErrCurrentPricesNotFound
 }
 
-func (r *CurrentPricesRepository) SaveCurrentPrices(ctx context.Context, prices *domain.Prices, inTicker string) error {
+func (r *CurrentPricesRepository) SaveCurrentPrices(ctx context.Context, prices *domain.Prices, inSymbol string) error {
 	data, err := json.Marshal(prices)
 	if err != nil {
 		return fmt.Errorf("could not encode prices struct, err: %w", err)
 	}
 
-	if cmd := r.client.Set(ctx, getRedisKeyCurrentPricesInTicker(inTicker), data, 0); cmd != nil {
+	if cmd := r.client.Set(ctx, getRedisKeyCurrentPricesInSymbol(inSymbol), data, 0); cmd != nil {
 		if _, err := cmd.Result(); err != nil {
 			return fmt.Errorf("could not save current prices to redis, err: %w", err)
 		}
@@ -55,6 +55,6 @@ func (r *CurrentPricesRepository) SaveCurrentPrices(ctx context.Context, prices 
 	return nil
 }
 
-func getRedisKeyCurrentPricesInTicker(ticker string) string {
-	return fmt.Sprintf("current-prices:%s", ticker)
+func getRedisKeyCurrentPricesInSymbol(symbol string) string {
+	return fmt.Sprintf("current-prices:%s", symbol)
 }

@@ -42,19 +42,19 @@ func (s *OrderSeller) SellOrder(ctx context.Context, orderID string) (*domain.Ba
 		return nil, fmt.Errorf("could get order by ID = '%s' for user ID = '%s', err: %w", orderID, user.ID, err)
 	}
 
-	sellAmount, err := s.converterService.Convert(ctx, user, order.ToAmount, order.ToTicker, balance.Ticker)
+	sellAmount, err := s.converterService.Convert(ctx, user, order.ToAmount, order.ToSymbol, balance.Symbol)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"could not convert %s to %s for user ID = '%s', err: %w",
-			order.ToTicker,
-			balance.Ticker,
+			order.ToSymbol,
+			balance.Symbol,
 			user.ID,
 			err,
 		)
 	}
 
 	order.CloseAmount = sellAmount
-	order.CloseTicker = balance.Ticker
+	order.CloseSymbol = balance.Symbol
 	order.Updated = time.Now()
 	order.Status = domain.OrderStatusClosed
 	if err := s.orderRepository.SaveOrder(ctx, order); err != nil {

@@ -15,7 +15,7 @@ function HeaderBalance(props) {
         <span className="header-title position-relative float-right pe-3 me-3">
             <i className="fa fa-wallet color-sunny-light"></i>
             <span className="color-sunny-light" style={{marginLeft:"5px"}}>
-                <span className="opacity-30 font-200" style={{marginRight:"3px"}}>{balance.ticker}</span>
+                <span className="opacity-30 font-200" style={{marginRight:"3px"}}>{balance.symbol}</span>
                 {balance.amount}
             </span>
         </span>

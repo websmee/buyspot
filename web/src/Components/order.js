@@ -23,14 +23,14 @@ function Order(props) {
                     <div className="align-self-center">
                         <h5 className="mb-n2">
                             {props.order.toAssetName}
-                            <span className="opacity-30 font-200" style={{marginLeft: "3px"}}>{props.order.toTicker}</span>
+                            <span className="opacity-30 font-200" style={{marginLeft: "3px"}}>{props.order.toSymbol}</span>
                         </h5>
                         <p className="mt-n1 mb-0 font-10"><ReactTimeAgo date={Date.parse(props.order.created)} locale="en-US" /></p>
                     </div>
                     <div className="align-self-center ms-auto ps-3">
                         <h5 className="mb-n2">
-                            <span className="opacity-30 font-200" style={{marginRight: "3px"}}>{props.order.fromTicker}</span>
-                            <a className={props.order.pnl < 0 ? "color-red-light" : "color-sunny-light"}>{props.order.amountInBalanceTicker}</a>
+                            <span className="opacity-30 font-200" style={{marginRight: "3px"}}>{props.order.fromSymbol}</span>
+                            <a className={props.order.pnl < 0 ? "color-red-light" : "color-sunny-light"}>{props.order.amountInBalanceSymbol}</a>
                         </h5>
                         <p className="mt-n1 mb-0 font-10" style={{textAlign: "right"}}>{props.order.pnl > 0 && "+"}{props.order.pnl}%</p>
                     </div>

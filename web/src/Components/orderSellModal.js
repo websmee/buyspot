@@ -12,7 +12,7 @@ function OrderSellModal(props) {
             <div className="menu-title">
                 <h1>
                     {props.order.toAssetName}
-                    <span className="opacity-30 font-200" style={{marginLeft: "5px"}}>{props.order.toTicker}</span>
+                    <span className="opacity-30 font-200" style={{marginLeft: "5px"}}>{props.order.toSymbol}</span>
                 </h1>
                 <p><ReactTimeAgo date={Date.parse(props.order.created)} locale="en-US" /></p>
                 <a className="close-menu"><i className="fa fa-times"></i></a>
@@ -20,7 +20,7 @@ function OrderSellModal(props) {
             <div className="divider divider-margins mb-1 mt-3"></div>
             <div className="content px-1">
                 <p>
-                    Current value: {props.order.amountTicker} <strong className={props.order.pnl < 0 ? "color-red-light" : "color-sunny-light"}>{props.order.amountInBalanceTicker}</strong>
+                    Current value: {props.order.amountSymbol} <strong className={props.order.pnl < 0 ? "color-red-light" : "color-sunny-light"}>{props.order.amountInBalanceSymbol}</strong>
                     <br />
                     PNL: <strong className={props.order.pnl < 0 ? "color-red-light" : "color-sunny-light"}>{props.order.pnl > 0 && "+"}{props.order.pnl}%</strong>
                     <br />

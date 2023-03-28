@@ -61,7 +61,7 @@ function SpotCharts(props) {
                     <div>
                         <h1 data-menu={props.assetDescriptionModalId} style={{ cursor: "pointer" }} className="mt-n2">
                             {props.assetName}
-                            <span className="font-16 font-400 opacity-50" style={{ marginLeft: "5px" }}>{props.assetTicker}</span>
+                            <span className="font-16 font-400 opacity-50" style={{ marginLeft: "5px" }}>{props.assetSymbol}</span>
                         </h1>
                         <h4 className="font-400 text-uppercase mt-n2 font-16 opacity-30">
                             <a style={{ marginRight: "12px" }}>1d</a>

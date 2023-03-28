@@ -38,12 +38,12 @@ func (r *SpotReader) GetSpotByIndex(ctx context.Context, index int) (*domain.Spo
 		return nil, fmt.Errorf("could not get spot by index %d, err: %w", index, err)
 	}
 
-	activeOrdersCount, err := r.orderRepository.GetUserActiveOrdersCountByTicker(ctx, user.ID, spot.Asset.Ticker)
+	activeOrdersCount, err := r.orderRepository.GetUserActiveOrdersCountBySymbol(ctx, user.ID, spot.Asset.Symbol)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"could not get user (ID = '%s') active orders count by ticker %s, err: %w",
+			"could not get user (ID = '%s') active orders count by symbol %s, err: %w",
 			user.ID,
-			spot.Asset.Ticker,
+			spot.Asset.Symbol,
 			err,
 		)
 	}

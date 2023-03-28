@@ -73,29 +73,29 @@ func (m *SpotMaker) makeSpots(ctx context.Context) ([]domain.Spot, error) {
 
 	var spots []domain.Spot
 	for i := range assets {
-		advice, err := m.adviser.GetAdviceByTicker(ctx, assets[i].Ticker)
+		advice, err := m.adviser.GetAdviceBySymbol(ctx, assets[i].Symbol)
 		if err != nil {
-			m.logger.Println(fmt.Errorf("could not find spot by ticker %s, err: %w", assets[i].Ticker, err))
+			m.logger.Println(fmt.Errorf("could not find spot by symbol %s, err: %w", assets[i].Symbol, err))
 			continue
 		}
 
-		historyMarketData, err := m.marketDataRepository.GetAllHours(ctx, assets[i].Ticker)
+		historyMarketData, err := m.marketDataRepository.GetMonth(ctx, assets[i].Symbol, domain.IntervalHour)
 		if err != nil {
-			m.logger.Println(fmt.Errorf("could not get market data by ticker %s, err: %w", assets[i].Ticker, err))
+			m.logger.Println(fmt.Errorf("could not get market data by symbol %s, err: %w", assets[i].Symbol, err))
 			continue
 		}
 
 		forecastMarketData := buildForecastHours(
 			ctx,
-			assets[i].Ticker,
+			assets[i].Symbol,
 			historyMarketData[len(historyMarketData)-1].High,
 			advice.PriceForecast,
 			advice.ForecastHours,
 		)
 
-		news, err := m.newsRepository.GetFreshNewsByTicker(ctx, assets[i].Ticker, time.Now().Add(-24*30*time.Hour))
+		news, err := m.newsRepository.GetFreshNewsBySymbol(ctx, assets[i].Symbol, time.Now().Add(-24*30*time.Hour))
 		if err != nil {
-			m.logger.Println(fmt.Errorf("could not get news by ticker %s, err: %w", assets[i].Ticker, err))
+			m.logger.Println(fmt.Errorf("could not get news by symbol %s, err: %w", assets[i].Symbol, err))
 			continue
 		}
 
@@ -113,38 +113,35 @@ func (m *SpotMaker) makeSpots(ctx context.Context) ([]domain.Spot, error) {
 
 func buildForecastHours(
 	_ context.Context,
-	assetTicker string,
+	assetSymbol string,
 	currentPrice float64,
 	priceForecast float64,
 	hours int,
-) []domain.Candlestick {
+) []domain.Kline {
 	price := currentPrice
 	endPrice := currentPrice + (currentPrice * priceForecast / 100)
 	diff := (endPrice - currentPrice) / float64(hours)
 	curvature := diff * 0.9
-	var candlesticks []domain.Candlestick
+	var klines []domain.Kline
 	for i := 1; i <= hours; i++ {
-		candlesticks = append(
-			candlesticks,
-			getForecastCandlestick(assetTicker, price, 0, time.Now().Add(time.Duration(i)*time.Hour)),
+		klines = append(
+			klines,
+			getForecastKline(price, 0, time.Now().Add(time.Duration(i)*time.Hour)),
 		)
 		p := float64(i) / float64(hours)
 		price += diff - curvature + (2 * curvature * p)
 	}
 
-	return candlesticks
+	return klines
 }
 
-func getForecastCandlestick(assetTicker string, price float64, volume int64, t time.Time) domain.Candlestick {
-	return domain.Candlestick{
-		Open:        price,
-		Low:         price,
-		High:        price,
-		Close:       price,
-		AdjClose:    price,
-		Volume:      volume,
-		Timestamp:   t,
-		Interval:    "1h",
-		AssetTicker: assetTicker,
+func getForecastKline(price float64, volume float64, t time.Time) domain.Kline {
+	return domain.Kline{
+		Open:    price,
+		Low:     price,
+		High:    price,
+		Close:   price,
+		Volume:  volume,
+		EndTime: t,
 	}
 }

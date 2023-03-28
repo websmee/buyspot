@@ -41,7 +41,7 @@ function Spot() {
                 {currentSpotsTotal > 0 && <>
                     <SpotCharts
                         assetName={spot.asset.name}
-                        assetTicker={spot.asset.ticker}
+                        assetSymbol={spot.asset.symbol}
                         forecast={spot.priceForecast}
                         chartTimes={spot.chartsData.times}
                         chartPrices={spot.chartsData.prices}
@@ -52,7 +52,7 @@ function Spot() {
 
                     <SpotButtons
                         activeOrdersCount={spot.activeOrders}
-                        assetTicker={spot.asset.ticker}
+                        assetSymbol={spot.asset.symbol}
                         buyModalId="buy-modal"
                     />
 
@@ -64,15 +64,15 @@ function Spot() {
                 </>}
             </div>
 
-            <AssetDescriptionModal id="asset-desc-modal" assetName={spot.asset.name} assetTicker={spot.asset.ticker}>
+            <AssetDescriptionModal id="asset-desc-modal" assetName={spot.asset.name} assetSymbol={spot.asset.symbol}>
                 {spot.asset.description}
             </AssetDescriptionModal>
 
             <SpotBuyModal
                 id="buy-modal"
                 assetName={spot.asset.name}
-                assetTicker={spot.asset.ticker}
-                balanceTicker={balance.ticker}
+                assetSymbol={spot.asset.symbol}
+                balanceSymbol={balance.symbol}
                 amount={spot.buyOrderSettings.amount}
                 takeProfit={spot.buyOrderSettings.takeProfit}
                 takeProfitOptions={spot.buyOrderSettings.takeProfitOptions}

@@ -62,7 +62,7 @@ func AddSpotHandlers(
 		updatedBalance, err := spotBuyer.BuySpot(
 			c,
 			buySpotRequest.Amount,
-			buySpotRequest.Ticker,
+			buySpotRequest.Symbol,
 			buySpotRequest.TakeProfit,
 			buySpotRequest.StopLoss,
 		)
@@ -79,7 +79,7 @@ func AddSpotHandlers(
 
 		c.IndentedJSON(http.StatusOK, api.BuySpotResponse{
 			UpdatedBalance: api.Balance{
-				Ticker: updatedBalance.Ticker,
+				Symbol: updatedBalance.Symbol,
 				Amount: updatedBalance.Amount,
 			},
 		})

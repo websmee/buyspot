@@ -53,39 +53,39 @@ func (r *OrderSeller) Run(ctx context.Context) error {
 			return
 		}
 
-		balanceTickers, err := r.balanceService.GetAvailableTickers(ctx)
+		balanceSymbols, err := r.balanceService.GetAvailableSymbols(ctx)
 		if err != nil {
-			r.logger.Println(fmt.Errorf("could not get available balance tickers, err: %w", err))
+			r.logger.Println(fmt.Errorf("could not get available balance symbols, err: %w", err))
 			return
 		}
 
-		for i := range balanceTickers {
-			currentPrices, err := r.pricesService.GetCurrentPrices(ctx, balanceTickers[i])
+		for i := range balanceSymbols {
+			currentPrices, err := r.pricesService.GetCurrentPrices(ctx, balanceSymbols[i])
 			if err != nil {
 				r.logger.Println(fmt.Errorf(
-					"could not get current prices for ticker '%s', err: %w",
-					balanceTickers[i],
+					"could not get current prices for symbol '%s', err: %w",
+					balanceSymbols[i],
 					err,
 				))
 				continue
 			}
 
 			for j := range assets {
-				tickerCurrentPrice, ok := currentPrices.PricesByTickers[assets[j].Ticker]
+				symbolCurrentPrice, ok := currentPrices.PricesBySymbols[assets[j].Symbol]
 				if !ok {
 					r.logger.Println(fmt.Errorf(
-						"could not get current price for ticker '%s'",
-						assets[j].Ticker,
+						"could not get current price for symbol '%s'",
+						assets[j].Symbol,
 					))
 					continue
 				}
 
-				orders, err := r.orderRepository.GetActiveOrdersToSell(ctx, balanceTickers[i], assets[j].Ticker, tickerCurrentPrice)
+				orders, err := r.orderRepository.GetActiveOrdersToSell(ctx, balanceSymbols[i], assets[j].Symbol, symbolCurrentPrice)
 				if err != nil {
 					r.logger.Println(fmt.Errorf(
 						"could not get active %s orders to sell for %s, err: %w",
-						assets[j].Ticker,
-						balanceTickers[i],
+						assets[j].Symbol,
+						balanceSymbols[i],
 						err,
 					))
 					continue
@@ -106,21 +106,21 @@ func (r *OrderSeller) Run(ctx context.Context) error {
 						ctx,
 						user,
 						orders[k].ToAmount,
-						orders[k].ToTicker,
-						balanceTickers[i],
+						orders[k].ToSymbol,
+						balanceSymbols[i],
 					)
 					if err != nil {
 						r.logger.Println(fmt.Errorf(
 							"could not convert %s to %s, err: %w",
-							orders[k].ToTicker,
-							balanceTickers[i],
+							orders[k].ToSymbol,
+							balanceSymbols[i],
 							err,
 						))
 						continue
 					}
 
 					orders[k].CloseAmount = closeAmount
-					orders[k].CloseTicker = balanceTickers[i]
+					orders[k].CloseSymbol = balanceSymbols[i]
 					orders[k].Updated = time.Now()
 					orders[k].Status = domain.OrderStatusClosed
 					if err := r.orderRepository.SaveOrder(ctx, &orders[k]); err != nil {

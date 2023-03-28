@@ -16,7 +16,7 @@ func NewBalanceService() *BalanceService {
 func (r *BalanceService) GetUserActiveBalance(_ context.Context, _ *domain.User) (*domain.Balance, error) {
 	return &domain.Balance{
 		Amount: 1234.56,
-		Ticker: "USDT",
+		Symbol: "USDT",
 	}, nil
 }
 
@@ -24,11 +24,11 @@ func (r *BalanceService) GetUserBalances(ctx context.Context, user *domain.User)
 	return []domain.Balance{
 		{
 			Amount: 1234.56,
-			Ticker: "USDT",
+			Symbol: "USDT",
 		},
 	}, nil
 }
 
-func (r *BalanceService) GetAvailableTickers(_ context.Context) ([]string, error) {
+func (r *BalanceService) GetAvailableSymbols(_ context.Context) ([]string, error) {
 	return []string{"USDT"}, nil
 }

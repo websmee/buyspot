@@ -10,17 +10,17 @@ type Order struct {
 	ID            primitive.ObjectID `bson:"_id"`
 	UserID        string             `bson:"user_id"`
 	FromAmount    float64            `bson:"from_amount"`
-	FromTicker    string             `bson:"from_ticker"`
+	FromSymbol    string             `bson:"from_symbol"`
 	ToAmount      float64            `bson:"to_amount"`
-	ToTicker      string             `bson:"to_ticker"`
-	ToTickerPrice float64            `bson:"to_ticker_price"`
+	ToSymbol      string             `bson:"to_symbol"`
+	ToSymbolPrice float64            `bson:"to_symbol_price"`
 	ToAssetName   string             `bson:"to_asset_name"`
 	TakeProfit    float64            `bson:"take_profit"`
 	StopLoss      float64            `bson:"stop_loss"`
 	Created       time.Time          `bson:"created"`
 	Updated       time.Time          `bson:"updated"`
 	CloseAmount   float64            `bson:"close_amount"`
-	CloseTicker   string             `bson:"close_ticker"`
+	CloseSymbol   string             `bson:"close_symbol"`
 	Status        OrderStatus        `bson:"status"`
 }
 
