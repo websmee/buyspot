@@ -22,7 +22,7 @@ func ConvertOrderToMessages(order *domain.Order) *Order {
 
 func ConvertPricesToMessage(prices *domain.Prices) *Prices {
 	return &Prices{
-		InSymbol:        prices.InSymbol,
+		Base:            prices.Base,
 		PricesBySymbols: prices.PricesBySymbols,
 	}
 }

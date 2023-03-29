@@ -10,6 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	httpAPI "websmee/buyspot/internal/api/http"
+	"websmee/buyspot/internal/infrastructure/binance"
 	"websmee/buyspot/internal/infrastructure/example"
 	mongoInfra "websmee/buyspot/internal/infrastructure/mongo"
 	redisInfra "websmee/buyspot/internal/infrastructure/redis"
@@ -41,16 +42,15 @@ func main() {
 	}()
 
 	userRepository := example.NewUserRepository()
-	marketDataRepository := example.NewMarketDataRepository()
+	marketDataRepository := mongoInfra.NewMarketDataRepository(mongoClient)
 	newsRepository := example.NewNewsRepository()
 	assetRepository := example.NewAssetRepository()
 	adviser := example.NewAdviser()
 	orderRepository := mongoInfra.NewOrderRepository(mongoClient)
 	balanceService := example.NewBalanceService()
-	pricesService := example.NewPricesService()
-	converterService := example.NewConverterService()
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
 	currentPricesRepository := redisInfra.NewCurrentPricesRepository(redisClient)
+	converterService := example.NewConverterService(currentPricesRepository)
 	spotReader := usecases.NewSpotReader(currentSpotsRepository, orderRepository)
 	spotBuyer := usecases.NewSpotBuyer(
 		orderRepository,
@@ -64,37 +64,40 @@ func main() {
 		converterService,
 		balanceService,
 	)
-	pricesReader := usecases.NewPricesReader(currentPricesRepository, balanceService)
+	pricesReader := usecases.NewPricesReader(assetRepository, currentPricesRepository, balanceService)
 
 	// background processed
 	spotMaker := background.NewSpotMaker(
+		balanceService,
 		currentSpotsRepository,
 		marketDataRepository,
 		newsRepository,
 		assetRepository,
 		adviser,
-		orderRepository,
 		newLogger("[SPOT MAKER]"),
 	)
 	if err := spotMaker.Run(ctx); err != nil {
 		logger.Fatalln(fmt.Errorf("could not run spot maker, err: %w", err))
 	}
 
-	currentPricesUpdater := background.NewCurrentPricesUpdater(
-		currentPricesRepository,
+	marketDataUpdater := background.NewMarketDataUpdater(
 		balanceService,
-		pricesService,
-		newLogger("[CURRENT PRICES UPDATER]"),
+		assetRepository,
+		binance.NewMarketDataStream(),
+		marketDataRepository,
+		currentPricesRepository,
+		newLogger("[MARKET DATA UPDATER]"),
 	)
-	if err := currentPricesUpdater.Run(ctx); err != nil {
-		logger.Fatalln(fmt.Errorf("could not run current prices updater, err: %w", err))
+	if err := marketDataUpdater.Run(ctx); err != nil {
+		logger.Fatalln(fmt.Errorf("could not run market data updater, err: %w", err))
 	}
+	defer marketDataUpdater.Close()
 
 	orderBackgroundSeller := background.NewOrderSeller(
 		userRepository,
 		balanceService,
 		assetRepository,
-		pricesService,
+		currentPricesRepository,
 		orderRepository,
 		converterService,
 		newLogger("[ORDER SELLER]"),

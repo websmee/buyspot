@@ -2,8 +2,8 @@ package redis
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 
@@ -18,43 +18,58 @@ func NewCurrentPricesRepository(client *redis.Client) *CurrentPricesRepository {
 	return &CurrentPricesRepository{client}
 }
 
-func (r *CurrentPricesRepository) GetCurrentPrices(ctx context.Context, inSymbol string) (*domain.Prices, error) {
-	if cmd := r.client.Get(ctx, getRedisKeyCurrentPricesInSymbol(inSymbol)); cmd != nil {
-		data, err := cmd.Bytes()
-		if err != nil {
-			if err == redis.Nil {
-				return nil, domain.ErrCurrentPricesNotFound
-			}
-
-			return nil, fmt.Errorf("could not find current prices in redis, err: %w", err)
-		}
-
-		var prices domain.Prices
-		if err := json.Unmarshal(data, &prices); err != nil {
-			return nil, fmt.Errorf("could not decode prices data, err: %w", err)
-		}
-
-		return &prices, nil
+func (r *CurrentPricesRepository) GetPrices(ctx context.Context, symbols []string, base string) (*domain.Prices, error) {
+	if len(symbols) == 0 {
+		return nil, nil
 	}
 
-	return nil, domain.ErrCurrentPricesNotFound
+	var prices domain.Prices
+	prices.Base = base
+	prices.PricesBySymbols = make(map[string]float64)
+
+	for _, symbol := range symbols {
+		price, err := r.GetPrice(ctx, symbol, base)
+		if err != nil {
+			return nil, err
+		}
+
+		prices.PricesBySymbols[symbol] = price
+	}
+
+	return &prices, nil
 }
 
-func (r *CurrentPricesRepository) SaveCurrentPrices(ctx context.Context, prices *domain.Prices, inSymbol string) error {
-	data, err := json.Marshal(prices)
-	if err != nil {
-		return fmt.Errorf("could not encode prices struct, err: %w", err)
+func (r *CurrentPricesRepository) GetPrice(ctx context.Context, symbol, base string) (float64, error) {
+	if cmd := r.client.Get(ctx, getRedisKeyPrice(symbol, base)); cmd != nil {
+		price, err := cmd.Float64()
+		if err != nil {
+			if err == redis.Nil {
+				return 0, nil
+			}
+
+			return 0, fmt.Errorf("could not find %s%s price in redis, err: %w", symbol, base, err)
+		}
+
+		return price, nil
 	}
 
-	if cmd := r.client.Set(ctx, getRedisKeyCurrentPricesInSymbol(inSymbol), data, 0); cmd != nil {
-		if _, err := cmd.Result(); err != nil {
-			return fmt.Errorf("could not save current prices to redis, err: %w", err)
-		}
+	return 0, nil
+}
+
+func (r *CurrentPricesRepository) UpdatePrice(
+	ctx context.Context,
+	price float64,
+	symbol string,
+	base string,
+	expiration time.Duration,
+) error {
+	if err := r.client.Set(ctx, getRedisKeyPrice(symbol, base), price, expiration).Err(); err != nil {
+		return fmt.Errorf("could not update %s%s price in redis, err: %w", symbol, base, err)
 	}
 
 	return nil
 }
 
-func getRedisKeyCurrentPricesInSymbol(symbol string) string {
-	return fmt.Sprintf("current-prices:%s", symbol)
+func getRedisKeyPrice(symbol, base string) string {
+	return fmt.Sprintf("current-prices:%s:%s", base, symbol)
 }

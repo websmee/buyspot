@@ -13,17 +13,18 @@ import (
 type MarketDataStream struct {
 }
 
-func NewMarketDataStream(apiKey string) *MarketDataStream {
+func NewMarketDataStream() *MarketDataStream {
 	return &MarketDataStream{}
 }
 
 func (s MarketDataStream) Subscribe(
 	ctx context.Context,
 	symbol string,
+	base string,
 	interval domain.Interval,
 	handler func(kline *domain.Kline),
 	errorHandler func(err error),
-) error {
+) (chan struct{}, error) {
 	wsKlineHandler := func(event *binance.WsKlineEvent) {
 		open, _ := strconv.ParseFloat(event.Kline.Open, 64)
 		cls, _ := strconv.ParseFloat(event.Kline.Close, 64)
@@ -49,13 +50,14 @@ func (s MarketDataStream) Subscribe(
 		})
 	}
 
-	doneC, stopC, err := binance.WsKlineServe(symbol, string(interval), wsKlineHandler, errorHandler)
+	doneC, stopC, err := binance.WsKlineServe(symbol+base, string(interval), wsKlineHandler, errorHandler)
 	if err != nil {
-		return err
+		return doneC, err
 	}
 
-	stopC <- <-ctx.Done()
-	<-doneC
+	go func() {
+		stopC <- <-ctx.Done()
+	}()
 
-	return nil
+	return doneC, nil
 }

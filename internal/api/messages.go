@@ -96,6 +96,6 @@ type Order struct {
 }
 
 type Prices struct {
-	InSymbol        string             `json:"inSymbol"`
+	Base            string             `json:"base"`
 	PricesBySymbols map[string]float64 `json:"pricesBySymbols"`
 }

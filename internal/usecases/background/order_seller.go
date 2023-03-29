@@ -13,20 +13,20 @@ import (
 )
 
 type OrderSeller struct {
-	userRepository   usecases.UserRepository
-	balanceService   usecases.BalanceService
-	assetRepository  usecases.AssetRepository
-	pricesService    usecases.PricesService
-	orderRepository  usecases.OrderRepository
-	converterService usecases.ConverterService
-	logger           *log.Logger
+	userRepository          usecases.UserRepository
+	balanceService          usecases.BalanceService
+	assetRepository         usecases.AssetRepository
+	currentPricesRepository usecases.CurrentPricesRepository
+	orderRepository         usecases.OrderRepository
+	converterService        usecases.ConverterService
+	logger                  *log.Logger
 }
 
 func NewOrderSeller(
 	userRepository usecases.UserRepository,
 	balanceService usecases.BalanceService,
 	assetRepository usecases.AssetRepository,
-	pricesService usecases.PricesService,
+	currentPricesRepository usecases.CurrentPricesRepository,
 	orderRepository usecases.OrderRepository,
 	converterService usecases.ConverterService,
 	logger *log.Logger,
@@ -35,7 +35,7 @@ func NewOrderSeller(
 		userRepository,
 		balanceService,
 		assetRepository,
-		pricesService,
+		currentPricesRepository,
 		orderRepository,
 		converterService,
 		logger,
@@ -60,30 +60,31 @@ func (r *OrderSeller) Run(ctx context.Context) error {
 		}
 
 		for i := range balanceSymbols {
-			currentPrices, err := r.pricesService.GetCurrentPrices(ctx, balanceSymbols[i])
-			if err != nil {
-				r.logger.Println(fmt.Errorf(
-					"could not get current prices for symbol '%s', err: %w",
-					balanceSymbols[i],
-					err,
-				))
-				continue
-			}
-
 			for j := range assets {
-				symbolCurrentPrice, ok := currentPrices.PricesBySymbols[assets[j].Symbol]
-				if !ok {
+				price, err := r.currentPricesRepository.GetPrice(ctx, assets[j].Symbol, balanceSymbols[i])
+				if err != nil {
 					r.logger.Println(fmt.Errorf(
-						"could not get current price for symbol '%s'",
+						"could not get %s%s price, err: %w",
 						assets[j].Symbol,
+						balanceSymbols[i],
+						err,
 					))
 					continue
 				}
 
-				orders, err := r.orderRepository.GetActiveOrdersToSell(ctx, balanceSymbols[i], assets[j].Symbol, symbolCurrentPrice)
+				if price == 0 {
+					r.logger.Println(fmt.Errorf(
+						"could not find %s%s price",
+						assets[j].Symbol,
+						balanceSymbols[i],
+					))
+					continue
+				}
+
+				orders, err := r.orderRepository.GetActiveOrdersToSell(ctx, balanceSymbols[i], assets[j].Symbol, price)
 				if err != nil {
 					r.logger.Println(fmt.Errorf(
-						"could not get active %s orders to sell for %s, err: %w",
+						"could not get active %s%s orders to sell, err: %w",
 						assets[j].Symbol,
 						balanceSymbols[i],
 						err,

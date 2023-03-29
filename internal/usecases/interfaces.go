@@ -13,10 +13,11 @@ type (
 	}
 
 	MarketDataRepository interface {
-		GetMonth(ctx context.Context, symbol string, interval domain.Interval) ([]domain.Kline, error)
+		GetMonth(ctx context.Context, symbol, base string, interval domain.Interval) ([]domain.Kline, error)
 		CreateOrUpdate(
 			ctx context.Context,
 			symbol string,
+			base string,
 			interval domain.Interval,
 			kline *domain.Kline,
 		) error
@@ -32,7 +33,7 @@ type (
 	}
 
 	Adviser interface {
-		GetAdviceBySymbol(ctx context.Context, symbol string) (*domain.Advice, error)
+		GetAdviceBySymbol(ctx context.Context, symbol, base string) (*domain.Advice, error)
 	}
 
 	OrderRepository interface {
@@ -59,8 +60,9 @@ type (
 	}
 
 	CurrentPricesRepository interface {
-		GetCurrentPrices(ctx context.Context, inSymbol string) (*domain.Prices, error)
-		SaveCurrentPrices(ctx context.Context, prices *domain.Prices, inSymbol string) error
+		GetPrice(ctx context.Context, symbol, base string) (float64, error)
+		GetPrices(ctx context.Context, symbols []string, base string) (*domain.Prices, error)
+		UpdatePrice(ctx context.Context, price float64, symbol, base string, expiration time.Duration) error
 	}
 
 	BalanceService interface {
@@ -85,9 +87,10 @@ type (
 		Subscribe(
 			ctx context.Context,
 			symbol string,
+			base string,
 			interval domain.Interval,
 			handler func(kline *domain.Kline),
 			errorHandler func(err error),
-		) error
+		) (done chan struct{}, err error)
 	}
 )

@@ -16,7 +16,7 @@ const slice = createSlice({
         loading: false,
         errorMessage: "",
         currentPrices: {
-            inSymbol: "",
+            base: "",
             pricesBySymbols: {
                 "": 0,
             },

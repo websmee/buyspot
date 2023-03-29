@@ -1,5 +1,7 @@
 import axios from "axios";
+
 import * as actions from "Store/api";
+import config from "Config/config";
 
 const api =
     ({ dispatch }) =>
@@ -16,7 +18,7 @@ const api =
 
                 try {
                     const response = await axios.request({
-                        baseURL: "http://localhost:8080",
+                        baseURL: config.API_BASE_URL,
                         url,
                         method,
                         data,
