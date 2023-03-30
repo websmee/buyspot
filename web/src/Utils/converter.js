@@ -5,7 +5,7 @@ export default {
         const paidAmount = amount * pricesBySymbols[fromSymbol];
         const convertedAmount = paidAmount * pricesBySymbols[toSymbol];
 
-        return Math.round(convertedAmount * 2) / 2;
+        return Math.round(convertedAmount * 100) / 100;
     },
 
     calculatePNL: (fromAmount, fromSymbol, toAmount, toSymbol, pricesBySymbols) => {
@@ -15,6 +15,6 @@ export default {
         const currentAmount = toAmount * pricesBySymbols[toSymbol];
         const diff = currentAmount - paidAmount;
 
-        return Math.round(diff / currentAmount * 100 * 2) / 2;
+        return Math.round(diff / currentAmount * 100 * 100) / 100;
     },
 }

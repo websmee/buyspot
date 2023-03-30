@@ -25,8 +25,8 @@ func (r *MarketDataRepository) getCollection(
 	interval domain.Interval,
 ) *mongo.Collection {
 	return r.client.
-		Database("buyspot").
-		Collection(fmt.Sprintf("market_data_%s%s_%s", symbol, base, interval))
+		Database("buyspot_market_data").
+		Collection(fmt.Sprintf("%s%s_%s", symbol, base, interval))
 }
 
 func (r *MarketDataRepository) GetMonth(

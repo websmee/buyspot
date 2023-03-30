@@ -6,17 +6,22 @@ import (
 	"log"
 	"os"
 
+	"github.com/adshao/go-binance/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 
 	httpAPI "websmee/buyspot/internal/api/http"
-	"websmee/buyspot/internal/infrastructure/binance"
+	binanceInfra "websmee/buyspot/internal/infrastructure/binance"
 	"websmee/buyspot/internal/infrastructure/example"
 	mongoInfra "websmee/buyspot/internal/infrastructure/mongo"
 	redisInfra "websmee/buyspot/internal/infrastructure/redis"
 	"websmee/buyspot/internal/usecases"
 	"websmee/buyspot/internal/usecases/background"
 )
+
+var secretKey = os.Getenv("BUYSPOT_SECRET_KEY")
+var binanceAPIKey = os.Getenv("BUYSPOT_BINANCE_API_KEY")
+var binanceSecretKey = os.Getenv("BUYSPOT_BINANCE_SECRET_KEY")
 
 func main() {
 	ctx := context.Background()
@@ -51,6 +56,7 @@ func main() {
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
 	currentPricesRepository := redisInfra.NewCurrentPricesRepository(redisClient)
 	converterService := example.NewConverterService(currentPricesRepository)
+	marketDataService := binanceInfra.NewMarketDataService(binance.NewClient(binanceAPIKey, binanceSecretKey))
 	spotReader := usecases.NewSpotReader(currentSpotsRepository, orderRepository)
 	spotBuyer := usecases.NewSpotBuyer(
 		orderRepository,
@@ -65,6 +71,13 @@ func main() {
 		balanceService,
 	)
 	pricesReader := usecases.NewPricesReader(assetRepository, currentPricesRepository, balanceService)
+	marketDataUpdater := usecases.NewMarketDataUpdater(
+		secretKey,
+		balanceService,
+		assetRepository,
+		marketDataRepository,
+		marketDataService,
+	)
 
 	// background processed
 	spotMaker := background.NewSpotMaker(
@@ -80,18 +93,18 @@ func main() {
 		logger.Fatalln(fmt.Errorf("could not run spot maker, err: %w", err))
 	}
 
-	marketDataUpdater := background.NewMarketDataUpdater(
+	marketDataBackgroundUpdater := background.NewMarketDataUpdater(
 		balanceService,
 		assetRepository,
-		binance.NewMarketDataStream(),
+		binanceInfra.NewMarketDataStream(),
 		marketDataRepository,
 		currentPricesRepository,
 		newLogger("[MARKET DATA UPDATER]"),
 	)
-	if err := marketDataUpdater.Run(ctx); err != nil {
+	if err := marketDataBackgroundUpdater.Run(ctx); err != nil {
 		logger.Fatalln(fmt.Errorf("could not run market data updater, err: %w", err))
 	}
-	defer marketDataUpdater.Close()
+	defer marketDataBackgroundUpdater.Close()
 
 	orderBackgroundSeller := background.NewOrderSeller(
 		userRepository,
@@ -114,6 +127,7 @@ func main() {
 	httpAPI.AddSpotHandlers(router, spotReader, spotBuyer)
 	httpAPI.AddOrderHandlers(router, orderReader, orderSeller)
 	httpAPI.AddPricesHandlers(router, pricesReader)
+	httpAPI.AddMarketDataHandlers(router, marketDataUpdater)
 	_ = router.Run("localhost:8080")
 }
 

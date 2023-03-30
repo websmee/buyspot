@@ -45,6 +45,7 @@ func (r *PricesReader) GetCurrentPrices(ctx context.Context) (*domain.Prices, er
 	for i := range assets {
 		symbols = append(symbols, assets[i].Symbol)
 	}
+	symbols = append(symbols, balance.Symbol)
 
 	return r.currentPricesRepository.GetPrices(ctx, symbols, balance.Symbol)
 }

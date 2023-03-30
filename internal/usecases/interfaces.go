@@ -93,4 +93,8 @@ type (
 			errorHandler func(err error),
 		) (done chan struct{}, err error)
 	}
+
+	MarketDataService interface {
+		GetMonth(ctx context.Context, symbol, base string, interval domain.Interval) ([]domain.Kline, error)
+	}
 )

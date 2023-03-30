@@ -16,6 +16,11 @@ func NewConverterService(currentPricesRepository usecases.CurrentPricesRepositor
 }
 
 func (s *ConverterService) Convert(ctx context.Context, user *domain.User, amount float64, fromSymbol, toSymbol string) (float64, error) {
-	price, _ := s.currentPricesRepository.GetPrice(ctx, fromSymbol, toSymbol)
+	price, _ := s.currentPricesRepository.GetPrice(ctx, toSymbol, fromSymbol)
+	if price == 0 {
+		price, _ = s.currentPricesRepository.GetPrice(ctx, fromSymbol, toSymbol)
+		return amount * price, nil
+	}
+
 	return amount / price, nil
 }

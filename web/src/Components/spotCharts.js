@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
+import classNames from 'classnames';
 import {
     BarElement,
     Chart as ChartJS,
@@ -29,6 +30,8 @@ ChartJS.register(
 );
 
 function SpotCharts(props) {
+    const [dataPointsCount, setDataPointsCount] = useState(24);
+
     useEffect(() => {
         const menuOpenListener = stickymobile.getMenuOpenListener(props.assetDescriptionModalId);
         const menuCloseListener = stickymobile.getMenuCloseListener();
@@ -40,17 +43,24 @@ function SpotCharts(props) {
     }, [])
 
     let prices = [];
+    let volumes = [];
     let forecast = [];
-    for(let i = 0; i < props.chartPrices.length; i++) {
-        prices.push(props.chartPrices[i]);
-        if (i < props.chartPrices.length - 1) {
-            forecast.push(null);
+    if (props.chartPrices) {
+        for (let i = 0; i < props.chartPrices.length; i++) {
+            prices.push(props.chartPrices[i]);
+            volumes.push(props.chartVolumes[i]);
+            if (i < props.chartPrices.length - 1) {
+                forecast.push(null);
+            }
         }
     }
-    for(let i = 0; i < props.chartForecast.length; i++) {
-        forecast.push(props.chartForecast[i]);
-        if (i > 0) {
-            prices.push(null);
+    if (props.chartForecast) {
+        for (let i = 0; i < props.chartForecast.length; i++) {
+            forecast.push(props.chartForecast[i]);
+            if (i > 0) {
+                prices.push(null);
+                volumes.push(null);
+            }
         }
     }
 
@@ -64,9 +74,9 @@ function SpotCharts(props) {
                             <span className="font-16 font-400 opacity-50" style={{ marginLeft: "5px" }}>{props.assetSymbol}</span>
                         </h1>
                         <h4 className="font-400 text-uppercase mt-n2 font-16 opacity-30">
-                            <a style={{ marginRight: "12px" }}>1d</a>
-                            <a style={{ marginRight: "12px" }} className="text-info">1w</a>
-                            <a style={{ marginRight: "12px" }} className="text-info">1m</a>
+                            <a style={{ marginRight: "12px" }} className={classNames({ "text-info": dataPointsCount != 24 })} onClick={() => { setDataPointsCount(24) }}>1d</a>
+                            <a style={{ marginRight: "12px" }} className={classNames({ "text-info": dataPointsCount != 7 * 24 })} onClick={() => { setDataPointsCount(7 * 24) }}>1w</a>
+                            <a style={{ marginRight: "12px" }} className={classNames({ "text-info": dataPointsCount != 30 * 24 })} onClick={() => { setDataPointsCount(30 * 24) }}>1m</a>
                         </h4>
                     </div>
                     <div className="ms-auto">
@@ -94,7 +104,7 @@ function SpotCharts(props) {
                             }
                         }}
                         data={{
-                            labels: props.chartTimes,
+                            labels: sliceDataPoints(props.chartTimes, dataPointsCount),
                             datasets: [{
                                 lineTension: 0.3,
                                 label: "actual",
@@ -103,7 +113,7 @@ function SpotCharts(props) {
                                 pointBackgroundColor: '#5D9CEC',
                                 fill: true,
                                 borderWidth: 2,
-                                data: prices,
+                                data: sliceDataPoints(prices, dataPointsCount),
                             }, {
                                 lineTension: 0.3,
                                 label: "forecast",
@@ -114,7 +124,7 @@ function SpotCharts(props) {
                                 pointRadius: 0,
                                 borderDash: [5, 5],
                                 borderWidth: 2,
-                                data: forecast,
+                                data: sliceDataPoints(forecast, dataPointsCount),
                             }],
                         }}
                     />
@@ -134,11 +144,11 @@ function SpotCharts(props) {
                             }
                         }}
                         data={{
-                            labels: props.chartTimes,
+                            labels: sliceDataPoints(props.chartTimes, dataPointsCount),
                             datasets: [{
                                 backgroundColor: 'rgba(93, 156, 236, 0.2)',
                                 borderWidth: 0,
-                                data: props.chartVolumes,
+                                data: sliceDataPoints(volumes, dataPointsCount),
                             }],
                         }}
                     />
@@ -147,5 +157,9 @@ function SpotCharts(props) {
         </div>
     )
 }
+
+const sliceDataPoints = (dataPoints, dataPointsCount) => {
+    return dataPoints.slice(dataPoints.length - dataPointsCount)
+};
 
 export default SpotCharts

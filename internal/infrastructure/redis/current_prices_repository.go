@@ -40,6 +40,10 @@ func (r *CurrentPricesRepository) GetPrices(ctx context.Context, symbols []strin
 }
 
 func (r *CurrentPricesRepository) GetPrice(ctx context.Context, symbol, base string) (float64, error) {
+	if symbol == base {
+		return 1, nil
+	}
+
 	if cmd := r.client.Get(ctx, getRedisKeyPrice(symbol, base)); cmd != nil {
 		price, err := cmd.Float64()
 		if err != nil {

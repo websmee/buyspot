@@ -20,7 +20,7 @@ func NewOrderRepository(client *mongo.Client) *OrderRepository {
 }
 
 func (r *OrderRepository) getCollection() *mongo.Collection {
-	return r.client.Database("buyspot").Collection("orders")
+	return r.client.Database("buyspot_main").Collection("orders")
 }
 
 func (r *OrderRepository) GetUserActiveOrders(ctx context.Context, userID string) ([]domain.Order, error) {

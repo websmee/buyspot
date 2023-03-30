@@ -53,7 +53,9 @@ func (m *MarketDataUpdater) Run(ctx context.Context) error {
 	}
 
 	for i := range balanceSymbols {
+		i := i
 		for j := range assets {
+			j := j
 			done, err := m.marketDataStream.Subscribe(ctx, assets[j].Symbol, balanceSymbols[i], domain.IntervalHour,
 				func(kline *domain.Kline) {
 					if err := m.currentPricesRepository.UpdatePrice(
