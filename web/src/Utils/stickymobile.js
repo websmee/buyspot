@@ -86,6 +86,32 @@ export default {
     hidePreloader: () => {
         document.getElementById('preloader').classList.add('preloader-hide')
     },
+
+    extendCard: (cardId) => {
+        const card = document.getElementById(cardId);
+        var headerHeight, footerHeight, headerOnPage;
+        var headerOnPage = document.querySelectorAll('.header:not(.header-transparent)')[0];
+        var footerOnPage = document.querySelectorAll('#footer-bar')[0];
+
+        headerOnPage ? headerHeight = document.querySelectorAll('.header')[0].offsetHeight : headerHeight = 0
+        footerOnPage ? footerHeight = document.querySelectorAll('#footer-bar')[0].offsetHeight : footerHeight = 0
+
+        if(card.getAttribute('data-card-height') === "cover"){
+            if (window.matchMedia('(display-mode: fullscreen)').matches) {var windowHeight = window.outerHeight;}
+            if (!window.matchMedia('(display-mode: fullscreen)').matches) {var windowHeight = window.innerHeight;}
+            //Fix for iOS 15 pages with data-height="cover"
+            var coverHeight = windowHeight + 'px';
+            // - Remove this for iOS 14 issues - var coverHeight = windowHeight - headerHeight - footerHeight + 'px';
+        }
+        if(card.hasAttribute('data-card-height')){
+            var getHeight = card.getAttribute('data-card-height');
+            card.style.height= getHeight +'px';
+            if(getHeight === "cover"){
+                var totalHeight = getHeight
+                card.style.height =  coverHeight
+            }
+        }
+    }
 };
 
 const preventDefault = (event) => {

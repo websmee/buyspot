@@ -49,7 +49,7 @@ func main() {
 	userRepository := example.NewUserRepository()
 	marketDataRepository := mongoInfra.NewMarketDataRepository(mongoClient)
 	newsRepository := example.NewNewsRepository()
-	assetRepository := example.NewAssetRepository()
+	assetRepository := mongoInfra.NewAssetRepository(mongoClient)
 	adviser := example.NewAdviser()
 	orderRepository := mongoInfra.NewOrderRepository(mongoClient)
 	balanceService := example.NewBalanceService()

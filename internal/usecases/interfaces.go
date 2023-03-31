@@ -29,7 +29,7 @@ type (
 
 	AssetRepository interface {
 		GetAvailableAssets(ctx context.Context) ([]domain.Asset, error)
-		GetAssetByTicket(ctx context.Context, symbol string) (*domain.Asset, error)
+		GetAssetBySymbol(ctx context.Context, symbol string) (*domain.Asset, error)
 	}
 
 	Adviser interface {

@@ -40,7 +40,7 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, symbol string, 
 		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", user.ID, err)
 	}
 
-	asset, err := b.assetRepository.GetAssetByTicket(ctx, symbol)
+	asset, err := b.assetRepository.GetAssetBySymbol(ctx, symbol)
 	if err != nil {
 		return nil, fmt.Errorf("could not available assets, err: %w", err)
 	}

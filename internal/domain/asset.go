@@ -1,10 +1,9 @@
 package domain
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
-
 type Asset struct {
-	ID          primitive.ObjectID `json:"_id"`
-	Symbol      string             `json:"symbol"`
-	Name        string             `json:"name"`
-	Description string             `json:"description"`
+	Symbol      string `bson:"symbol"`
+	Order       int    `bson:"order"`
+	IsAvailable bool   `bson:"is_available"`
+	Name        string `bson:"name"`
+	Description string `bson:"description"`
 }

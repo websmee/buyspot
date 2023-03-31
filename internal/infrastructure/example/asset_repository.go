@@ -3,8 +3,6 @@ package example
 import (
 	"context"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
 	"websmee/buyspot/internal/domain"
 )
 
@@ -18,7 +16,6 @@ func NewAssetRepository() *AssetRepository {
 func (r *AssetRepository) GetAvailableAssets(ctx context.Context) ([]domain.Asset, error) {
 	return []domain.Asset{
 		{
-			ID:     primitive.NewObjectID(),
 			Symbol: "BTC",
 			Name:   "Bitcoin",
 			Description: "Bitcoin (abbreviation: BTC[a] or XBT[b]; sign: ₿) " +
@@ -29,7 +26,6 @@ func (r *AssetRepository) GetAvailableAssets(ctx context.Context) ([]domain.Asse
 				"Because the token has characteristics of money, it can be thought of as a digital currency.",
 		},
 		{
-			ID:     primitive.NewObjectID(),
 			Symbol: "ETH",
 			Name:   "Ethereum",
 			Description: "Ethereum is a decentralized, open-source blockchain with smart contract functionality. " +
@@ -50,7 +46,6 @@ func (r *AssetRepository) GetAvailableAssets(ctx context.Context) ([]domain.Asse
 				"and have utilized the platform for initial coin offerings.",
 		},
 		{
-			ID:     primitive.NewObjectID(),
 			Symbol: "SHIB",
 			Name:   "Shiba Inu token",
 			Description: "Shiba Inu token (symbol: SHIB) is a decentralized cryptocurrency created in August 2020 " +
@@ -66,7 +61,7 @@ func (r *AssetRepository) GetAvailableAssets(ctx context.Context) ([]domain.Asse
 	}, nil
 }
 
-func (r *AssetRepository) GetAssetByTicket(ctx context.Context, symbol string) (*domain.Asset, error) {
+func (r *AssetRepository) GetAssetBySymbol(ctx context.Context, symbol string) (*domain.Asset, error) {
 	assets, err := r.GetAvailableAssets(ctx)
 	if err != nil {
 		return nil, err
