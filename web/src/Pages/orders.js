@@ -1,15 +1,18 @@
 import { useDispatch, useSelector } from "react-redux";
 import { getOrders, updateOrdersData } from "Store/reducer";
 import { useEffect } from "react";
+import { Navigate } from 'react-router-dom'
 
 import Order from "Components/order"
 import OrderSellModal from "Components/orderSellModal"
 import OrdersHeader from 'Layouts/ordersHeader';
 import ErrorMessage from "Components/errorMessage";
+import Footer from "Layouts/footer";
 
 function Orders() {
     const dispatch = useDispatch();
     const orders = useSelector((state) => state.orders);
+    const unauthorized = useSelector((state) => state.unauthorized);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -21,6 +24,10 @@ function Orders() {
           clearInterval(intervalId);
         };
     }, [dispatch]);
+
+    if (unauthorized) {
+        return <Navigate to='/login' />
+    }
 
     return (
         <>
@@ -37,6 +44,8 @@ function Orders() {
             {orders.map((order, i) =>
                 <OrderSellModal key={i} id={"sell-modal-" + i} order={order} />
             )}
+
+            <Footer />
         </>
     )
 }

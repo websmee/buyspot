@@ -22,13 +22,14 @@ const api =
                         url,
                         method,
                         data,
+                        headers: {"Authorization": sessionStorage.getItem("jwt")},
                     });
                     dispatch(actions.apiCallSuccess(response.data));
                     if (onSuccess) dispatch({ type: onSuccess, payload: response.data });
                     if (then) then(response.data);
                 } catch (error) {
                     dispatch(actions.apiCallFailed(error.message));
-                    if (onError) dispatch({ type: onError, payload: error.message });
+                    if (onError) dispatch({ type: onError, payload: { status: error.response.status, message: error.message } });
                 }
             };
 

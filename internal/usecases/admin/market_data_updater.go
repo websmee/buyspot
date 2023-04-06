@@ -1,26 +1,27 @@
-package usecases
+package admin
 
 import (
 	"context"
 	"fmt"
 
 	"websmee/buyspot/internal/domain"
+	"websmee/buyspot/internal/usecases"
 )
 
 type MarketDataUpdater struct {
 	secretKey            string
-	balanceService       BalanceService
-	assetRepository      AssetRepository
-	marketDataRepository MarketDataRepository
-	marketDataService    MarketDataService
+	balanceService       usecases.BalanceService
+	assetRepository      usecases.AssetRepository
+	marketDataRepository usecases.MarketDataRepository
+	marketDataService    usecases.MarketDataService
 }
 
 func NewMarketDataUpdater(
 	secretKey string,
-	balanceService BalanceService,
-	assetRepository AssetRepository,
-	marketDataRepository MarketDataRepository,
-	marketDataService MarketDataService,
+	balanceService usecases.BalanceService,
+	assetRepository usecases.AssetRepository,
+	marketDataRepository usecases.MarketDataRepository,
+	marketDataService usecases.MarketDataService,
 ) *MarketDataUpdater {
 	return &MarketDataUpdater{
 		secretKey,

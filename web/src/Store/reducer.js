@@ -14,9 +14,10 @@ const slice = createSlice({
     name: "reducer",
     initialState: {
         loading: false,
+        unauthorized: false,
         errorMessage: "",
         currentPrices: {
-            base: "",
+            quote: "",
             pricesBySymbols: {
                 "": 0,
             },
@@ -36,12 +37,12 @@ const slice = createSlice({
                 activeOrders: 0,
             },
             priceForecast: 0,
-            chartsData: {
+            chartsDataByQuotes: {"USDT": {
                 times: [],
                 prices: [],
                 forecast: [],
                 volumes: [],
-            },
+            }},
             news: [
                 // {
                 //     sentiment: NEWS_ARTICLE_SENTIMENT.NEUTRAL,
@@ -79,6 +80,18 @@ const slice = createSlice({
     },
 
     reducers: {
+        loginRequested: (state, action) => {
+        },
+
+        loginSuccess: (state, action) => {
+            sessionStorage.setItem("jwt", action.payload)
+            state.unauthorized = false;
+        },
+
+        loginRequestFailed: (state, action) => {
+            handleFail(state, action);
+        },
+
         currentPricesRequested: (state, action) => {
         },
 
@@ -88,7 +101,7 @@ const slice = createSlice({
         },
 
         currentPricesRequestFailed: (state, action) => {
-            state.errorMessage = action.payload;
+            handleFail(state, action);
         },
 
         currentBalanceRequested: (state, action) => {
@@ -100,7 +113,7 @@ const slice = createSlice({
         },
 
         currentBalanceRequestFailed: (state, action) => {
-            state.errorMessage = action.payload;
+            handleFail(state, action);
         },
 
         currentSpotsDataRequested: (state, action) => {
@@ -135,7 +148,7 @@ const slice = createSlice({
             state.currentSpotsTotal = 0;
             state.currentSpotsIndex = 0;
             state.currentSpotsNext = 0;
-            state.errorMessage = action.payload;
+            handleFail(state, action);
         },
 
         spotRequested: (state, action) => {
@@ -151,8 +164,7 @@ const slice = createSlice({
         },
 
         spotRequestFailed: (state, action) => {
-            state.errorMessage = action.payload;
-            stickymobile.hidePreloader();
+            handleFail(state, action);
         },
 
         buySpotRequested: (state, action) => {
@@ -165,7 +177,7 @@ const slice = createSlice({
         },
 
         buySpotRequestFailed: (state, action) => {
-            state.errorMessage = action.payload;
+            handleFail(state, action);
         },
 
         sellOrderRequested: (state, action) => {
@@ -178,7 +190,7 @@ const slice = createSlice({
         },
 
         sellOrderRequestFailed: (state, action) => {
-            state.errorMessage = action.payload;
+            handleFail(state, action);
         },
 
         ordersRequested: (state, action) => {
@@ -193,8 +205,7 @@ const slice = createSlice({
         },
 
         ordersRequestFailed: (state, action) => {
-            state.errorMessage = action.payload;
-            stickymobile.hidePreloader();
+            handleFail(state, action);
         },
 
         clearErrorMessageRequested: (state, action) => {
@@ -225,6 +236,12 @@ const updateOrders = state => {
     });
 };
 
+const handleFail = (state, action) => {
+    if (action.payload.status == 401) state.unauthorized = true;
+    state.errorMessage = action.payload.message;
+    stickymobile.hidePreloader();
+}
+
 export default slice.reducer;
 
 const {
@@ -235,9 +252,23 @@ const {
     buySpotRequested, buySpotRequestSucceded, buySpotRequestFailed,
     sellOrderRequested, sellOrderRequestSucceded, sellOrderRequestFailed,
     ordersRequested, ordersReceived, ordersRequestFailed,
+    loginRequested, loginSuccess, loginRequestFailed,
     clearErrorMessageRequested,
     updateOrdersDataRequested,
 } = slice.actions;
+
+export const login = (username, password) => (dispatch) => {
+    return dispatch(
+        apiCallBegan({
+            url: "/api/v1/login",
+            method: "post",
+            data: { username, password },
+            onStart: loginRequested.type,
+            onSuccess: loginSuccess.type,
+            onError: loginRequestFailed.type,
+        })
+    );
+};
 
 export const getCurrentPrices = () => (dispatch) => {
     return dispatch(

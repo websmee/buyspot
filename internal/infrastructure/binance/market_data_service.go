@@ -22,16 +22,16 @@ func NewMarketDataService(client *binance.Client) *MarketDataService {
 func (s *MarketDataService) GetMonth(
 	ctx context.Context,
 	symbol string,
-	base string,
+	quote string,
 	interval domain.Interval,
 ) ([]domain.Kline, error) {
 	klines, err := s.client.NewKlinesService().
-		Symbol(symbol + base).
+		Symbol(symbol + quote).
 		Interval(string(interval)).
 		StartTime(time.Now().AddDate(0, -1, 0).UnixMilli()).
 		Do(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("could not get %s%s klines from binance, err: %w", symbol, base, err)
+		return nil, fmt.Errorf("could not get %s%s klines from binance, err: %w", symbol, quote, err)
 	}
 
 	var result []domain.Kline

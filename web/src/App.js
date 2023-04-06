@@ -8,6 +8,7 @@ import Orders from 'Pages/orders';
 import Settings from 'Pages/settings';
 import Profile from 'Pages/profile';
 import Layout from 'Layouts/layout';
+import Login from 'Pages/login';
 
 function App() {
   const dispatch = useDispatch();
@@ -32,6 +33,7 @@ function App() {
         { path: '/orders', element: <Orders /> },
         { path: '/settings', element: <Settings /> },
         { path: '/profile', element: <Profile /> },
+        { path: '/login', element: <Login /> },
       ],
     },
   ];

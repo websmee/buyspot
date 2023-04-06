@@ -13,10 +13,6 @@ function Footer() {
         { path: "/profile", text: "Profile", icon: "fa fa-user" },
     ];
 
-    if (activeNav == "/login") {
-        return ""
-    }
-
     return (
         <div id="footer-bar" className="footer-bar-1">{links.map((l, i) => {
             return <Link key={i} to={l.path} className={classNames({ "active-nav": activeNav == l.path })} onClick={() => { setActiveNav(l.path) }}>

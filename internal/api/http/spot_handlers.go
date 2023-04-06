@@ -38,6 +38,11 @@ func AddSpotHandlers(
 
 		spot, err := spotReader.GetSpotByIndex(c, index)
 		if err != nil {
+			if errors.Is(err, domain.ErrUnauthorized) {
+				c.Status(http.StatusUnauthorized)
+				return
+			}
+
 			if errors.Is(err, domain.ErrSpotNotFound) {
 				c.Status(http.StatusNotFound)
 				return
@@ -56,6 +61,7 @@ func AddSpotHandlers(
 	router.POST("/api/v1/spots/buy", func(c *gin.Context) {
 		var buySpotRequest api.BuySpotRequest
 		if err := c.BindJSON(&buySpotRequest); err != nil {
+			c.Status(http.StatusBadRequest)
 			return
 		}
 

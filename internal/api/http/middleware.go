@@ -22,8 +22,10 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-func AuthMiddleware() gin.HandlerFunc {
+func AuthMiddleware(auth *SimpleAuth) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Set(domain.CtxKeyUser, &domain.User{ID: "test"})
+		if userID := auth.GetUserID(c.GetHeader("Authorization")); userID != "" {
+			c.Set(domain.CtxKeyUser, &domain.User{ID: userID})
+		}
 	}
 }

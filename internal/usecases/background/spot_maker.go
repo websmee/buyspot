@@ -79,64 +79,64 @@ func (m *SpotMaker) makeSpots(ctx context.Context) ([]domain.Spot, error) {
 	}
 
 	var spots []domain.Spot
-	for i := range balanceSymbols {
-		for j := range assets {
-			advice, err := m.adviser.GetAdviceBySymbol(ctx, assets[j].Symbol, balanceSymbols[i])
-			if err != nil {
-				m.logger.Println(fmt.Errorf(
-					"could not find spot for %s%s, err: %w",
-					assets[j].Symbol,
-					balanceSymbols[i],
-					err,
-				))
-				continue
-			}
+	for i := range assets {
+		advice, err := m.adviser.GetAdviceBySymbol(ctx, assets[i].Symbol)
+		if err != nil {
+			m.logger.Println(fmt.Errorf(
+				"could not find spot for %s, err: %w",
+				assets[i].Symbol,
+				err,
+			))
+			continue
+		}
 
-			historyMarketData, err := m.marketDataRepository.GetMonth(
+		historyMarketData := make(map[string][]domain.Kline, 0)
+		forecastMarketData := make(map[string][]domain.Kline, 0)
+		for j := range balanceSymbols {
+			historyMarketData[balanceSymbols[j]], err = m.marketDataRepository.GetMonth(
 				ctx,
-				assets[j].Symbol,
-				balanceSymbols[i],
+				assets[i].Symbol,
+				balanceSymbols[j],
 				domain.IntervalHour,
 			)
 			if err != nil {
 				m.logger.Println(fmt.Errorf(
 					"could not get %s%s market data, err: %w",
-					assets[j].Symbol,
-					balanceSymbols[i],
+					assets[i].Symbol,
+					balanceSymbols[j],
 					err,
 				))
 				continue
 			}
 
-			var forecastMarketData []domain.Kline
-			if len(historyMarketData) > 0 {
-				forecastMarketData = buildForecastHours(
+			if len(historyMarketData[balanceSymbols[j]]) > 0 {
+				forecastMarketData[balanceSymbols[j]] = buildForecastHours(
 					ctx,
-					historyMarketData[len(historyMarketData)-1].High,
+					historyMarketData[balanceSymbols[j]][len(historyMarketData[balanceSymbols[j]])-1].Close,
 					advice.PriceForecast,
 					advice.ForecastHours,
 				)
 			}
-
-			news, err := m.newsRepository.GetFreshNewsBySymbol(ctx, assets[j].Symbol, time.Now().Add(-24*30*time.Hour))
-			if err != nil {
-				m.logger.Println(fmt.Errorf(
-					"could not get %s%s news, err: %w",
-					assets[j].Symbol,
-					balanceSymbols[i],
-					err,
-				))
-				continue
-			}
-
-			spots = append(spots, domain.Spot{
-				Asset:              &assets[j],
-				Advice:             advice,
-				HistoryMarketData:  historyMarketData,
-				ForecastMarketData: forecastMarketData,
-				News:               news,
-			})
 		}
+
+		news, err := m.newsRepository.GetFreshNewsBySymbol(ctx, assets[i].Symbol, time.Now().Add(-24*30*time.Hour))
+		if err != nil {
+			m.logger.Println(fmt.Errorf(
+				"could not get %s%s news, err: %w",
+				assets[i].Symbol,
+				balanceSymbols[i],
+				err,
+			))
+			continue
+		}
+
+		spots = append(spots, domain.Spot{
+			Asset:                      &assets[i],
+			Advice:                     advice,
+			HistoryMarketDataByQuotes:  historyMarketData,
+			ForecastMarketDataByQuotes: forecastMarketData,
+			News:                       news,
+		})
 	}
 
 	return spots, nil

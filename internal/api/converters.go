@@ -22,18 +22,18 @@ func ConvertOrderToMessages(order *domain.Order) *Order {
 
 func ConvertPricesToMessage(prices *domain.Prices) *Prices {
 	return &Prices{
-		Base:            prices.Base,
+		Quote:           prices.Quote,
 		PricesBySymbols: prices.PricesBySymbols,
 	}
 }
 
 func ConvertSpotToMessage(spot *domain.Spot) *Spot {
-	chartsData := buildChartsData(spot.HistoryMarketData, spot.ForecastMarketData)
+	chartsData := buildChartsData(spot.HistoryMarketDataByQuotes, spot.ForecastMarketDataByQuotes)
 
 	var news []NewsArticle
 	for i := range spot.News {
 		news = append(news, NewsArticle{
-			Sentiment: NewsArticleSentiment(spot.News[i].Sentiment),
+			Sentiment: ConvertNewsSentiment(spot.News[i].Sentiment),
 			Title:     spot.News[i].Title,
 			Content:   spot.News[i].Content,
 			Created:   spot.News[i].Created,
@@ -63,10 +63,10 @@ func ConvertSpotToMessage(spot *domain.Spot) *Spot {
 			Symbol:      spot.Asset.Symbol,
 			Description: spot.Asset.Description,
 		},
-		ActiveOrders:  spot.ActiveOrders,
-		PriceForecast: spot.Advice.PriceForecast,
-		ChartsData:    chartsData,
-		News:          news,
+		ActiveOrders:       spot.ActiveOrders,
+		PriceForecast:      spot.Advice.PriceForecast,
+		ChartsDataByQuotes: chartsData,
+		News:               news,
 		BuyOrderSettings: BuyOrderSettings{
 			Amount:            spot.Advice.BuyOrderSettings.Amount,
 			TakeProfit:        spot.Advice.BuyOrderSettings.TakeProfit,
@@ -77,17 +77,34 @@ func ConvertSpotToMessage(spot *domain.Spot) *Spot {
 	}
 }
 
-func buildChartsData(history []domain.Kline, forecast []domain.Kline) ChartsData {
-	var chartsData ChartsData
-	for i := range history {
-		chartsData.Times = append(chartsData.Times, history[i].EndTime.Format("15:04"))
-		chartsData.Prices = append(chartsData.Prices, history[i].High)
-		chartsData.Volumes = append(chartsData.Volumes, int64(history[i].Volume))
+func ConvertNewsSentiment(sentiment domain.NewsArticleSentiment) NewsArticleSentiment {
+	switch sentiment {
+	case domain.NewsArticleSentimentNeutral:
+		return NewsArticleSentimentNeutral
+	case domain.NewsArticleSentimentPositive:
+		return NewsArticleSentimentPositive
+	case domain.NewsArticleSentimentNegative:
+		return NewsArticleSentimentNegative
+	default:
+		return NewsArticleSentimentNeutral
 	}
-	for i := range forecast {
-		chartsData.Times = append(chartsData.Times, forecast[i].EndTime.Format("15:04"))
-		chartsData.Forecast = append(chartsData.Forecast, forecast[i].High)
+}
+
+func buildChartsData(historyByQuotes map[string][]domain.Kline, forecastByQuotes map[string][]domain.Kline) map[string]ChartsData {
+	chartsDataByQuotes := make(map[string]ChartsData)
+	for quote := range historyByQuotes {
+		var data ChartsData
+		for i := range historyByQuotes[quote] {
+			data.Times = append(data.Times, historyByQuotes[quote][i].EndTime.Format("15:04"))
+			data.Prices = append(data.Prices, historyByQuotes[quote][i].High)
+			data.Volumes = append(data.Volumes, int64(historyByQuotes[quote][i].Volume))
+		}
+		for i := range forecastByQuotes[quote] {
+			data.Times = append(data.Times, forecastByQuotes[quote][i].EndTime.Format("15:04"))
+			data.Forecast = append(data.Forecast, forecastByQuotes[quote][i].High)
+		}
+		chartsDataByQuotes[quote] = data
 	}
 
-	return chartsData
+	return chartsDataByQuotes
 }

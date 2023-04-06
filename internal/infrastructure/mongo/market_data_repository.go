@@ -21,21 +21,21 @@ func NewMarketDataRepository(client *mongo.Client) *MarketDataRepository {
 
 func (r *MarketDataRepository) getCollection(
 	symbol string,
-	base string,
+	quote string,
 	interval domain.Interval,
 ) *mongo.Collection {
 	return r.client.
 		Database("buyspot_market_data").
-		Collection(fmt.Sprintf("%s%s_%s", symbol, base, interval))
+		Collection(fmt.Sprintf("%s%s_%s", symbol, quote, interval))
 }
 
 func (r *MarketDataRepository) GetMonth(
 	ctx context.Context,
 	symbol string,
-	base string,
+	quote string,
 	interval domain.Interval,
 ) ([]domain.Kline, error) {
-	cur, err := r.getCollection(symbol, base, interval).Find(ctx, bson.M{
+	cur, err := r.getCollection(symbol, quote, interval).Find(ctx, bson.M{
 		"start_time": bson.M{
 			"$gte": time.Now().AddDate(0, -1, 0),
 		},
@@ -44,7 +44,7 @@ func (r *MarketDataRepository) GetMonth(
 		return nil, fmt.Errorf(
 			"could not get %s%s klines from mongo, err: %w",
 			symbol,
-			base,
+			quote,
 			err,
 		)
 	}
@@ -53,7 +53,7 @@ func (r *MarketDataRepository) GetMonth(
 	for cur.Next(ctx) {
 		var kline domain.Kline
 		if err := cur.Decode(&kline); err != nil {
-			return nil, fmt.Errorf("could not decode %s%s kline data, err: %w", symbol, base, err)
+			return nil, fmt.Errorf("could not decode %s%s kline data, err: %w", symbol, quote, err)
 		}
 		klines = append(klines, kline)
 	}
@@ -64,23 +64,23 @@ func (r *MarketDataRepository) GetMonth(
 func (r *MarketDataRepository) CreateOrUpdate(
 	ctx context.Context,
 	symbol string,
-	base string,
+	quote string,
 	interval domain.Interval,
 	kline *domain.Kline,
 ) error {
-	res, err := r.getCollection(symbol, base, interval).UpdateOne(
+	res, err := r.getCollection(symbol, quote, interval).UpdateOne(
 		ctx,
 		bson.M{"start_time": kline.StartTime},
 		bson.M{"$set": kline},
 	)
 	if err != nil {
-		return fmt.Errorf("could not update %s%s kline data, err: %w", symbol, base, err)
+		return fmt.Errorf("could not update %s%s kline data, err: %w", symbol, quote, err)
 	}
 
 	if res.MatchedCount == 0 {
-		_, err := r.getCollection(symbol, base, interval).InsertOne(ctx, kline)
+		_, err := r.getCollection(symbol, quote, interval).InsertOne(ctx, kline)
 		if err != nil {
-			return fmt.Errorf("could not insert %s%s kline data, err: %w", symbol, base, err)
+			return fmt.Errorf("could not insert %s%s kline data, err: %w", symbol, quote, err)
 		}
 	}
 

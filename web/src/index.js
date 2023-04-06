@@ -8,7 +8,6 @@ import en from 'javascript-time-ago/locale/en.json'
 
 import configureStore from './Store/store'
 
-
 TimeAgo.addDefaultLocale(en)
 const store = configureStore();
 const root = ReactDOM.createRoot(document.getElementById('page'));

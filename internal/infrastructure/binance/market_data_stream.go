@@ -20,7 +20,7 @@ func NewMarketDataStream() *MarketDataStream {
 func (s MarketDataStream) Subscribe(
 	ctx context.Context,
 	symbol string,
-	base string,
+	quote string,
 	interval domain.Interval,
 	handler func(kline *domain.Kline),
 	errorHandler func(err error),
@@ -50,7 +50,7 @@ func (s MarketDataStream) Subscribe(
 		})
 	}
 
-	doneC, stopC, err := binance.WsKlineServe(symbol+base, string(interval), wsKlineHandler, errorHandler)
+	doneC, stopC, err := binance.WsKlineServe(symbol+quote, string(interval), wsKlineHandler, errorHandler)
 	if err != nil {
 		return doneC, err
 	}

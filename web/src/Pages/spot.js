@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Navigate } from 'react-router-dom'
 
 import SpotHeader from 'Layouts/spotHeader';
 import AssetDescriptionModal from "Components/assetDescriptionModal"
@@ -10,6 +11,7 @@ import SpotBuyModal from "Components/spotBuyModal"
 import NewsArticleModal from "Components/newsArticleModal"
 import ErrorMessage from 'Components/errorMessage';
 import { getCurrentSpotsData, getSpotByIndex } from 'Store/reducer';
+import Footer from 'Layouts/footer';
 
 function Spot() {
     const dispatch = useDispatch();
@@ -17,14 +19,19 @@ function Spot() {
     const spot = useSelector((state) => state.spot);
     const currentSpotsIndex = useSelector((state) => state.currentSpotsIndex);
     const currentSpotsTotal = useSelector((state) => state.currentSpotsTotal);
+    const unauthorized = useSelector((state) => state.unauthorized);
 
-    useEffect(() => {        
+    useEffect(() => {
         dispatch(getCurrentSpotsData());
     }, [dispatch]);
 
     useEffect(() => {
         currentSpotsIndex != 0 && dispatch(getSpotByIndex(currentSpotsIndex));
     }, [currentSpotsIndex]);
+
+    if (unauthorized) {
+        return <Navigate to='/login' />
+    }
 
     return (
         <>
@@ -33,8 +40,8 @@ function Spot() {
             <div className="page-content header-clear-medium">
                 <ErrorMessage />
 
-                {currentSpotsTotal == 0 && <div className="ms-3 me-3 mb-4 alert alert-small shadow-xl bg-fade-gray-dark" role="alert" style={{borderRadius: "15px"}}>
-                    <span style={{borderRadius: "15px 0 0 15px", left: "0", top: "0", bottom: "0"}}><i className="fa fa-circle-info"></i></span>
+                {currentSpotsTotal == 0 && <div className="ms-3 me-3 mb-4 alert alert-small shadow-xl bg-fade-gray-dark" role="alert" style={{ borderRadius: "15px" }}>
+                    <span style={{ borderRadius: "15px 0 0 15px", left: "0", top: "0", bottom: "0" }}><i className="fa fa-circle-info"></i></span>
                     <strong>No spots found at the moment.</strong>
                 </div>}
 
@@ -43,10 +50,10 @@ function Spot() {
                         assetName={spot.asset.name}
                         assetSymbol={spot.asset.symbol}
                         forecast={spot.priceForecast}
-                        chartTimes={spot.chartsData.times}
-                        chartPrices={spot.chartsData.prices}
-                        chartForecast={spot.chartsData.forecast}
-                        chartVolumes={spot.chartsData.volumes}
+                        chartTimes={spot.chartsDataByQuotes[balance.symbol].times}
+                        chartPrices={spot.chartsDataByQuotes[balance.symbol].prices}
+                        chartForecast={spot.chartsDataByQuotes[balance.symbol].forecast}
+                        chartVolumes={spot.chartsDataByQuotes[balance.symbol].volumes}
                         assetDescriptionModalId="asset-desc-modal"
                     />
 
@@ -56,7 +63,7 @@ function Spot() {
                         buyModalId="buy-modal"
                     />
 
-                    {spot.news.map((article, i) =>
+                    {spot.news && spot.news.map((article, i) =>
                         <NewsArticle key={i} modalId={"article-modal-" + i} created={article.created} views={article.views} sentiment={article.sentiment}>
                             {article.title}
                         </NewsArticle>
@@ -80,11 +87,13 @@ function Spot() {
                 stopLossOptions={spot.buyOrderSettings.stopLossOptions}
             />
 
-            {spot.news.map((article, i) =>
+            {spot.news && spot.news.map((article, i) =>
                 <NewsArticleModal key={i} id={"article-modal-" + i} created={article.created} views={article.views} title={article.title}>
                     {article.content}
                 </NewsArticleModal>
             )}
+
+            <Footer />
         </>
     )
 }

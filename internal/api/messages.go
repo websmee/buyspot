@@ -52,15 +52,20 @@ type BuyOrderSettings struct {
 }
 
 type Spot struct {
-	Index             int              `json:"index"`
-	Asset             Asset            `json:"asset"`
-	ActiveOrders      int              `json:"activeOrders"`
-	PriceForecast     float64          `json:"priceForecast"`
-	ChartsData        ChartsData       `json:"chartsData"`
-	CurrentSpotsIndex int              `json:"currentSpotsIndex"`
-	CurrentSpotsTotal int              `json:"currentSpotsTotal"`
-	News              []NewsArticle    `json:"news"`
-	BuyOrderSettings  BuyOrderSettings `json:"buyOrderSettings"`
+	Index              int                   `json:"index"`
+	Asset              Asset                 `json:"asset"`
+	ActiveOrders       int                   `json:"activeOrders"`
+	PriceForecast      float64               `json:"priceForecast"`
+	ChartsDataByQuotes map[string]ChartsData `json:"chartsDataByQuotes"`
+	CurrentSpotsIndex  int                   `json:"currentSpotsIndex"`
+	CurrentSpotsTotal  int                   `json:"currentSpotsTotal"`
+	News               []NewsArticle         `json:"news"`
+	BuyOrderSettings   BuyOrderSettings      `json:"buyOrderSettings"`
+}
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type BuySpotRequest struct {
@@ -96,6 +101,6 @@ type Order struct {
 }
 
 type Prices struct {
-	Base            string             `json:"base"`
+	Quote           string             `json:"quote"`
 	PricesBySymbols map[string]float64 `json:"pricesBySymbols"`
 }

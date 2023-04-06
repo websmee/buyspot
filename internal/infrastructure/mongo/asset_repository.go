@@ -63,13 +63,13 @@ func (r *AssetRepository) CreateOrUpdate(
 		bson.M{"$set": asset},
 	)
 	if err != nil {
-		return fmt.Errorf("could not update %s asset, err: %w", asset.Symbol, err)
+		return fmt.Errorf("could not update %s asset in mongo, err: %w", asset.Symbol, err)
 	}
 
 	if res.MatchedCount == 0 {
 		_, err := r.getCollection().InsertOne(ctx, asset)
 		if err != nil {
-			return fmt.Errorf("could not insert %s asset, err: %w", asset.Symbol, err)
+			return fmt.Errorf("could not insert %s asset in mongo, err: %w", asset.Symbol, err)
 		}
 	}
 
