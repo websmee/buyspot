@@ -58,7 +58,7 @@ func main() {
 	marketDataRepository := mongoInfra.NewMarketDataRepository(mongoClient)
 	newsRepository := mongoInfra.NewNewsRepository(mongoClient)
 	assetRepository := mongoInfra.NewAssetRepository(mongoClient)
-	adviser := domain.NewAdviser()
+	adviser := domain.NewAdviser(3, 2.5)
 	orderRepository := mongoInfra.NewOrderRepository(mongoClient)
 	balanceService := example.NewBalanceService()
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)

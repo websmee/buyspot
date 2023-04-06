@@ -39,19 +39,16 @@ func (r *NewsUpdater) Update(ctx context.Context, secretKey string) error {
 		return fmt.Errorf("could not get available assets, err: %w", err)
 	}
 
-	var symbols []string
 	for i := range assets {
-		symbols = append(symbols, assets[i].Symbol)
-	}
+		news, err := r.newsService.GetNews(ctx, []string{assets[i].Symbol}, domain.NewsPeriodLastMonth)
+		if err != nil {
+			return fmt.Errorf("could not get last month %s news, err: %w", assets[i].Symbol, err)
+		}
 
-	news, err := r.newsService.GetNews(ctx, symbols, domain.NewsPeriodLastMonth)
-	if err != nil {
-		return fmt.Errorf("could not get last month news, err: %w", err)
-	}
-
-	for i := range news {
-		if err := r.newsRepository.CreateOrUpdate(ctx, &news[i]); err != nil {
-			return fmt.Errorf("could not save imported news article, err: %w", err)
+		for i := range news {
+			if err := r.newsRepository.CreateOrUpdate(ctx, &news[i]); err != nil {
+				return fmt.Errorf("could not save imported news article, err: %w", err)
+			}
 		}
 	}
 

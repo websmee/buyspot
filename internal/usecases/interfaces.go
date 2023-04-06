@@ -13,7 +13,7 @@ type (
 	}
 
 	MarketDataRepository interface {
-		GetMonth(ctx context.Context, symbol, quote string, interval domain.Interval) ([]domain.Kline, error)
+		GetMonth(ctx context.Context, symbol, quote string, before time.Time, interval domain.Interval) ([]domain.Kline, error)
 		CreateOrUpdate(
 			ctx context.Context,
 			symbol string,
@@ -24,7 +24,7 @@ type (
 	}
 
 	NewsRepository interface {
-		GetFreshNewsBySymbol(ctx context.Context, symbol string, from time.Time) ([]domain.NewsArticle, error)
+		GetNewsBySymbol(ctx context.Context, symbol string, from, to time.Time) ([]domain.NewsArticle, error)
 		CreateOrUpdate(
 			ctx context.Context,
 			article *domain.NewsArticle,
@@ -37,7 +37,7 @@ type (
 	}
 
 	Adviser interface {
-		GetAdviceBySymbol(ctx context.Context, symbol string) (*domain.Advice, error)
+		GetAdvice(ctx context.Context, marketData []domain.Kline) (*domain.Advice, error)
 	}
 
 	OrderRepository interface {

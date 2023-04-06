@@ -23,11 +23,12 @@ func (r *NewsRepository) getCollection() *mongo.Collection {
 	return r.client.Database("buyspot_main").Collection("news")
 }
 
-func (r *NewsRepository) GetFreshNewsBySymbol(ctx context.Context, symbol string, from time.Time) ([]domain.NewsArticle, error) {
+func (r *NewsRepository) GetNewsBySymbol(ctx context.Context, symbol string, from, to time.Time) ([]domain.NewsArticle, error) {
 	cur, err := r.getCollection().Find(ctx, bson.M{
-		"symbols": symbol,
-		"created": bson.M{
-			"$gte": from,
+		"$and": []bson.M{
+			{"symbols": symbol},
+			{"created": bson.M{"$gte": from}},
+			{"created": bson.M{"$lte": to}},
 		},
 	})
 	if err != nil {
