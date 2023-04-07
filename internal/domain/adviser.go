@@ -5,26 +5,46 @@ import (
 )
 
 type Adviser struct {
-	riseInARow  int
-	minForecast float64
+	priceRiseInARow    int
+	volumeRiseInARow   int
+	volumeSpikePercent float64
+	minForecast        float64
+	maxForecast        float64
 }
 
-func NewAdviser(riseInARow int, minForecast float64) *Adviser {
-	return &Adviser{riseInARow, minForecast}
+func NewAdviser(
+	priceRiseInARow int,
+	volumeRiseInARow int,
+	volumeSpikePercent float64,
+	minForecast float64,
+	maxForecast float64,
+) *Adviser {
+	return &Adviser{
+		priceRiseInARow,
+		volumeRiseInARow,
+		volumeSpikePercent,
+		minForecast,
+		maxForecast,
+	}
 }
 
-func (r *Adviser) GetAdvice(ctx context.Context, marketData []Kline) (*Advice, error) {
-	rise, forecast, hours := checkIfPricesRise(marketData, r.riseInARow)
-	if rise && forecast > r.minForecast {
+func (r *Adviser) GetAdvice(_ context.Context, marketData []Kline) (*Advice, error) {
+	forecast := r.getPriceForecast(marketData)
+	hours := r.getForecastHours(marketData)
+	if r.checkIfPriceRises(marketData) &&
+		r.checkIfVolumeRises(marketData) &&
+		r.checkVolumeSpike(marketData) &&
+		forecast > r.minForecast &&
+		forecast < r.maxForecast {
 		return &Advice{
 			PriceForecast: forecast,
 			ForecastHours: hours,
 			BuyOrderSettings: BuyOrderSettings{
 				Amount:            100,
 				TakeProfit:        forecast,
-				TakeProfitOptions: []float64{forecast, forecast + 1, forecast + 2, forecast + 3, forecast + 4},
+				TakeProfitOptions: []float64{forecast - 1, forecast, forecast + 1, forecast + 2, forecast + 3},
 				StopLoss:          -forecast,
-				StopLossOptions:   []float64{-forecast, -forecast - 1, -forecast - 2, -forecast - 3, -forecast - 4},
+				StopLossOptions:   []float64{-forecast + 1, -forecast, -forecast - 1, -forecast - 2, -forecast - 3},
 			},
 		}, nil
 	}
@@ -55,18 +75,39 @@ func (r *Adviser) CheckAdvice(advice *Advice, followingMarketData []Kline) int {
 	return 0
 }
 
-func checkIfPricesRise(marketData []Kline, inARow int) (rise bool, forecast float64, hours int) {
-	diff := marketData[len(marketData)-1].Close - marketData[len(marketData)-inARow].Close
-	forecast = diff / marketData[len(marketData)-inARow].Close * 100
-	hours = inARow * 2
-	for i := len(marketData) - 1; i > len(marketData)-inARow; i-- {
+func (r *Adviser) getPriceForecast(marketData []Kline) float64 {
+	diff := marketData[len(marketData)-1].Close - marketData[len(marketData)-r.priceRiseInARow].Close
+	return diff / marketData[len(marketData)-r.priceRiseInARow].Close * 100
+}
+
+func (r *Adviser) getForecastHours(_ []Kline) int {
+	return r.priceRiseInARow * 2
+}
+
+func (r *Adviser) checkIfPriceRises(marketData []Kline) bool {
+	for i := len(marketData) - 1; i > len(marketData)-r.priceRiseInARow; i-- {
 		if marketData[i].Close < marketData[i-1].Close {
-			return false, 0, 0
+			return false
 		}
 		if marketData[i].High < marketData[i-1].High {
-			return false, 0, 0
+			return false
 		}
 	}
 
-	return true, forecast, hours
+	return true
+}
+
+func (r *Adviser) checkIfVolumeRises(marketData []Kline) bool {
+	for i := len(marketData) - 1; i > len(marketData)-r.volumeRiseInARow; i-- {
+		if marketData[i].Volume < marketData[i-1].Volume {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (r *Adviser) checkVolumeSpike(marketData []Kline) bool {
+	diff := marketData[len(marketData)-1].Volume - marketData[len(marketData)-2].Volume
+	return diff/marketData[len(marketData)-2].Volume*100 >= r.volumeSpikePercent
 }

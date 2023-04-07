@@ -80,10 +80,11 @@ func (m *SpotMaker) makeSpots(ctx context.Context) ([]domain.Spot, error) {
 
 	var spots []domain.Spot
 	for i := range assets {
-		adviceMarketData, err := m.marketDataRepository.GetMonth(
+		adviceMarketData, err := m.marketDataRepository.GetKlines(
 			ctx,
 			assets[i].Symbol,
 			"USDT",
+			time.Now().AddDate(0, -1, 0),
 			time.Now(),
 			domain.IntervalHour,
 		)
@@ -131,11 +132,13 @@ func (m *SpotMaker) GetSpot(
 	var err error
 	historyMarketData := make(map[string][]domain.Kline, 0)
 	forecastMarketData := make(map[string][]domain.Kline, 0)
+	actualMarketData := make(map[string][]domain.Kline, 0)
 	for j := range balanceSymbols {
-		historyMarketData[balanceSymbols[j]], err = m.marketDataRepository.GetMonth(
+		historyMarketData[balanceSymbols[j]], err = m.marketDataRepository.GetKlines(
 			ctx,
 			asset.Symbol,
 			balanceSymbols[j],
+			before.AddDate(0, -1, 0),
 			before,
 			domain.IntervalHour,
 		)
@@ -154,6 +157,7 @@ func (m *SpotMaker) GetSpot(
 				ctx,
 				historyMarketData[balanceSymbols[j]][len(historyMarketData[balanceSymbols[j]])-1].Close,
 				advice.PriceForecast,
+				before,
 				advice.ForecastHours,
 			)
 		}
@@ -174,6 +178,7 @@ func (m *SpotMaker) GetSpot(
 		Advice:                     advice,
 		HistoryMarketDataByQuotes:  historyMarketData,
 		ForecastMarketDataByQuotes: forecastMarketData,
+		ActualMarketDataByQuotes:   actualMarketData,
 		News:                       news,
 	}
 }
@@ -182,6 +187,7 @@ func buildForecastHours(
 	_ context.Context,
 	currentPrice float64,
 	priceForecast float64,
+	after time.Time,
 	hours int,
 ) []domain.Kline {
 	price := currentPrice
@@ -189,25 +195,26 @@ func buildForecastHours(
 	diff := (endPrice - currentPrice) / float64(hours)
 	curvature := diff * 0.9
 	var klines []domain.Kline
-	for i := 1; i <= hours; i++ {
+	for i := 0; i < hours; i++ {
 		klines = append(
 			klines,
-			getForecastKline(price, 0, time.Now().Add(time.Duration(i)*time.Hour)),
+			getForecastKline(price, 0, after.Add(time.Duration(i)*time.Hour)),
 		)
-		p := float64(i) / float64(hours)
+		p := float64(i+1) / float64(hours)
 		price += diff - curvature + (2 * curvature * p)
 	}
 
 	return klines
 }
 
-func getForecastKline(price float64, volume float64, t time.Time) domain.Kline {
+func getForecastKline(price float64, volume float64, startTime time.Time) domain.Kline {
 	return domain.Kline{
-		Open:    price,
-		Low:     price,
-		High:    price,
-		Close:   price,
-		Volume:  volume,
-		EndTime: t,
+		Open:      price,
+		Low:       price,
+		High:      price,
+		Close:     price,
+		Volume:    volume,
+		StartTime: startTime,
+		EndTime:   startTime.Add(time.Hour),
 	}
 }

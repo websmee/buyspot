@@ -29,17 +29,17 @@ func (r *MarketDataRepository) getCollection(
 		Collection(fmt.Sprintf("%s%s_%s", symbol, quote, interval))
 }
 
-func (r *MarketDataRepository) GetMonth(
+func (r *MarketDataRepository) GetKlines(
 	ctx context.Context,
 	symbol string,
 	quote string,
-	before time.Time,
+	from, to time.Time,
 	interval domain.Interval,
 ) ([]domain.Kline, error) {
 	cur, err := r.getCollection(symbol, quote, interval).Find(ctx, bson.M{
 		"$and": []bson.M{
-			{"start_time": bson.M{"$gte": before.AddDate(0, -1, 0)}},
-			{"start_time": bson.M{"$lt": before}},
+			{"start_time": bson.M{"$gte": from}},
+			{"end_time": bson.M{"$lte": to}},
 		},
 	})
 	if err != nil {

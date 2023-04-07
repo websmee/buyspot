@@ -28,7 +28,11 @@ func ConvertPricesToMessage(prices *domain.Prices) *Prices {
 }
 
 func ConvertSpotToMessage(spot *domain.Spot) *Spot {
-	chartsData := buildChartsData(spot.HistoryMarketDataByQuotes, spot.ForecastMarketDataByQuotes)
+	chartsData := buildChartsData(
+		spot.HistoryMarketDataByQuotes,
+		spot.ForecastMarketDataByQuotes,
+		spot.ActualMarketDataByQuotes,
+	)
 
 	var news []NewsArticle
 	for i := range spot.News {
@@ -37,6 +41,8 @@ func ConvertSpotToMessage(spot *domain.Spot) *Spot {
 			Title:     spot.News[i].Title,
 			Content:   spot.News[i].Content,
 			Created:   spot.News[i].Created,
+			URL:       spot.News[i].URL,
+			ImgURL:    spot.News[i].ImageURL,
 			Views:     spot.News[i].Views,
 		})
 	}
@@ -90,18 +96,25 @@ func ConvertNewsSentiment(sentiment domain.NewsArticleSentiment) NewsArticleSent
 	}
 }
 
-func buildChartsData(historyByQuotes map[string][]domain.Kline, forecastByQuotes map[string][]domain.Kline) map[string]ChartsData {
+func buildChartsData(
+	historyByQuotes map[string][]domain.Kline,
+	forecastByQuotes map[string][]domain.Kline,
+	actualByQuotes map[string][]domain.Kline,
+) map[string]ChartsData {
 	chartsDataByQuotes := make(map[string]ChartsData)
 	for quote := range historyByQuotes {
 		var data ChartsData
 		for i := range historyByQuotes[quote] {
 			data.Times = append(data.Times, historyByQuotes[quote][i].EndTime.Format("15:04"))
-			data.Prices = append(data.Prices, historyByQuotes[quote][i].High)
+			data.Prices = append(data.Prices, historyByQuotes[quote][i].Close)
 			data.Volumes = append(data.Volumes, int64(historyByQuotes[quote][i].Volume))
 		}
 		for i := range forecastByQuotes[quote] {
 			data.Times = append(data.Times, forecastByQuotes[quote][i].EndTime.Format("15:04"))
-			data.Forecast = append(data.Forecast, forecastByQuotes[quote][i].High)
+			data.Forecast = append(data.Forecast, forecastByQuotes[quote][i].Close)
+		}
+		for i := range actualByQuotes[quote] {
+			data.Actual = append(data.Actual, actualByQuotes[quote][i].Close)
 		}
 		chartsDataByQuotes[quote] = data
 	}

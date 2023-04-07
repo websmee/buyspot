@@ -53,6 +53,7 @@ function Spot() {
                         chartTimes={spot.chartsDataByQuotes[balance.symbol].times}
                         chartPrices={spot.chartsDataByQuotes[balance.symbol].prices}
                         chartForecast={spot.chartsDataByQuotes[balance.symbol].forecast}
+                        chartActual={spot.chartsDataByQuotes[balance.symbol].actual}
                         chartVolumes={spot.chartsDataByQuotes[balance.symbol].volumes}
                         assetDescriptionModalId="asset-desc-modal"
                     />
@@ -68,6 +69,11 @@ function Spot() {
                             {article.title}
                         </NewsArticle>
                     )}
+
+                    {currentSpotsTotal > 0 && !spot.news && <div className="ms-3 me-3 mb-4 alert alert-small shadow-xl bg-fade-gray-dark" role="alert" style={{ borderRadius: "15px" }}>
+                        <span style={{ borderRadius: "15px 0 0 15px", left: "0", top: "0", bottom: "0" }}><i className="fa fa-circle-info"></i></span>
+                        <strong>No recent news found.</strong>
+                    </div>}
                 </>}
             </div>
 
@@ -88,7 +94,7 @@ function Spot() {
             />
 
             {spot.news && spot.news.map((article, i) =>
-                <NewsArticleModal key={i} id={"article-modal-" + i} created={article.created} views={article.views} title={article.title}>
+                <NewsArticleModal key={i} id={"article-modal-" + i} url={article.url} created={article.created} views={article.views} title={article.title}>
                     {article.content}
                 </NewsArticleModal>
             )}

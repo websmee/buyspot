@@ -19,6 +19,7 @@ type ChartsData struct {
 	Times    []string  `json:"times"`
 	Prices   []float64 `json:"prices"`
 	Forecast []float64 `json:"forecast"`
+	Actual   []float64 `json:"actual"`
 	Volumes  []int64   `json:"volumes"`
 }
 
@@ -26,6 +27,8 @@ type NewsArticle struct {
 	Sentiment NewsArticleSentiment `json:"sentiment"`
 	Title     string               `json:"title"`
 	Content   string               `json:"content"`
+	URL       string               `json:"url"`
+	ImgURL    string               `json:"imgURL"`
 	Created   time.Time            `json:"created"`
 	Views     int64                `json:"views"`
 }

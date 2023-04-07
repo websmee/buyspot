@@ -32,7 +32,7 @@ function NewsArticle(props) {
                         <h5 className="font-15 pt-2">{props.children}</h5>
                         <span className="color-theme font-11 opacity-50">
                             <i className="far fa-clock fa-fw pe-2"></i><ReactTimeAgo date={Date.parse(props.created)} locale="en-US" />
-                            <i className="far fa-eye fa-fw px-3"></i>{numbers.pretty(props.views, 1)}
+                            {/* <i className="far fa-eye fa-fw px-3"></i>{numbers.pretty(props.views, 1)} */}
                         </span>
                     </div>
                 </div>

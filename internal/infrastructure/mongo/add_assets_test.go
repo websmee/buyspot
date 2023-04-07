@@ -141,4 +141,119 @@ func TestAddAssets(t *testing.T) {
 			"different chains together in a single network, allowing them to process transactions " +
 			"in parallel and exchange data between chains without sacrificing security.",
 	}))
+
+	fmt.Println(assetRepository.CreateOrUpdate(ctx, &domain.Asset{
+		Symbol:      "LTC",
+		Order:       10,
+		IsAvailable: true,
+		Name:        "Litecoin",
+		Description: "Litecoin (LTC) is a peer-to-peer cryptocurrency that aims to enable fast and low-cost payments " +
+			"to anyone in the world. The Litecoin Project was conceived and created by Charles Lee, " +
+			"a former Coinbase employee, with the support of multiple members in the Bitcoin community. " +
+			"It was launched on October 13th 2011, and has introduced a number of modifications " +
+			"based on the original Bitcoin protocol. The most prominent of these is " +
+			"Litecoin’s Proof-of-Work consensus: its algorithm is based on Scrypt, instead of SHA-256d. " +
+			"Furthermore, Litecoin has a target block time of 2.5 minutes, and a total supply of 84 million. " +
+			"In May 2017, Litecoin adopted Segregated Witness (SegWit). In the same month, " +
+			"the first Lightning Network transaction was completed on Litecoin, " +
+			"transferring 0.00000001 LTC from Zürich to San Francisco in under one second. " +
+			"Future development areas include the addition of privacy-features " +
+			"(an implementation of the MimbleWimble protocol), the support of Schnorr Signatures, " +
+			"and Taproot (a privacy preserving switchable scripting feature).",
+	}))
+
+	fmt.Println(assetRepository.CreateOrUpdate(ctx, &domain.Asset{
+		Symbol:      "ICX",
+		Order:       11,
+		IsAvailable: true,
+		Name:        "ICON",
+		Description: "ICON (ICX) is a blockchain with the goal of " +
+			"\"connecting crypto to the real world and advancing our society towards true hyperconnectivity\". " +
+			"ICON aims to reach this goal by connecting independent blockchains and enabling transactions " +
+			"between them. To do this, ICON uses the self-developed Loop Fault Tolerance (LFT) consensus mechanism. " +
+			"Built on on the Byzantine Fault Tolerant (BFT) Tendermint mechanism, " +
+			"LFT improves it by increasing performance through a consolidation of network messages. " +
+			"ICON has a total supply of 800,460,000 token. During the ICO, an ERC-20 token, ICX, was sold, " +
+			"which was subsequently moved to the mainnet in June 2018. " +
+			"ICON considers itself to be governed alike to an indirect democracy. To this end, " +
+			"ICON makes use of representation channels, reserve channels and incentives " +
+			"to align the votes of nodes and users.",
+	}))
+
+	fmt.Println(assetRepository.CreateOrUpdate(ctx, &domain.Asset{
+		Symbol:      "ARB",
+		Order:       12,
+		IsAvailable: true,
+		Name:        "Arbitrum",
+		Description: "Arbitrum is a suite of scaling solutions on Ethereum that utilize Optimistic Rollup. " +
+			"It allows users to enjoy faster speed and cheaper transaction costs when interacting with web3 dApps. " +
+			"There are 2 Arbitrum chains:\nArbitrum One: Major applications are currently housed on Arbitrum One, " +
+			"with a concentration of DeFi protocols.\nArbitrum Nova: Utilizes a milder trust assumption in exchange " +
+			"for lower fees. Introduced to cater for high-volume applications such as gaming and social.",
+	}))
+
+	fmt.Println(assetRepository.CreateOrUpdate(ctx, &domain.Asset{
+		Symbol:      "ONT",
+		Order:       13,
+		IsAvailable: true,
+		Name:        "Ontology",
+		Description: "Ontology is a high performance public blockchain and distributed collaboration platform. " +
+			"Ontology aims at solving the trust problem with blockchains, " +
+			"with a prime focus on issues such as identity security and data integrity. " +
+			"Ontology's mainnet launch took place in July 2018. " +
+			"Some of its core features include a lightweight universal smart contract language (with WASM support), " +
+			"the support for multiple encryption algorithms, and the support for multiple consensus algorithms " +
+			"(e.g., VBFT, DBFT, RBFT, SBFT, PoW).",
+	}))
+
+	fmt.Println(assetRepository.CreateOrUpdate(ctx, &domain.Asset{
+		Symbol:      "SXP",
+		Order:       14,
+		IsAvailable: true,
+		Name:        "Swipe",
+		Description: "Swipe is a crypto-fiat gateway that enables cryptocurrencies " +
+			"to be spent as fiat currencies in real time. Its mission is to " +
+			"\"make crypto finance mainstream by connecting existing payment networks to cryptocurrencies\". " +
+			"Swipe features a wallet for users to deposit, store, and withdraw their cryptocurrencies. " +
+			"Users are able to spend these cryptos with the Swipe Visa debit card at any place " +
+			"that supports Visa payments. Swipe also features a utility token, SXP, " +
+			"that can be used for paying for transaction fees, as a medium of exchange, " +
+			"and to receive discounts on the fees. 80% of transaction and withdrawal fees in SXP token " +
+			"are automatically burned on-chain.",
+	}))
+
+	fmt.Println(assetRepository.CreateOrUpdate(ctx, &domain.Asset{
+		Symbol:      "ENJ",
+		Order:       15,
+		IsAvailable: true,
+		Name:        "Enjin Coin",
+		Description: "Enjin Coin (ENJ) is an Ethereum-based cryptocurrency that is used " +
+			"to directly back the value of next-generation blockchain assets. " +
+			"It aims to become \"the gold standard for digital assets\". " +
+			"Enjin created the open-source ERC-1155 token standard: " +
+			"it enables game editors to convert various types of assets, such as " +
+			"currency, real estate, digital art, and gaming items into tokens " +
+			"that are usable in blockchain applications. Enjin has built a complete ecosystem " +
+			"for on-chain applications, which integrates with its open-source token standard " +
+			"and features a unique blockchain explorer (EnjinX). Enjin focuses on adoption for " +
+			"non-blockchain participants with various solutions for professionals.",
+	}))
+
+	fmt.Println(assetRepository.CreateOrUpdate(ctx, &domain.Asset{
+		Symbol:      "TRX",
+		Order:       16,
+		IsAvailable: true,
+		Name:        "TRON",
+		Description: "TRON is one of the most widely used public blockchains online, " +
+			"with 100 million users and a cumulative total of over 3.4 billion transactions. " +
+			"The TRON network aims to decentralize content-sharing and establish a framework " +
+			"through which future Web3 platforms will operate. TRON price is updated live on Binance. " +
+			"Originally designed as a decentralized content distribution platform, " +
+			"TRON has expanded in scope and now functions as one of the biggest decentralized application " +
+			"(dApp) blockchains. The TRON ecosystem includes multiple scalability and adoption projects, " +
+			"such as its dApp sidechain, Sun Network. The TRON network incorporates a variety of features " +
+			"that include dApps, smart contracts, and delegated proof-of-stake (DPoS) consensus, " +
+			"as well as stablecoin issuance capabilities. To date, TRON hosts the largest circulating supply " +
+			"of USD Tether (USDT) stablecoins, having overtaken the Ethereum network in early 2021.",
+	}))
 }

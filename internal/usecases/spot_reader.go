@@ -3,27 +3,26 @@ package usecases
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"websmee/buyspot/internal/domain"
 )
 
-type CurrentSpotsReader interface {
-	GetSpotByIndex(ctx context.Context, index int) (*domain.Spot, error)
-	GetSpotsCount(ctx context.Context) (int, error)
-}
-
 type SpotReader struct {
-	currentSpotsReader CurrentSpotsReader
-	orderRepository    OrderRepository
+	currentSpotsRepository CurrentSpotsRepository
+	orderRepository        OrderRepository
+	marketDataRepository   MarketDataRepository
 }
 
 func NewSpotReader(
-	currentSpotsReader CurrentSpotsReader,
+	currentSpotsRepository CurrentSpotsRepository,
 	orderRepository OrderRepository,
+	marketDataRepository MarketDataRepository,
 ) *SpotReader {
 	return &SpotReader{
-		currentSpotsReader,
+		currentSpotsRepository,
 		orderRepository,
+		marketDataRepository,
 	}
 }
 
@@ -33,9 +32,33 @@ func (r *SpotReader) GetSpotByIndex(ctx context.Context, index int) (*domain.Spo
 		return nil, domain.ErrUnauthorized
 	}
 
-	spot, err := r.currentSpotsReader.GetSpotByIndex(ctx, index)
+	spot, err := r.currentSpotsRepository.GetSpotByIndex(ctx, index)
 	if err != nil {
 		return nil, fmt.Errorf("could not get spot by index %d, err: %w", index, err)
+	}
+
+	spot.ActualMarketDataByQuotes = make(map[string][]domain.Kline)
+	for i := range spot.HistoryMarketDataByQuotes {
+		last := spot.HistoryMarketDataByQuotes[i][len(spot.HistoryMarketDataByQuotes[i])-1]
+		hours := len(spot.ForecastMarketDataByQuotes[i])
+		if last.EndTime.Add(time.Hour).Before(time.Now()) {
+			spot.ActualMarketDataByQuotes[i], err = r.marketDataRepository.GetKlines(
+				ctx,
+				spot.Asset.Symbol,
+				i,
+				last.EndTime.Add(-time.Hour),
+				last.EndTime.Add(time.Duration(hours-1)*time.Hour),
+				domain.IntervalHour,
+			)
+			if err != nil {
+				return nil, fmt.Errorf(
+					"could not get %s%s actual market data, err: %w",
+					spot.Asset.Symbol,
+					i,
+					err,
+				)
+			}
+		}
 	}
 
 	activeOrdersCount, err := r.orderRepository.GetUserActiveOrdersCountBySymbol(ctx, user.ID, spot.Asset.Symbol)
@@ -54,5 +77,5 @@ func (r *SpotReader) GetSpotByIndex(ctx context.Context, index int) (*domain.Spo
 }
 
 func (r *SpotReader) GetSpotsCount(ctx context.Context) (int, error) {
-	return r.currentSpotsReader.GetSpotsCount(ctx)
+	return r.currentSpotsRepository.GetSpotsCount(ctx)
 }

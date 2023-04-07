@@ -9,11 +9,13 @@ import (
 
 type (
 	CurrentSpotsRepository interface {
+		GetSpotByIndex(ctx context.Context, index int) (*domain.Spot, error)
+		GetSpotsCount(ctx context.Context) (int, error)
 		SaveSpots(ctx context.Context, spots []domain.Spot, expiration time.Duration) error
 	}
 
 	MarketDataRepository interface {
-		GetMonth(ctx context.Context, symbol, quote string, before time.Time, interval domain.Interval) ([]domain.Kline, error)
+		GetKlines(ctx context.Context, symbol, quote string, from, to time.Time, interval domain.Interval) ([]domain.Kline, error)
 		CreateOrUpdate(
 			ctx context.Context,
 			symbol string,

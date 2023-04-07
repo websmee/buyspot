@@ -16,6 +16,7 @@ import {
 import { Bar, Line } from 'react-chartjs-2';
 
 import stickymobile from 'Utils/stickymobile';
+import numbers from 'Utils/numbers';
 
 ChartJS.register(
     CategoryScale,
@@ -45,12 +46,14 @@ function SpotCharts(props) {
     let prices = [];
     let volumes = [];
     let forecast = [];
+    let actual = [];
     if (props.chartPrices) {
         for (let i = 0; i < props.chartPrices.length; i++) {
             prices.push(props.chartPrices[i]);
             volumes.push(props.chartVolumes[i]);
             if (i < props.chartPrices.length - 1) {
                 forecast.push(null);
+                actual.push(null);
             }
         }
     }
@@ -60,6 +63,13 @@ function SpotCharts(props) {
             if (i > 0) {
                 prices.push(null);
                 volumes.push(null);
+            }
+            if (props.chartActual) {
+                if (i < props.chartActual.length) {
+                    actual.push(props.chartActual[i]);
+                } else {
+                    actual.push(null);
+                }
             }
         }
     }
@@ -80,7 +90,7 @@ function SpotCharts(props) {
                         </h4>
                     </div>
                     <div className="ms-auto">
-                        <h1 className="mt-n2 text-end color-sunny-light">+{props.forecast}%</h1>
+                        <h1 className="mt-n2 text-end color-sunny-light">+{Math.round(props.forecast * 100) / 100}%</h1>
                         <h4 className="font-400 text-uppercase mt-n2 font-16 opacity-30 text-end">Forecast</h4>
                     </div>
                 </div>
@@ -125,6 +135,17 @@ function SpotCharts(props) {
                                 borderDash: [5, 5],
                                 borderWidth: 2,
                                 data: sliceDataPoints(forecast, dataPointsCount),
+                            }, {
+                                lineTension: 0.3,
+                                label: "actual",
+                                backgroundColor: 'rgba(93, 156, 236, 0.2)',
+                                borderColor: '#5D9CEC',
+                                fill: true,
+                                pointStyle: false,
+                                pointRadius: 0,
+                                borderDash: [2, 2],
+                                borderWidth: 2,
+                                data: sliceDataPoints(actual, dataPointsCount),
                             }],
                         }}
                     />
@@ -141,6 +162,19 @@ function SpotCharts(props) {
                             },
                             title: {
                                 display: false
+                            },
+                            scales: {
+                                y: {
+                                    ticks: {
+                                        callback: function (label, index, labels) {
+                                            return numbers.pretty(label, 1);
+                                        }
+                                    },
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: '1k = 1000'
+                                    }
+                                }
                             }
                         }}
                         data={{

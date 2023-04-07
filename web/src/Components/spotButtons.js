@@ -9,6 +9,7 @@ function SpotButtons(props) {
     const currentSpotsIndex = useSelector((state) => state.currentSpotsIndex);
     const currentSpotsTotal = useSelector((state) => state.currentSpotsTotal);
     const currentSpotsNext = useSelector((state) => state.currentSpotsNext);
+    const currentSpotsPrev = useSelector((state) => state.currentSpotsPrev);
 
     useEffect(() => {
         const menuOpenListener = stickymobile.getMenuOpenListener(props.buyModalId);
@@ -33,10 +34,17 @@ function SpotButtons(props) {
                         </span>
                     </a>
                 </div>
-                <div className="col-6 ps-1">
+                <div className="col-2 ps-1 pe-1">
+                    <a data-menu="menu-transaction-request" onClick={() => { dispatch(getSpotByIndex(currentSpotsPrev)); }}
+                        className="card-style d-block bg-theme gradient-dark py-3 mx-0">
+                        <span className="color-theme font-800 font-13 text-uppercase"><i
+                            className="fa fa-arrow-left pt-2 pe-4 float-end"></i>&nbsp;</span>
+                    </a>
+                </div>
+                <div className="col-4 ps-1">
                     <a data-menu="menu-transaction-request" onClick={() => { dispatch(getSpotByIndex(currentSpotsNext)); }}
                         className="card-style d-block bg-theme gradient-dark py-3 mx-0">
-                        <span className="ps-3 pt-3 mt-n1 font-10 opacity-50 position-absolute">spot {currentSpotsIndex} out of {currentSpotsTotal}</span>
+                        <span className="ps-3 pt-3 mt-n1 font-10 opacity-50 position-absolute">{currentSpotsIndex} out of {currentSpotsTotal}</span>
                         <span className="color-theme font-800 font-13 text-uppercase px-3"><i
                             className="fa fa-arrow-right pt-2 pe-3 float-end"></i>Next</span>
                     </a>

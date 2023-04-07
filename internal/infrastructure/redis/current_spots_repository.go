@@ -68,6 +68,23 @@ func (r *CurrentSpotsRepository) SaveSpots(ctx context.Context, spots []domain.S
 	return nil
 }
 
+func (r *CurrentSpotsRepository) ClearSpots(ctx context.Context) error {
+	if keysCmd := r.client.Keys(ctx, "current-spots:*"); keysCmd != nil {
+		keys, err := keysCmd.Result()
+		if err != nil {
+			return fmt.Errorf("could not get current spots keys from redis, err: %w", err)
+		}
+
+		if cmd := r.client.Del(ctx, keys...); cmd != nil {
+			if _, err := cmd.Result(); err != nil {
+				return fmt.Errorf("could not clear spots in redis, err: %w", err)
+			}
+		}
+	}
+
+	return nil
+}
+
 func (r *CurrentSpotsRepository) saveSpot(
 	ctx context.Context,
 	spot *domain.Spot,

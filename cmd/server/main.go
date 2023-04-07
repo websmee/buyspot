@@ -58,7 +58,7 @@ func main() {
 	marketDataRepository := mongoInfra.NewMarketDataRepository(mongoClient)
 	newsRepository := mongoInfra.NewNewsRepository(mongoClient)
 	assetRepository := mongoInfra.NewAssetRepository(mongoClient)
-	adviser := domain.NewAdviser(3, 2.5)
+	adviser := domain.NewAdviser(3, 3, 0, 2.5, 5)
 	orderRepository := mongoInfra.NewOrderRepository(mongoClient)
 	balanceService := example.NewBalanceService()
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
@@ -66,7 +66,7 @@ func main() {
 	converterService := example.NewConverterService(currentPricesRepository)
 	marketDataService := binanceInfra.NewMarketDataService(binance.NewClient(binanceAPIKey, binanceSecretKey))
 	newsService := cryptonews.NewNewsService(cryptonewsAPIToken)
-	spotReader := usecases.NewSpotReader(currentSpotsRepository, orderRepository)
+	spotReader := usecases.NewSpotReader(currentSpotsRepository, orderRepository, marketDataRepository)
 	spotBuyer := usecases.NewSpotBuyer(
 		orderRepository,
 		converterService,

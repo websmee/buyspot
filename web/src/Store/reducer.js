@@ -28,6 +28,7 @@ const slice = createSlice({
         },
         currentSpotsIndex: 0,
         currentSpotsNext: 0,
+        currentSpotsPrev: 0,
         currentSpotsTotal: 0,
         spot: {
             asset: {
@@ -37,18 +38,23 @@ const slice = createSlice({
                 activeOrders: 0,
             },
             priceForecast: 0,
-            chartsDataByQuotes: {"USDT": {
-                times: [],
-                prices: [],
-                forecast: [],
-                volumes: [],
-            }},
+            chartsDataByQuotes: {
+                "USDT": {
+                    times: [],
+                    prices: [],
+                    forecast: [],
+                    actual: [],
+                    volumes: [],
+                }
+            },
             news: [
                 // {
                 //     sentiment: NEWS_ARTICLE_SENTIMENT.NEUTRAL,
                 //     title: "",
                 //     content: "",
                 //     created: "2023-03-04T15:16:34.2960596+06:00",
+                //     url: "https://...",
+                //     imgURL: "https://...",
                 //     views: 0,
                 // },
             ],
@@ -125,15 +131,18 @@ const slice = createSlice({
             if (action.payload.currentSpotsTotal == 0) {
                 state.currentSpotsIndex = 0;
                 state.currentSpotsNext = 0;
+                state.currentSpotsPrev = 0;
             }
 
             if (action.payload.currentSpotsTotal > 0 && state.currentSpotsIndex == 0) {
                 state.currentSpotsIndex = 1;
                 state.currentSpotsNext = 2;
+                state.currentSpotsPrev = action.payload.currentSpotsTotal;
             }
 
             if (action.payload.currentSpotsTotal < state.currentSpotsNext) {
                 state.currentSpotsNext = 1;
+                state.currentSpotsPrev = action.payload.currentSpotsTotal;
             };
 
             if (action.payload.spot) {
@@ -148,6 +157,7 @@ const slice = createSlice({
             state.currentSpotsTotal = 0;
             state.currentSpotsIndex = 0;
             state.currentSpotsNext = 0;
+            state.currentSpotsPrev = 0;
             handleFail(state, action);
         },
 
@@ -158,6 +168,7 @@ const slice = createSlice({
         spotReceived: (state, action) => {
             state.currentSpotsIndex = action.payload.index;
             state.currentSpotsNext = action.payload.index < state.currentSpotsTotal ? action.payload.index + 1 : 1;
+            state.currentSpotsPrev = action.payload.index > 1 ? action.payload.index - 1 : state.currentSpotsTotal;
             state.spot = action.payload;
             stickymobile.hidePreloader();
             state.errorMessage = "";

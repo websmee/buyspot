@@ -29,7 +29,7 @@ func TestAdviser(t *testing.T) {
 	var asts []domain.Asset
 	c, _ := Connect(context.Background(), "mongodb://localhost:27017")
 	ar := NewAssetRepository(c)
-	adviser := domain.NewAdviser(riseInARow, 2.5)
+	adviser := domain.NewAdviser(riseInARow, 3, 0, 2.5, 999)
 	assets, _ := ar.GetAvailableAssets(context.Background())
 	for _, asset := range assets {
 		marketData := getTestMarketData(asset.Symbol, "USDT", domain.IntervalHour)
@@ -88,6 +88,7 @@ func TestAdviser(t *testing.T) {
 		spots = append(spots, *spot)
 	}
 
+	currentSpotsRepository.ClearSpots(context.Background())
 	currentSpotsRepository.SaveSpots(context.Background(), spots, time.Hour)
 }
 
@@ -104,7 +105,7 @@ func getTestMarketData(
 		Find(ctx, bson.M{
 			"$and": []bson.M{
 				{"start_time": bson.M{"$gte": time.Now().AddDate(0, -1, 0)}},
-				{"start_time": bson.M{"$lte": time.Now()}},
+				{"end_time": bson.M{"$lte": time.Now()}},
 			},
 		})
 
