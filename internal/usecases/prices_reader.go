@@ -26,14 +26,14 @@ func NewPricesReader(
 }
 
 func (r *PricesReader) GetCurrentPrices(ctx context.Context) (*domain.Prices, error) {
-	user := domain.GetCtxUser(ctx)
-	if user == nil {
+	userID := domain.GetCtxUserID(ctx)
+	if userID == "" {
 		return nil, domain.ErrUnauthorized
 	}
 
-	balance, err := r.balanceService.GetUserActiveBalance(ctx, user)
+	balance, err := r.balanceService.GetUserActiveBalance(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", user.ID, err)
+		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", userID, err)
 	}
 
 	assets, err := r.assetRepository.GetAvailableAssets(ctx)

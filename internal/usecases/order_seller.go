@@ -27,28 +27,28 @@ func NewOrderSeller(
 }
 
 func (s *OrderSeller) SellOrder(ctx context.Context, orderID string) (*domain.Balance, error) {
-	user := domain.GetCtxUser(ctx)
-	if user == nil {
+	userID := domain.GetCtxUserID(ctx)
+	if userID == "" {
 		return nil, domain.ErrUnauthorized
 	}
 
-	balance, err := s.balanceService.GetUserActiveBalance(ctx, user)
+	balance, err := s.balanceService.GetUserActiveBalance(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", user.ID, err)
+		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", userID, err)
 	}
 
-	order, err := s.orderRepository.GetUserOrderByID(ctx, user.ID, orderID)
+	order, err := s.orderRepository.GetUserOrderByID(ctx, userID, orderID)
 	if err != nil {
-		return nil, fmt.Errorf("could get order by ID = '%s' for user ID = '%s', err: %w", orderID, user.ID, err)
+		return nil, fmt.Errorf("could get order by ID = '%s' for user ID = '%s', err: %w", orderID, userID, err)
 	}
 
-	sellAmount, err := s.converterService.Convert(ctx, user, order.ToAmount, order.ToSymbol, balance.Symbol)
+	sellAmount, err := s.converterService.Convert(ctx, userID, order.ToAmount, order.ToSymbol, balance.Symbol)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"could not convert %s to %s for user ID = '%s', err: %w",
 			order.ToSymbol,
 			balance.Symbol,
-			user.ID,
+			userID,
 			err,
 		)
 	}
@@ -61,9 +61,9 @@ func (s *OrderSeller) SellOrder(ctx context.Context, orderID string) (*domain.Ba
 		return nil, fmt.Errorf("could not save order after conversion, err: %w", err)
 	}
 
-	balance, err = s.balanceService.GetUserActiveBalance(ctx, user)
+	balance, err = s.balanceService.GetUserActiveBalance(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get balance for user ID = '%s' after conversion, err: %w", user.ID, err)
+		return nil, fmt.Errorf("could not get balance for user ID = '%s' after conversion, err: %w", userID, err)
 	}
 
 	return balance, nil

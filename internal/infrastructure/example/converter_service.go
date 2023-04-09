@@ -3,7 +3,6 @@ package example
 import (
 	"context"
 
-	"websmee/buyspot/internal/domain"
 	"websmee/buyspot/internal/usecases"
 )
 
@@ -15,7 +14,7 @@ func NewConverterService(currentPricesRepository usecases.CurrentPricesRepositor
 	return &ConverterService{currentPricesRepository}
 }
 
-func (s *ConverterService) Convert(ctx context.Context, user *domain.User, amount float64, fromSymbol, toSymbol string) (float64, error) {
+func (s *ConverterService) Convert(ctx context.Context, userID string, amount float64, fromSymbol, toSymbol string) (float64, error) {
 	price, _ := s.currentPricesRepository.GetPrice(ctx, toSymbol, fromSymbol)
 	if price == 0 {
 		price, _ = s.currentPricesRepository.GetPrice(ctx, fromSymbol, toSymbol)

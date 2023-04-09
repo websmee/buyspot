@@ -6,6 +6,15 @@ import (
 	"websmee/buyspot/internal/domain"
 )
 
+func UserToDomain(user *User) *domain.User {
+	return &domain.User{
+		Email:            user.Email,
+		Password:         user.Password,
+		BinanceAPIKey:    user.BinanceAPIKey,
+		BinanceSecretKey: user.BinanceSecretKey,
+	}
+}
+
 func ConvertOrderToMessages(order *domain.Order) *Order {
 	return &Order{
 		ID:          order.ID.Hex(),

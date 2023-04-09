@@ -1,6 +1,8 @@
 package http
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +12,7 @@ import (
 
 func AddAuthHandlers(
 	router *gin.Engine,
-	auth *SimpleAuth,
+	auth *Auth,
 ) {
 	router.POST("/api/v1/login", func(c *gin.Context) {
 		var request api.LoginRequest
@@ -19,11 +21,25 @@ func AddAuthHandlers(
 			return
 		}
 
-		if !auth.CheckCredentials(request.Username, request.Password) {
-			c.Status(http.StatusUnauthorized)
+		user, err := auth.CheckCredentials(c, request.Email, request.Password)
+		if err != nil {
+			if errors.Is(err, ErrInvalidCredentials) {
+				c.Status(http.StatusUnauthorized)
+				return
+			}
+
+			c.Error(fmt.Errorf("could not check credentials, err: %w", err))
+			c.Status(http.StatusInternalServerError)
 			return
 		}
 
-		c.IndentedJSON(http.StatusOK, auth.GetToken(request.Username))
+		token, err := auth.GetToken(user)
+		if err != nil {
+			c.Error(fmt.Errorf("could not generate token, err: %w", err))
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		c.IndentedJSON(http.StatusOK, token)
 	})
 }

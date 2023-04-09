@@ -16,14 +16,14 @@ func NewOrderReader(orderRepository OrderRepository) *OrderReader {
 }
 
 func (r *OrderReader) GetUserOrders(ctx context.Context) ([]domain.Order, error) {
-	user := domain.GetCtxUser(ctx)
-	if user == nil {
+	userID := domain.GetCtxUserID(ctx)
+	if userID == "" {
 		return nil, domain.ErrUnauthorized
 	}
 
-	orders, err := r.orderRepository.GetUserActiveOrders(ctx, user.ID)
+	orders, err := r.orderRepository.GetUserActiveOrders(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get orders for user ID = '%s', err: %w", user.ID, err)
+		return nil, fmt.Errorf("could not get orders for user ID = '%s', err: %w", userID, err)
 	}
 
 	return orders, nil

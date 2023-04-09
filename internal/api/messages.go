@@ -4,6 +4,13 @@ import (
 	"time"
 )
 
+type User struct {
+	Email            string `bson:"email"`
+	Password         string `bson:"password"`
+	BinanceAPIKey    string `bson:"binanceAPIKey"`
+	BinanceSecretKey string `bson:"binanceSecretKey"`
+}
+
 type Balance struct {
 	Symbol string  `json:"symbol"`
 	Amount float64 `json:"amount"`
@@ -67,7 +74,7 @@ type Spot struct {
 }
 
 type LoginRequest struct {
-	Username string `json:"username"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 

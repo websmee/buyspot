@@ -1,55 +1,91 @@
 package http
 
-import "strings"
+import (
+	"context"
+	"errors"
+	"time"
 
-type SimpleAuth struct {
-	users       map[string]SimpleAuthUser
-	idsByTokens map[string]string
+	"github.com/golang-jwt/jwt"
+
+	"websmee/buyspot/internal/domain"
+)
+
+var ErrInvalidCredentials = errors.New("invalid credentials")
+var ErrInvalidToken = errors.New("invalid token")
+
+type UserFinder interface {
+	FindByEmail(ctx context.Context, email string) (*domain.User, error)
 }
 
-type SimpleAuthUser struct {
-	Username string
-	Password string
-	ID       string
-	Token    string
+type Auth struct {
+	secretKey  string
+	userFinder UserFinder
 }
 
-func NewSimpleAuth(usersStr string) *SimpleAuth {
-	users := make(map[string]SimpleAuthUser)
-	idsByTokens := make(map[string]string)
-	for _, userStr := range strings.Split(usersStr, ",") {
-		userArr := strings.Split(userStr, " ")
-		users[userArr[0]] = SimpleAuthUser{
-			Username: userArr[0],
-			Password: userArr[1],
-			ID:       userArr[2],
-			Token:    userArr[3],
-		}
-		idsByTokens[userArr[3]] = userArr[2]
-	}
-
-	return &SimpleAuth{
-		users:       users,
-		idsByTokens: idsByTokens,
+func NewAuth(secretKey string, userFinder UserFinder) *Auth {
+	return &Auth{
+		secretKey,
+		userFinder,
 	}
 }
 
-func (s *SimpleAuth) CheckCredentials(username, password string) bool {
-	if _, ok := s.users[username]; !ok {
-		return false
+func (s *Auth) CheckCredentials(ctx context.Context, email, password string) (*domain.User, error) {
+	user, err := s.userFinder.FindByEmail(ctx, email)
+	if err != nil {
+		return nil, err
 	}
 
-	return s.users[username].Password == password
-}
-
-func (s *SimpleAuth) GetUserID(token string) string {
-	return s.idsByTokens[token]
-}
-
-func (s *SimpleAuth) GetToken(username string) string {
-	if _, ok := s.users[username]; !ok {
-		return ""
+	if user == nil {
+		return nil, ErrInvalidCredentials
 	}
 
-	return s.users[username].Token
+	if !domain.CheckPasswordHash(password, user.Password) {
+		return nil, ErrInvalidCredentials
+	}
+
+	return user, nil
+}
+
+func (s *Auth) GetUserIDByToken(tokenString string) (string, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(s.secretKey), nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	if !token.Valid {
+		return "", ErrInvalidToken
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", ErrInvalidToken
+	}
+
+	id, ok := claims["id"].(string)
+	if !ok {
+		return "", ErrInvalidToken
+	}
+
+	if id == "" {
+		return "", ErrInvalidToken
+	}
+
+	return id, nil
+}
+
+func (s *Auth) GetToken(user *domain.User) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+
+	claims := token.Claims.(jwt.MapClaims)
+	claims["exp"] = time.Now().Add(24 * time.Hour).Unix()
+	claims["id"] = user.ID.Hex()
+
+	tokenString, err := token.SignedString([]byte(s.secretKey))
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }

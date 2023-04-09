@@ -30,14 +30,14 @@ func NewSpotBuyer(
 }
 
 func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, symbol string, takeProfit, stopLoss float64) (*domain.Balance, error) {
-	user := domain.GetCtxUser(ctx)
-	if user == nil {
+	userID := domain.GetCtxUserID(ctx)
+	if userID == "" {
 		return nil, domain.ErrUnauthorized
 	}
 
-	balance, err := b.balanceService.GetUserActiveBalance(ctx, user)
+	balance, err := b.balanceService.GetUserActiveBalance(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", user.ID, err)
+		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", userID, err)
 	}
 
 	asset, err := b.assetRepository.GetAssetBySymbol(ctx, symbol)
@@ -49,7 +49,7 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, symbol string, 
 	}
 
 	order := &domain.Order{
-		UserID:      user.ID,
+		UserID:      userID,
 		FromAmount:  amount,
 		FromSymbol:  balance.Symbol,
 		ToAmount:    0,
@@ -66,13 +66,13 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, symbol string, 
 		return nil, fmt.Errorf("could not save new order, err: %w", err)
 	}
 
-	boughtAmount, err := b.converterService.Convert(ctx, user, amount, balance.Symbol, symbol)
+	boughtAmount, err := b.converterService.Convert(ctx, userID, amount, balance.Symbol, symbol)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"could not convert %s to %s for user ID = '%s', err: %w",
 			balance.Symbol,
 			symbol,
-			user.ID,
+			userID,
 			err,
 		)
 	}
@@ -85,9 +85,9 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, symbol string, 
 		return nil, fmt.Errorf("could not save order after conversion, err: %w", err)
 	}
 
-	balance, err = b.balanceService.GetUserActiveBalance(ctx, user)
+	balance, err = b.balanceService.GetUserActiveBalance(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get balance for user ID = '%s' after conversion, err: %w", user.ID, err)
+		return nil, fmt.Errorf("could not get balance for user ID = '%s' after conversion, err: %w", userID, err)
 	}
 
 	return balance, nil

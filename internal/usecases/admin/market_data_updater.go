@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"websmee/buyspot/internal/domain"
 	"websmee/buyspot/internal/usecases"
@@ -49,7 +50,14 @@ func (r *MarketDataUpdater) Update(ctx context.Context, secretKey string) error 
 
 	for i := range balanceSymbols {
 		for j := range assets {
-			klines, err := r.marketDataService.GetMonth(ctx, assets[j].Symbol, balanceSymbols[i], domain.IntervalHour)
+			klines, err := r.marketDataService.GetKlines(
+				ctx,
+				assets[j].Symbol,
+				balanceSymbols[i],
+				time.Now().AddDate(0, -1, 0),
+				time.Now(),
+				domain.IntervalHour,
+			)
 			if err != nil {
 				return fmt.Errorf(
 					"could not get %s%s market data, err: %w",

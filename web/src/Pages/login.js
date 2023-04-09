@@ -9,7 +9,7 @@ function Login() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const unauthorized = useSelector((state) => state.unauthorized);
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     useEffect(() => {
@@ -31,8 +31,8 @@ function Login() {
 
                         <div className="input-style no-borders has-icon validate-field">
                             <i className="fa fa-user"></i>
-                            <input type="name" className="form-control validate-name" id="form1a" placeholder="Name" value={username} onChange={(e) => { setUsername(e.target.value) }}/>
-                            <label htmlFor="form1a" className="color-blue-dark font-10 mt-1">Name</label>
+                            <input type="email" className="form-control validate-name" id="form1a" placeholder="Email" value={email} onChange={(e) => { setEmail(e.target.value) }}/>
+                            <label htmlFor="form1a" className="color-blue-dark font-10 mt-1">Email</label>
                             <i className="fa fa-times disabled invalid color-red-dark"></i>
                             <i className="fa fa-check disabled valid color-green-dark"></i>
                             <em>(required)</em>
@@ -49,7 +49,7 @@ function Login() {
 
                         <a
                             onClick={() => {
-                                dispatch(login(username, password));
+                                dispatch(login(email, password));
                             }}
                             className="back-button btn btn-full btn-m shadow-large rounded-sm text-uppercase font-700 bg-highlight">LOGIN</a>
                     </div>

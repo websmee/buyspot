@@ -25,7 +25,6 @@ import (
 var secretKey = os.Getenv("BUYSPOT_SECRET_KEY")
 var binanceAPIKey = os.Getenv("BUYSPOT_BINANCE_API_KEY")
 var binanceSecretKey = os.Getenv("BUYSPOT_BINANCE_SECRET_KEY")
-var authUsers = os.Getenv("BUYSPOT_AUTH_USERS")
 var redisAddr = os.Getenv("BUYSPOT_REDIS")
 var mongoURI = os.Getenv("BUYSPOT_MONGO")
 var webAddr = os.Getenv("BUYSPOT_WEB_ADDR")
@@ -54,7 +53,7 @@ func main() {
 		}
 	}()
 
-	userRepository := example.NewUserRepository()
+	userRepository := mongoInfra.NewUserRepository(mongoClient)
 	marketDataRepository := mongoInfra.NewMarketDataRepository(mongoClient)
 	newsRepository := mongoInfra.NewNewsRepository(mongoClient)
 	assetRepository := mongoInfra.NewAssetRepository(mongoClient)
@@ -80,6 +79,7 @@ func main() {
 		balanceService,
 	)
 	pricesReader := usecases.NewPricesReader(assetRepository, currentPricesRepository, balanceService)
+	userManager := admin.NewUserManager(secretKey, userRepository)
 	marketDataUpdater := admin.NewMarketDataUpdater(
 		secretKey,
 		balanceService,
@@ -146,14 +146,14 @@ func main() {
 
 	// web server
 	router := gin.Default()
-	auth := httpAPI.NewSimpleAuth(authUsers)
+	auth := httpAPI.NewAuth(secretKey, userRepository)
 	router.Use(httpAPI.CORSMiddleware())
 	router.Use(httpAPI.AuthMiddleware(auth))
 	httpAPI.AddBalanceHandlers(router)
 	httpAPI.AddSpotHandlers(router, spotReader, spotBuyer)
 	httpAPI.AddOrderHandlers(router, orderReader, orderSeller)
 	httpAPI.AddPricesHandlers(router, pricesReader)
-	httpAPI.AddAdminHandlers(router, marketDataUpdater, newsUpdater)
+	httpAPI.AddAdminHandlers(router, marketDataUpdater, newsUpdater, userManager)
 	httpAPI.AddAuthHandlers(router, auth)
 	_ = router.Run(webAddr)
 }

@@ -27,8 +27,8 @@ func NewSpotReader(
 }
 
 func (r *SpotReader) GetSpotByIndex(ctx context.Context, index int) (*domain.Spot, error) {
-	user := domain.GetCtxUser(ctx)
-	if user == nil {
+	userID := domain.GetCtxUserID(ctx)
+	if userID == "" {
 		return nil, domain.ErrUnauthorized
 	}
 
@@ -61,11 +61,11 @@ func (r *SpotReader) GetSpotByIndex(ctx context.Context, index int) (*domain.Spo
 		}
 	}
 
-	activeOrdersCount, err := r.orderRepository.GetUserActiveOrdersCountBySymbol(ctx, user.ID, spot.Asset.Symbol)
+	activeOrdersCount, err := r.orderRepository.GetUserActiveOrdersCountBySymbol(ctx, userID, spot.Asset.Symbol)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"could not get user (ID = '%s') active orders count by symbol %s, err: %w",
-			user.ID,
+			userID,
 			spot.Asset.Symbol,
 			err,
 		)

@@ -15,7 +15,14 @@ type (
 	}
 
 	MarketDataRepository interface {
-		GetKlines(ctx context.Context, symbol, quote string, from, to time.Time, interval domain.Interval) ([]domain.Kline, error)
+		GetKlines(
+			ctx context.Context,
+			symbol string,
+			quote string,
+			from time.Time,
+			to time.Time,
+			interval domain.Interval,
+		) ([]domain.Kline, error)
 		CreateOrUpdate(
 			ctx context.Context,
 			symbol string,
@@ -72,8 +79,8 @@ type (
 	}
 
 	BalanceService interface {
-		GetUserActiveBalance(ctx context.Context, user *domain.User) (*domain.Balance, error)
-		GetUserBalances(ctx context.Context, user *domain.User) ([]domain.Balance, error)
+		GetUserActiveBalance(ctx context.Context, userID string) (*domain.Balance, error)
+		GetUserBalances(ctx context.Context, userID string) ([]domain.Balance, error)
 		GetAvailableSymbols(ctx context.Context) ([]string, error)
 	}
 
@@ -82,11 +89,12 @@ type (
 	}
 
 	ConverterService interface {
-		Convert(ctx context.Context, user *domain.User, amount float64, fromSymbol, toSymbol string) (float64, error)
+		Convert(ctx context.Context, userID string, amount float64, fromSymbol, toSymbol string) (float64, error)
 	}
 
 	UserRepository interface {
-		GetUserByID(ctx context.Context, userID string) (*domain.User, error)
+		CreateOrUpdate(ctx context.Context, user *domain.User) error
+		GetByID(ctx context.Context, userID string) (*domain.User, error)
 	}
 
 	MarketDataStream interface {
@@ -101,7 +109,14 @@ type (
 	}
 
 	MarketDataService interface {
-		GetMonth(ctx context.Context, symbol, quote string, interval domain.Interval) ([]domain.Kline, error)
+		GetKlines(
+			ctx context.Context,
+			symbol string,
+			quote string,
+			from time.Time,
+			to time.Time,
+			interval domain.Interval,
+		) ([]domain.Kline, error)
 	}
 
 	NewsService interface {

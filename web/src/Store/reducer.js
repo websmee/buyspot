@@ -268,12 +268,12 @@ const {
     updateOrdersDataRequested,
 } = slice.actions;
 
-export const login = (username, password) => (dispatch) => {
+export const login = (email, password) => (dispatch) => {
     return dispatch(
         apiCallBegan({
             url: "/api/v1/login",
             method: "post",
-            data: { username, password },
+            data: { email, password },
             onStart: loginRequested.type,
             onSuccess: loginSuccess.type,
             onError: loginRequestFailed.type,

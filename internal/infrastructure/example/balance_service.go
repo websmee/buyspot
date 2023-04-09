@@ -13,14 +13,14 @@ func NewBalanceService() *BalanceService {
 	return &BalanceService{}
 }
 
-func (r *BalanceService) GetUserActiveBalance(_ context.Context, _ *domain.User) (*domain.Balance, error) {
+func (r *BalanceService) GetUserActiveBalance(_ context.Context, userID string) (*domain.Balance, error) {
 	return &domain.Balance{
 		Amount: 1234.56,
 		Symbol: "USDT",
 	}, nil
 }
 
-func (r *BalanceService) GetUserBalances(ctx context.Context, user *domain.User) ([]domain.Balance, error) {
+func (r *BalanceService) GetUserBalances(ctx context.Context, userID string) ([]domain.Balance, error) {
 	return []domain.Balance{
 		{
 			Amount: 1234.56,

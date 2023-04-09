@@ -93,7 +93,7 @@ func (r *OrderSeller) Run(ctx context.Context) error {
 				}
 
 				for k := range orders {
-					user, err := r.userRepository.GetUserByID(ctx, orders[k].UserID)
+					user, err := r.userRepository.GetByID(ctx, orders[k].UserID)
 					if err != nil {
 						r.logger.Println(fmt.Errorf(
 							"could not find user by ID = '%s', err: %w",
@@ -105,7 +105,7 @@ func (r *OrderSeller) Run(ctx context.Context) error {
 
 					closeAmount, err := r.converterService.Convert(
 						ctx,
-						user,
+						user.ID.Hex(),
 						orders[k].ToAmount,
 						orders[k].ToSymbol,
 						balanceSymbols[i],
