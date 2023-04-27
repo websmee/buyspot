@@ -33,7 +33,7 @@ func NewMarketDataUpdater(
 	}
 }
 
-func (r *MarketDataUpdater) Update(ctx context.Context, secretKey string) error {
+func (r *MarketDataUpdater) Update(ctx context.Context, secretKey string, period int) error {
 	if secretKey != r.secretKey {
 		return domain.ErrForbidden
 	}
@@ -54,7 +54,7 @@ func (r *MarketDataUpdater) Update(ctx context.Context, secretKey string) error 
 				ctx,
 				assets[j].Symbol,
 				balanceSymbols[i],
-				time.Now().AddDate(0, -1, 0),
+				time.Now().AddDate(0, 0, -period),
 				time.Now(),
 				domain.IntervalHour,
 			)

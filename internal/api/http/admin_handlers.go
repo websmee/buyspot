@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -18,8 +19,14 @@ func AddAdminHandlers(
 	newsUpdater *admin.NewsUpdater,
 	userManager *admin.UserManager,
 ) {
-	router.POST("/api/v1/admin/market_data/update", func(c *gin.Context) {
-		if err := marketDataUpdater.Update(c, c.GetHeader("X-BUYSPOT-SECRET-KEY")); err != nil {
+	router.POST("/api/v1/admin/market_data/update/:period", func(c *gin.Context) {
+		period, err := strconv.Atoi(c.Param("period"))
+		if err != nil {
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
+		if err := marketDataUpdater.Update(c, c.GetHeader("X-BUYSPOT-SECRET-KEY"), period); err != nil {
 			if errors.Is(err, domain.ErrForbidden) {
 				c.Status(http.StatusForbidden)
 				return

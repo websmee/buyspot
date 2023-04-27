@@ -12,6 +12,7 @@ import (
 
 	httpAPI "websmee/buyspot/internal/api/http"
 	"websmee/buyspot/internal/domain"
+	"websmee/buyspot/internal/domain/indicator"
 	binanceInfra "websmee/buyspot/internal/infrastructure/binance"
 	"websmee/buyspot/internal/infrastructure/cryptonews"
 	"websmee/buyspot/internal/infrastructure/example"
@@ -57,7 +58,13 @@ func main() {
 	marketDataRepository := mongoInfra.NewMarketDataRepository(mongoClient)
 	newsRepository := mongoInfra.NewNewsRepository(mongoClient)
 	assetRepository := mongoInfra.NewAssetRepository(mongoClient)
-	adviser := domain.NewAdviser(3, 3, 0, 2.5, 5)
+	adviser := domain.NewAdviser(
+		24,
+		8,
+		4,
+		indicator.NewRSI(10, 65),
+		indicator.NewVolumeRise(3),
+	)
 	orderRepository := mongoInfra.NewOrderRepository(mongoClient)
 	balanceService := example.NewBalanceService()
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)

@@ -89,6 +89,7 @@ func ConvertSpotToMessage(spot *domain.Spot) *Spot {
 			StopLoss:          spot.Advice.BuyOrderSettings.StopLoss,
 			StopLossOptions:   stopLossOptions,
 		},
+		IsProfitable: spot.Advice.IsProfitable,
 	}
 }
 
@@ -114,12 +115,12 @@ func buildChartsData(
 	for quote := range historyByQuotes {
 		var data ChartsData
 		for i := range historyByQuotes[quote] {
-			data.Times = append(data.Times, historyByQuotes[quote][i].EndTime.Format("15:04"))
+			data.Times = append(data.Times, historyByQuotes[quote][i].EndTime.Format("02 Jan 15:04"))
 			data.Prices = append(data.Prices, historyByQuotes[quote][i].Close)
 			data.Volumes = append(data.Volumes, int64(historyByQuotes[quote][i].Volume))
 		}
 		for i := range forecastByQuotes[quote] {
-			data.Times = append(data.Times, forecastByQuotes[quote][i].EndTime.Format("15:04"))
+			data.Times = append(data.Times, forecastByQuotes[quote][i].EndTime.Format("02 Jan 15:04"))
 			data.Forecast = append(data.Forecast, forecastByQuotes[quote][i].Close)
 		}
 		for i := range actualByQuotes[quote] {

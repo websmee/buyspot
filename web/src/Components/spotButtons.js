@@ -38,7 +38,7 @@ function SpotButtons(props) {
                     <a data-menu="menu-transaction-request" onClick={() => { dispatch(getSpotByIndex(currentSpotsPrev)); }}
                         className="card-style d-block bg-theme gradient-dark py-3 mx-0">
                         <span className="color-theme font-800 font-13 text-uppercase"><i
-                            className="fa fa-arrow-left pt-2 pe-4 float-end"></i>&nbsp;</span>
+                            className="fa fa-arrow-left pt-2 float-end" style={{paddingRight: "42%"}}></i>&nbsp;</span>
                     </a>
                 </div>
                 <div className="col-4 ps-1">

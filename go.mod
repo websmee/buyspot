@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/adshao/go-binance/v2 v2.4.1
+	github.com/cinar/indicator v1.2.24
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-co-op/gocron v1.19.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
@@ -33,6 +34,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
+	github.com/patrikeh/go-deep v0.0.0-20230424101457-39f6de4f2696 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect

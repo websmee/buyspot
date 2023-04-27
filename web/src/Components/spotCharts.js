@@ -82,6 +82,7 @@ function SpotCharts(props) {
                         <h1 data-menu={props.assetDescriptionModalId} style={{ cursor: "pointer" }} className="mt-n2">
                             {props.assetName}
                             <span className="font-16 font-400 opacity-50" style={{ marginLeft: "5px" }}>{props.assetSymbol}</span>
+                            {props.isProfitable && <span className='ms-2 font-16 font-400 badge rounded-xl bg-sunny-light'>PROFIT</span>}
                         </h1>
                         <h4 className="font-400 text-uppercase mt-n2 font-16 opacity-30">
                             <a style={{ marginRight: "12px" }} className={classNames({ "text-info": dataPointsCount != 24 })} onClick={() => { setDataPointsCount(24) }}>1d</a>

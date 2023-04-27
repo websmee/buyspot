@@ -7,6 +7,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"websmee/buyspot/internal/domain"
 )
@@ -41,39 +42,7 @@ func (r *MarketDataRepository) GetKlines(
 			{"start_time": bson.M{"$gte": from}},
 			{"end_time": bson.M{"$lte": to}},
 		},
-	})
-	if err != nil {
-		return nil, fmt.Errorf(
-			"could not get %s%s klines from mongo, err: %w",
-			symbol,
-			quote,
-			err,
-		)
-	}
-
-	var klines []domain.Kline
-	for cur.Next(ctx) {
-		var kline domain.Kline
-		if err := cur.Decode(&kline); err != nil {
-			return nil, fmt.Errorf("could not decode %s%s kline data, err: %w", symbol, quote, err)
-		}
-		klines = append(klines, kline)
-	}
-
-	return klines, nil
-}
-
-func (r *MarketDataRepository) GetPeriod(
-	ctx context.Context,
-	symbol string,
-	quote string,
-	interval domain.Interval,
-) ([]domain.Kline, error) {
-	cur, err := r.getCollection(symbol, quote, interval).Find(ctx, bson.M{
-		"start_time": bson.M{
-			"$gte": time.Now().AddDate(0, -1, 0),
-		},
-	})
+	}, options.Find().SetSort(bson.D{{"start_time", 1}}))
 	if err != nil {
 		return nil, fmt.Errorf(
 			"could not get %s%s klines from mongo, err: %w",

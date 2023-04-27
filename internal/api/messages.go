@@ -71,6 +71,7 @@ type Spot struct {
 	CurrentSpotsTotal  int                   `json:"currentSpotsTotal"`
 	News               []NewsArticle         `json:"news"`
 	BuyOrderSettings   BuyOrderSettings      `json:"buyOrderSettings"`
+	IsProfitable       bool                  `json:"isProfitable"`
 }
 
 type LoginRequest struct {

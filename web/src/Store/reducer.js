@@ -69,6 +69,7 @@ const slice = createSlice({
                     // {value: 0, text: ""},
                 ],
             },
+            isPorfitable: false,
         },
         orders: [
             // {

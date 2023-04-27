@@ -55,6 +55,7 @@ function Spot() {
                         chartForecast={spot.chartsDataByQuotes[balance.symbol].forecast}
                         chartActual={spot.chartsDataByQuotes[balance.symbol].actual}
                         chartVolumes={spot.chartsDataByQuotes[balance.symbol].volumes}
+                        isProfitable={spot.isProfitable}
                         assetDescriptionModalId="asset-desc-modal"
                     />
 

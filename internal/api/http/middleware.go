@@ -24,7 +24,13 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func AuthMiddleware(auth *Auth) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userID, err := auth.GetUserIDByToken(c.GetHeader("Authorization"))
+		token := c.GetHeader("Authorization")
+		if token == "" {
+			c.Set(domain.CtxKeyUserID, "")
+			return
+		}
+
+		userID, err := auth.GetUserIDByToken(token)
 		if err != nil {
 			c.Error(err)
 		}

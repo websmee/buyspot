@@ -4,6 +4,7 @@ type Advice struct {
 	PriceForecast    float64          `json:"price_forecast"`
 	ForecastHours    int              `json:"forecast_hours"`
 	BuyOrderSettings BuyOrderSettings `json:"buy_order_settings"`
+	IsProfitable     bool             `json:"is_profitable"`
 }
 
 type BuyOrderSettings struct {
