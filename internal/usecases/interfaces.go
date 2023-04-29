@@ -34,6 +34,7 @@ type (
 
 	NewsRepository interface {
 		GetNewsBySymbol(ctx context.Context, symbol string, from, to time.Time) ([]domain.NewsArticle, error)
+		IsArticleExists(ctx context.Context, article *domain.NewsArticle) (bool, error)
 		CreateOrUpdate(
 			ctx context.Context,
 			article *domain.NewsArticle,
@@ -121,5 +122,9 @@ type (
 
 	NewsService interface {
 		GetNews(ctx context.Context, symbols []string, period domain.NewsPeriod) ([]domain.NewsArticle, error)
+	}
+
+	Summarizer interface {
+		GetSummary(ctx context.Context, url string) (string, error)
 	}
 )

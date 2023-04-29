@@ -52,6 +52,7 @@ const slice = createSlice({
                 //     sentiment: NEWS_ARTICLE_SENTIMENT.NEUTRAL,
                 //     title: "",
                 //     content: "",
+                //     summary: "",
                 //     created: "2023-03-04T15:16:34.2960596+06:00",
                 //     url: "https://...",
                 //     imgURL: "https://...",

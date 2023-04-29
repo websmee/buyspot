@@ -34,6 +34,7 @@ type NewsArticle struct {
 	Sentiment NewsArticleSentiment `json:"sentiment"`
 	Title     string               `json:"title"`
 	Content   string               `json:"content"`
+	Summary   string               `json:"summary"`
 	URL       string               `json:"url"`
 	ImgURL    string               `json:"imgURL"`
 	Created   time.Time            `json:"created"`

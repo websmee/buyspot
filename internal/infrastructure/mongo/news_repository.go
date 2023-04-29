@@ -7,6 +7,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"websmee/buyspot/internal/domain"
 )
@@ -30,7 +31,7 @@ func (r *NewsRepository) GetNewsBySymbol(ctx context.Context, symbol string, fro
 			{"created": bson.M{"$gte": from}},
 			{"created": bson.M{"$lte": to}},
 		},
-	})
+	}, options.Find().SetSort(bson.D{{"created", -1}}))
 	if err != nil {
 		return nil, fmt.Errorf("could not get %s news from mongo, err: %w", symbol, err)
 	}
@@ -45,6 +46,15 @@ func (r *NewsRepository) GetNewsBySymbol(ctx context.Context, symbol string, fro
 	}
 
 	return news, nil
+}
+
+func (r *NewsRepository) IsArticleExists(ctx context.Context, article *domain.NewsArticle) (bool, error) {
+	count, err := r.getCollection().CountDocuments(ctx, bson.M{"url": article.URL})
+	if err != nil {
+		return false, fmt.Errorf("could not check if news article exists in mongo, err: %w", err)
+	}
+
+	return count > 0, nil
 }
 
 func (r *NewsRepository) CreateOrUpdate(

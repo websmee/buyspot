@@ -11,6 +11,7 @@ type NewsArticle struct {
 	Sentiment NewsArticleSentiment `bson:"sentiment"`
 	Title     string               `bson:"title"`
 	Content   string               `bson:"content"`
+	Summary   string               `bson:"summary"`
 	Created   time.Time            `bson:"created"`
 	Views     int64                `bson:"views"`
 }

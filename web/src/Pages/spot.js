@@ -96,7 +96,7 @@ function Spot() {
 
             {spot.news && spot.news.map((article, i) =>
                 <NewsArticleModal key={i} id={"article-modal-" + i} url={article.url} created={article.created} views={article.views} title={article.title}>
-                    {article.content}
+                    {article.summary || article.content}
                 </NewsArticleModal>
             )}
 

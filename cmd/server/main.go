@@ -17,6 +17,7 @@ import (
 	"websmee/buyspot/internal/infrastructure/cryptonews"
 	"websmee/buyspot/internal/infrastructure/example"
 	mongoInfra "websmee/buyspot/internal/infrastructure/mongo"
+	"websmee/buyspot/internal/infrastructure/openai"
 	redisInfra "websmee/buyspot/internal/infrastructure/redis"
 	"websmee/buyspot/internal/usecases"
 	"websmee/buyspot/internal/usecases/admin"
@@ -30,6 +31,8 @@ var redisAddr = os.Getenv("BUYSPOT_REDIS")
 var mongoURI = os.Getenv("BUYSPOT_MONGO")
 var webAddr = os.Getenv("BUYSPOT_WEB_ADDR")
 var cryptonewsAPIToken = os.Getenv("BUYSPOT_CRYPTONEWS_API_TOKEN")
+var openaiAPIKey = os.Getenv("BUYSPOT_OPENAI_API_KEY")
+var openaiOrgID = os.Getenv("BUYSPOT_OPENAI_ORG_ID")
 
 func main() {
 	ctx := context.Background()
@@ -72,6 +75,7 @@ func main() {
 	converterService := example.NewConverterService(currentPricesRepository)
 	marketDataService := binanceInfra.NewMarketDataService(binance.NewClient(binanceAPIKey, binanceSecretKey))
 	newsService := cryptonews.NewNewsService(cryptonewsAPIToken)
+	summarizer := openai.NewSummarizer(openai.NewClient(openaiAPIKey, openaiOrgID))
 	spotReader := usecases.NewSpotReader(currentSpotsRepository, orderRepository, marketDataRepository)
 	spotBuyer := usecases.NewSpotBuyer(
 		orderRepository,
@@ -145,6 +149,7 @@ func main() {
 		assetRepository,
 		newsRepository,
 		newsService,
+		summarizer,
 		newLogger("[NEWS UPDATER]"),
 	)
 	if err := newsBackgroundUpdater.Run(ctx); err != nil {

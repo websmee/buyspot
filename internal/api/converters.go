@@ -49,6 +49,7 @@ func ConvertSpotToMessage(spot *domain.Spot) *Spot {
 			Sentiment: ConvertNewsSentiment(spot.News[i].Sentiment),
 			Title:     spot.News[i].Title,
 			Content:   spot.News[i].Content,
+			Summary:   spot.News[i].Summary,
 			Created:   spot.News[i].Created,
 			URL:       spot.News[i].URL,
 			ImgURL:    spot.News[i].ImageURL,
