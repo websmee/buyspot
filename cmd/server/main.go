@@ -28,7 +28,10 @@ var secretKey = os.Getenv("BUYSPOT_SECRET_KEY")
 var binanceAPIKey = os.Getenv("BUYSPOT_BINANCE_API_KEY")
 var binanceSecretKey = os.Getenv("BUYSPOT_BINANCE_SECRET_KEY")
 var redisAddr = os.Getenv("BUYSPOT_REDIS")
+var redisPassword = os.Getenv("BUYSPOT_REDIS_PASSWORD")
 var mongoURI = os.Getenv("BUYSPOT_MONGO")
+var mongoUser = os.Getenv("BUYSPOT_MONGO_USER")
+var mongoPwd = os.Getenv("BUYSPOT_MONGO_PWD")
 var webAddr = os.Getenv("BUYSPOT_WEB_ADDR")
 var cryptonewsAPIToken = os.Getenv("BUYSPOT_CRYPTONEWS_API_TOKEN")
 var openaiAPIKey = os.Getenv("BUYSPOT_OPENAI_API_KEY")
@@ -40,14 +43,14 @@ func main() {
 	// dependencies
 	logger := newLogger("[MAIN]")
 
-	redisClient := redis.NewClient(&redis.Options{Addr: redisAddr})
+	redisClient := redis.NewClient(&redis.Options{Addr: redisAddr, Password: redisPassword})
 	defer func() {
 		if err := redisClient.Close(); err != nil {
 			logger.Fatalln(err)
 		}
 	}()
 
-	mongoClient, err := mongoInfra.Connect(ctx, mongoURI)
+	mongoClient, err := mongoInfra.Connect(ctx, mongoURI, mongoUser, mongoPwd)
 	if err != nil {
 		logger.Fatalln(err)
 	}
