@@ -63,6 +63,20 @@ func (r *UserRepository) GetByID(ctx context.Context, userID string) (*domain.Us
 	return &user, nil
 }
 
+func (r *UserRepository) GetUsers(ctx context.Context) ([]domain.User, error) {
+	var users []domain.User
+	cur, err := r.getCollection().Find(ctx, bson.M{})
+	if err != nil {
+		return nil, fmt.Errorf("could not get users from mongo, err: %w", err)
+	}
+
+	if err := cur.All(ctx, &users); err != nil {
+		return nil, fmt.Errorf("could not get users from mongo, err: %w", err)
+	}
+
+	return users, nil
+}
+
 func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
 	var user domain.User
 	if err := r.getCollection().FindOne(ctx, primitive.M{"email": email}).Decode(&user); err != nil {

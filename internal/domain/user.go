@@ -15,6 +15,7 @@ type User struct {
 	Password         string             `bson:"password"`
 	BinanceAPIKey    string             `bson:"binance_api_key"`
 	BinanceSecretKey string             `bson:"binance_secret_key"`
+	NotificationsKey string             `bson:"notifications_key"`
 }
 
 func GetCtxUserID(ctx context.Context) string {

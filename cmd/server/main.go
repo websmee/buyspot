@@ -19,6 +19,7 @@ import (
 	mongoInfra "websmee/buyspot/internal/infrastructure/mongo"
 	"websmee/buyspot/internal/infrastructure/openai"
 	redisInfra "websmee/buyspot/internal/infrastructure/redis"
+	"websmee/buyspot/internal/infrastructure/simplepush"
 	"websmee/buyspot/internal/usecases"
 	"websmee/buyspot/internal/usecases/admin"
 	"websmee/buyspot/internal/usecases/background"
@@ -116,6 +117,8 @@ func main() {
 		newsRepository,
 		assetRepository,
 		adviser,
+		userRepository,
+		simplepush.NewNewSpotsNotifier(simplepush.NewClient()),
 		newLogger("[SPOT MAKER]"),
 	)
 	if err := spotMaker.Run(ctx); err != nil {
@@ -160,6 +163,7 @@ func main() {
 	}
 
 	// web server
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	auth := httpAPI.NewAuth(secretKey, userRepository)
 	router.Use(httpAPI.CORSMiddleware())

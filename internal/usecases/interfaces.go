@@ -96,6 +96,7 @@ type (
 	UserRepository interface {
 		CreateOrUpdate(ctx context.Context, user *domain.User) error
 		GetByID(ctx context.Context, userID string) (*domain.User, error)
+		GetUsers(ctx context.Context) ([]domain.User, error)
 	}
 
 	MarketDataStream interface {
@@ -126,5 +127,9 @@ type (
 
 	Summarizer interface {
 		GetSummary(ctx context.Context, url string) (string, error)
+	}
+
+	NewSpotsNotifier interface {
+		Notify(ctx context.Context, user *domain.User, spots []domain.Spot) error
 	}
 )

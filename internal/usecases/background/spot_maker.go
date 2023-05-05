@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/go-co-op/gocron"
@@ -19,6 +20,8 @@ type SpotMaker struct {
 	newsRepository         usecases.NewsRepository
 	assetRepository        usecases.AssetRepository
 	adviser                usecases.Adviser
+	userRepository         usecases.UserRepository
+	notifier               usecases.NewSpotsNotifier
 	logger                 *log.Logger
 }
 
@@ -29,6 +32,8 @@ func NewSpotMaker(
 	newsRepository usecases.NewsRepository,
 	assetRepository usecases.AssetRepository,
 	adviser usecases.Adviser,
+	userRepository usecases.UserRepository,
+	notifier usecases.NewSpotsNotifier,
 	logger *log.Logger,
 ) *SpotMaker {
 	return &SpotMaker{
@@ -38,13 +43,15 @@ func NewSpotMaker(
 		newsRepository,
 		assetRepository,
 		adviser,
+		userRepository,
+		notifier,
 		logger,
 	}
 }
 
 func (m *SpotMaker) Run(ctx context.Context) error {
 	s := gocron.NewScheduler(time.UTC)
-	_, err := s.Every(time.Minute).Do(func() {
+	_, err := s.Every(time.Hour).Do(func() {
 		m.logger.Println("making new spots")
 
 		spots, err := m.makeSpots(ctx)
@@ -59,10 +66,12 @@ func (m *SpotMaker) Run(ctx context.Context) error {
 			return
 		}
 
+		m.notifyUsers(ctx, spots)
+
 		m.logger.Println("new spots saved")
 	})
 
-	//s.StartAsync()
+	s.StartAsync()
 
 	return err
 }
@@ -120,6 +129,32 @@ func (m *SpotMaker) makeSpots(ctx context.Context) ([]domain.Spot, error) {
 	}
 
 	return spots, nil
+}
+
+func (m *SpotMaker) notifyUsers(ctx context.Context, spots []domain.Spot) {
+	if len(spots) == 0 {
+		return
+	}
+
+	users, err := m.userRepository.GetUsers(ctx)
+	if err != nil {
+		m.logger.Println(fmt.Errorf("could not get users to notify, err: %w", err))
+	}
+
+	var wg sync.WaitGroup
+	for i := range users {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			err = m.notifier.Notify(ctx, &users[i], spots)
+			if err != nil {
+				m.logger.Println(fmt.Errorf("could not notify user %s, err: %w", users[i].Email, err))
+			}
+		}(i)
+	}
+	wg.Wait()
+
+	return
 }
 
 func (m *SpotMaker) GetSpot(
