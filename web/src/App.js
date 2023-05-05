@@ -9,11 +9,13 @@ import Settings from 'Pages/settings';
 import Profile from 'Pages/profile';
 import Layout from 'Layouts/layout';
 import Login from 'Pages/login';
+import runOneSignal from "Utils/onesignal";
 
 function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    runOneSignal();
     dispatch(getCurrentPrices());
     const intervalId = setInterval(() => {
         dispatch(getCurrentPrices());
