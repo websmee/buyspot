@@ -9,6 +9,7 @@ type User struct {
 	Password         string `bson:"password"`
 	BinanceAPIKey    string `bson:"binanceAPIKey"`
 	BinanceSecretKey string `bson:"binanceSecretKey"`
+	NotificationsKey string `bson:"notificationsKey"`
 }
 
 type Balance struct {

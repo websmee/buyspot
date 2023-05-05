@@ -12,6 +12,7 @@ func UserToDomain(user *User) *domain.User {
 		Password:         user.Password,
 		BinanceAPIKey:    user.BinanceAPIKey,
 		BinanceSecretKey: user.BinanceSecretKey,
+		NotificationsKey: user.NotificationsKey,
 	}
 }
 
