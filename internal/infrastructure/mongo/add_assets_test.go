@@ -10,7 +10,7 @@ import (
 
 func TestAddAssets(t *testing.T) {
 	ctx := context.Background()
-	client, _ := Connect(ctx, "mongodb://localhost:27017")
+	client, _ := Connect(ctx, "mongodb://localhost:27017", "", "")
 	assetRepository := NewAssetRepository(client)
 
 	fmt.Println(assetRepository.CreateOrUpdate(ctx, &domain.Asset{

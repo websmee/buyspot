@@ -20,6 +20,26 @@ import (
 	"websmee/buyspot/internal/usecases/background"
 )
 
+type TestUserRepository struct{}
+
+func (r *TestUserRepository) GetUsers(ctx context.Context) ([]domain.User, error) {
+	return nil, nil
+}
+
+func (r *TestUserRepository) GetByID(ctx context.Context, userID string) (*domain.User, error) {
+	return nil, nil
+}
+
+func (r *TestUserRepository) CreateOrUpdate(ctx context.Context, user *domain.User) error {
+	return nil
+}
+
+type TestNewSpotsNotifier struct{}
+
+func (r *TestNewSpotsNotifier) Notify(ctx context.Context, user *domain.User, spots []domain.Spot) error {
+	return nil
+}
+
 func TestAdviser(t *testing.T) {
 	checksCount := 0
 	adviceCount := 0
@@ -30,7 +50,7 @@ func TestAdviser(t *testing.T) {
 	var advices []domain.Advice
 	var times []time.Time
 	var asts []domain.Asset
-	c, _ := Connect(context.Background(), "mongodb://localhost:27017")
+	c, _ := Connect(context.Background(), "mongodb://localhost:27017", "", "")
 	ar := NewAssetRepository(c)
 	adviser := domain.NewAdviser(
 		24,
@@ -89,6 +109,8 @@ func TestAdviser(t *testing.T) {
 		newsRepository,
 		assetRepository,
 		adviser,
+		&TestUserRepository{},
+		&TestNewSpotsNotifier{},
 		log.New(os.Stdout, "[ADVISER TEST] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile),
 	)
 
@@ -112,7 +134,7 @@ func getTestMarketData(
 	interval domain.Interval,
 ) []domain.Kline {
 	ctx := context.Background()
-	client, _ := Connect(ctx, "mongodb://localhost:27017")
+	client, _ := Connect(ctx, "mongodb://localhost:27017", "", "")
 	cur, _ := client.
 		Database("buyspot_market_data").
 		Collection(fmt.Sprintf("%s%s_%s", symbol, quote, interval)).
