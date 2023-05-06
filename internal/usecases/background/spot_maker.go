@@ -16,6 +16,7 @@ import (
 type SpotMaker struct {
 	balanceService         usecases.BalanceService
 	currentSpotsRepository usecases.CurrentSpotsRepository
+	SpotRepository         usecases.SpotRepository
 	marketDataRepository   usecases.MarketDataRepository
 	newsRepository         usecases.NewsRepository
 	assetRepository        usecases.AssetRepository
@@ -28,6 +29,7 @@ type SpotMaker struct {
 func NewSpotMaker(
 	balanceService usecases.BalanceService,
 	currentSpotsRepository usecases.CurrentSpotsRepository,
+	SpotRepository usecases.SpotRepository,
 	marketDataRepository usecases.MarketDataRepository,
 	newsRepository usecases.NewsRepository,
 	assetRepository usecases.AssetRepository,
@@ -39,6 +41,7 @@ func NewSpotMaker(
 	return &SpotMaker{
 		balanceService,
 		currentSpotsRepository,
+		SpotRepository,
 		marketDataRepository,
 		newsRepository,
 		assetRepository,
@@ -57,6 +60,17 @@ func (m *SpotMaker) Run(ctx context.Context) error {
 		spots, err := m.makeSpots(ctx)
 		if err != nil {
 			m.logger.Println(fmt.Errorf("could not get new spots, err: %w", err))
+			return
+		}
+
+		if len(spots) == 0 {
+			m.logger.Println("no new spots")
+			return
+		}
+
+		err = m.SpotRepository.SaveSpots(ctx, spots)
+		if err != nil {
+			m.logger.Println(fmt.Errorf("could not add spots to history, err: %w", err))
 			return
 		}
 

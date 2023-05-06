@@ -14,6 +14,10 @@ type (
 		SaveSpots(ctx context.Context, spots []domain.Spot, expiration time.Duration) error
 	}
 
+	SpotRepository interface {
+		SaveSpots(ctx context.Context, spots []domain.Spot) error
+	}
+
 	MarketDataRepository interface {
 		GetKlines(
 			ctx context.Context,

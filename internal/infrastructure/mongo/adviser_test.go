@@ -20,6 +20,12 @@ import (
 	"websmee/buyspot/internal/usecases/background"
 )
 
+type TestSpotRepository struct{}
+
+func (r *TestSpotRepository) SaveSpots(ctx context.Context, spots []domain.Spot) error {
+	return nil
+}
+
 type TestUserRepository struct{}
 
 func (r *TestUserRepository) GetUsers(ctx context.Context) ([]domain.User, error) {
@@ -105,6 +111,7 @@ func TestAdviser(t *testing.T) {
 	spotMaker := background.NewSpotMaker(
 		balanceService,
 		currentSpotsRepository,
+		&TestSpotRepository{},
 		marketDataRepository,
 		newsRepository,
 		assetRepository,

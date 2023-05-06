@@ -62,6 +62,7 @@ func main() {
 	}()
 
 	userRepository := mongoInfra.NewUserRepository(mongoClient)
+	spotRepository := mongoInfra.NewSpotRepository(mongoClient)
 	marketDataRepository := mongoInfra.NewMarketDataRepository(mongoClient)
 	newsRepository := mongoInfra.NewNewsRepository(mongoClient)
 	assetRepository := mongoInfra.NewAssetRepository(mongoClient)
@@ -113,6 +114,7 @@ func main() {
 	spotMaker := background.NewSpotMaker(
 		balanceService,
 		currentSpotsRepository,
+		spotRepository,
 		marketDataRepository,
 		newsRepository,
 		assetRepository,
