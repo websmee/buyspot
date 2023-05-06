@@ -35,6 +35,10 @@ func (r *Adviser) GetAdvice(_ context.Context, marketData []Kline) (*Advice, err
 		return nil, nil
 	}
 
+	if len(marketData) < r.checkHours {
+		return nil, nil
+	}
+
 	for _, indicator := range r.indicators {
 		if !indicator.Check(marketData[len(marketData)-r.checkHours:]) {
 			return nil, nil
