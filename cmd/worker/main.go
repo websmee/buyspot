@@ -2,34 +2,34 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/adshao/go-binance/v2"
-	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 
-	httpAPI "websmee/buyspot/internal/api/http"
-	adminHTTPAPI "websmee/buyspot/internal/api/http/admin"
+	"websmee/buyspot/internal/domain"
+	"websmee/buyspot/internal/domain/indicator"
 	binanceInfra "websmee/buyspot/internal/infrastructure/binance"
 	"websmee/buyspot/internal/infrastructure/cryptonews"
 	"websmee/buyspot/internal/infrastructure/local"
 	mongoInfra "websmee/buyspot/internal/infrastructure/mongo"
+	"websmee/buyspot/internal/infrastructure/openai"
 	redisInfra "websmee/buyspot/internal/infrastructure/redis"
-	"websmee/buyspot/internal/usecases"
-	"websmee/buyspot/internal/usecases/admin"
+	"websmee/buyspot/internal/infrastructure/simplepush"
+	"websmee/buyspot/internal/usecases/background"
 )
 
-var secretKey = os.Getenv("BUYSPOT_SECRET_KEY")
-var binanceAPIKey = os.Getenv("BUYSPOT_BINANCE_API_KEY")
-var binanceSecretKey = os.Getenv("BUYSPOT_BINANCE_SECRET_KEY")
 var redisAddr = os.Getenv("BUYSPOT_REDIS")
 var redisPassword = os.Getenv("BUYSPOT_REDIS_PASSWORD")
 var mongoURI = os.Getenv("BUYSPOT_MONGO")
 var mongoUser = os.Getenv("BUYSPOT_MONGO_USER")
 var mongoPwd = os.Getenv("BUYSPOT_MONGO_PWD")
-var webAddr = os.Getenv("BUYSPOT_WEB_ADDR")
 var cryptonewsAPIToken = os.Getenv("BUYSPOT_CRYPTONEWS_API_TOKEN")
+var openaiAPIKey = os.Getenv("BUYSPOT_OPENAI_API_KEY")
+var openaiOrgID = os.Getenv("BUYSPOT_OPENAI_ORG_ID")
 
 func main() {
 	ctx := context.Background()
@@ -55,59 +55,89 @@ func main() {
 	}()
 
 	userRepository := mongoInfra.NewUserRepository(mongoClient)
+	spotRepository := mongoInfra.NewSpotRepository(mongoClient)
 	marketDataRepository := mongoInfra.NewMarketDataRepository(mongoClient)
 	newsRepository := mongoInfra.NewNewsRepository(mongoClient)
 	assetRepository := mongoInfra.NewAssetRepository(mongoClient)
+	adviser := domain.NewAdviser(
+		24,
+		8,
+		4,
+		indicator.NewRSI(10, 65),
+		indicator.NewVolumeRise(3),
+	)
 	orderRepository := mongoInfra.NewOrderRepository(mongoClient)
 	balanceService := mongoInfra.NewBalanceService(mongoClient)
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
 	currentPricesRepository := redisInfra.NewCurrentPricesRepository(redisClient)
 	tradingService := local.NewTradingService(currentPricesRepository, balanceService)
-	marketDataService := binanceInfra.NewMarketDataService(binance.NewClient(binanceAPIKey, binanceSecretKey))
 	newsService := cryptonews.NewNewsService(cryptonewsAPIToken)
-	spotReader := usecases.NewSpotReader(currentSpotsRepository, orderRepository, marketDataRepository)
-	spotBuyer := usecases.NewSpotBuyer(
-		orderRepository,
-		tradingService,
+	summarizer := openai.NewSummarizer(openai.NewClient(openaiAPIKey, openaiOrgID))
+
+	spotMaker := background.NewSpotMaker(
 		balanceService,
-		assetRepository,
-	)
-	orderReader := usecases.NewOrderReader(orderRepository)
-	balanceReader := usecases.NewBalanceReader(balanceService)
-	orderSeller := usecases.NewOrderSeller(
-		orderRepository,
-		tradingService,
-		balanceService,
-	)
-	pricesReader := usecases.NewPricesReader(assetRepository, currentPricesRepository, balanceService)
-	userManager := admin.NewUserManager(secretKey, userRepository, balanceService)
-	marketDataUpdater := admin.NewMarketDataUpdater(
-		secretKey,
-		balanceService,
-		assetRepository,
+		currentSpotsRepository,
+		spotRepository,
 		marketDataRepository,
-		marketDataService,
+		newsRepository,
+		assetRepository,
+		adviser,
+		userRepository,
+		simplepush.NewNotifier(),
+		newLogger("[SPOT MAKER]"),
 	)
-	newsUpdater := admin.NewNewsUpdater(
-		secretKey,
+	if err := spotMaker.Run(ctx); err != nil {
+		logger.Fatalln(fmt.Errorf("could not run spot maker, err: %w", err))
+	}
+
+	marketDataBackgroundUpdater := background.NewMarketDataUpdater(
+		balanceService,
+		assetRepository,
+		binanceInfra.NewMarketDataStream(),
+		marketDataRepository,
+		currentPricesRepository,
+		newLogger("[MARKET DATA UPDATER]"),
+	)
+	if err := marketDataBackgroundUpdater.Run(ctx); err != nil {
+		logger.Fatalln(fmt.Errorf("could not run market data updater, err: %w", err))
+	}
+	defer marketDataBackgroundUpdater.Close()
+
+	orderBackgroundSeller := background.NewOrderSeller(
+		userRepository,
+		balanceService,
+		assetRepository,
+		currentPricesRepository,
+		orderRepository,
+		tradingService,
+		simplepush.NewNotifier(),
+		newLogger("[ORDER SELLER]"),
+	)
+	if err := orderBackgroundSeller.Run(ctx); err != nil {
+		logger.Fatalln(fmt.Errorf("could not run order seller, err: %w", err))
+	}
+
+	newsBackgroundUpdater := background.NewNewsUpdater(
 		assetRepository,
 		newsRepository,
 		newsService,
+		summarizer,
+		newLogger("[NEWS UPDATER]"),
 	)
+	if err := newsBackgroundUpdater.Run(ctx); err != nil {
+		logger.Fatalln(fmt.Errorf("could not run news updater, err: %w", err))
+	}
 
-	// web server
-	gin.SetMode(gin.ReleaseMode)
-	router := gin.Default()
-	auth := httpAPI.NewAuth(secretKey, userRepository)
-	router.Use(httpAPI.CORSMiddleware())
-	router.Use(httpAPI.AuthMiddleware(auth))
-	httpAPI.AddBalanceHandlers(router, balanceReader)
-	httpAPI.AddSpotHandlers(router, spotReader, spotBuyer)
-	httpAPI.AddOrderHandlers(router, orderReader, orderSeller)
-	httpAPI.AddPricesHandlers(router, pricesReader)
-	adminHTTPAPI.AddAdminHandlers(router, marketDataUpdater, newsUpdater, userManager)
-	httpAPI.AddAuthHandlers(router, auth)
-	_ = router.Run(webAddr)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	done := make(chan bool, 1)
+	go func() {
+		sig := <-sigs
+		fmt.Println()
+		fmt.Println(sig)
+		done <- true
+	}()
+	<-done
 }
 
 func newLogger(name string) *log.Logger {

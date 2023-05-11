@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"websmee/buyspot/internal/api"
 	"websmee/buyspot/internal/domain"
 	"websmee/buyspot/internal/usecases"
 )
@@ -30,9 +29,9 @@ func AddOrderHandlers(
 			return
 		}
 
-		ordersMessages := make([]api.Order, 0, len(orders))
+		ordersMessages := make([]Order, 0, len(orders))
 		for i := range orders {
-			ordersMessages = append(ordersMessages, *api.ConvertOrderToMessages(&orders[i]))
+			ordersMessages = append(ordersMessages, *ConvertOrderToMessages(&orders[i]))
 		}
 
 		c.IndentedJSON(http.StatusOK, ordersMessages)
@@ -52,9 +51,9 @@ func AddOrderHandlers(
 			return
 		}
 
-		c.IndentedJSON(http.StatusOK, api.SellOrderResponse{
+		c.IndentedJSON(http.StatusOK, SellOrderResponse{
 			OrderID: orderID,
-			UpdatedBalance: api.Balance{
+			UpdatedBalance: Balance{
 				Symbol: updatedBalance.Symbol,
 				Amount: updatedBalance.Amount,
 			},

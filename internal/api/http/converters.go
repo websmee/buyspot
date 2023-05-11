@@ -1,20 +1,10 @@
-package api
+package http
 
 import (
 	"fmt"
 
 	"websmee/buyspot/internal/domain"
 )
-
-func UserToDomain(user *User) *domain.User {
-	return &domain.User{
-		Email:            user.Email,
-		Password:         user.Password,
-		BinanceAPIKey:    user.BinanceAPIKey,
-		BinanceSecretKey: user.BinanceSecretKey,
-		NotificationsKey: user.NotificationsKey,
-	}
-}
 
 func ConvertOrderToMessages(order *domain.Order) *Order {
 	return &Order{
@@ -34,6 +24,13 @@ func ConvertPricesToMessage(prices *domain.Prices) *Prices {
 	return &Prices{
 		Quote:           prices.Quote,
 		PricesBySymbols: prices.PricesBySymbols,
+	}
+}
+
+func ConvertBalanceToMessage(balance *domain.Balance) *Balance {
+	return &Balance{
+		Symbol: balance.Symbol,
+		Amount: balance.Amount,
 	}
 }
 
@@ -117,12 +114,12 @@ func buildChartsData(
 	for quote := range historyByQuotes {
 		var data ChartsData
 		for i := range historyByQuotes[quote] {
-			data.Times = append(data.Times, historyByQuotes[quote][i].EndTime.Format("02 Jan 15:04"))
+			data.Times = append(data.Times, historyByQuotes[quote][i].EndTime.Format("15:04"))
 			data.Prices = append(data.Prices, historyByQuotes[quote][i].Close)
 			data.Volumes = append(data.Volumes, int64(historyByQuotes[quote][i].Volume))
 		}
 		for i := range forecastByQuotes[quote] {
-			data.Times = append(data.Times, forecastByQuotes[quote][i].EndTime.Format("02 Jan 15:04"))
+			data.Times = append(data.Times, forecastByQuotes[quote][i].EndTime.Format("15:04"))
 			data.Forecast = append(data.Forecast, forecastByQuotes[quote][i].Close)
 		}
 		for i := range actualByQuotes[quote] {

@@ -1,27 +1,30 @@
 package simplepush
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"websmee/buyspot/internal/domain"
 )
 
 const apiURL = "https://api.simplepush.io/send"
 
-type Client struct {
+type Notifier struct {
 }
 
-func NewClient() *Client {
-	return &Client{}
+func NewNotifier() *Notifier {
+	return &Notifier{}
 }
 
-func (c *Client) SendNotification(key, title, message, event string) error {
+func (c *Notifier) Notify(_ context.Context, user *domain.User, title, message string) error {
 	data := url.Values{}
-	data.Set("key", key)
+	data.Set("key", user.NotificationsKey)
 	data.Set("title", title)
 	data.Set("msg", message)
-	data.Set("event", event)
+	data.Set("event", title)
 
 	u, _ := url.ParseRequestURI(apiURL)
 	urlStr := u.String()

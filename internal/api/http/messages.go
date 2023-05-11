@@ -1,16 +1,8 @@
-package api
+package http
 
 import (
 	"time"
 )
-
-type User struct {
-	Email            string `bson:"email"`
-	Password         string `bson:"password"`
-	BinanceAPIKey    string `bson:"binanceAPIKey"`
-	BinanceSecretKey string `bson:"binanceSecretKey"`
-	NotificationsKey string `bson:"notificationsKey"`
-}
 
 type Balance struct {
 	Symbol string  `json:"symbol"`

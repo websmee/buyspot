@@ -6,8 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-
-	"websmee/buyspot/internal/api"
 )
 
 func AddAuthHandlers(
@@ -15,7 +13,7 @@ func AddAuthHandlers(
 	auth *Auth,
 ) {
 	router.POST("/api/v1/login", func(c *gin.Context) {
-		var request api.LoginRequest
+		var request LoginRequest
 		if err := c.BindJSON(&request); err != nil {
 			c.Status(http.StatusBadRequest)
 			return

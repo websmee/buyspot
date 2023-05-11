@@ -9,21 +9,21 @@ import (
 )
 
 type SpotBuyer struct {
-	orderRepository  OrderRepository
-	converterService ConverterService
-	balanceService   BalanceService
-	assetRepository  AssetRepository
+	orderRepository OrderRepository
+	tradingService  TradingService
+	balanceService  BalanceService
+	assetRepository AssetRepository
 }
 
 func NewSpotBuyer(
 	orderRepository OrderRepository,
-	converterService ConverterService,
+	tradingService TradingService,
 	balanceService BalanceService,
 	assetRepository AssetRepository,
 ) *SpotBuyer {
 	return &SpotBuyer{
 		orderRepository,
-		converterService,
+		tradingService,
 		balanceService,
 		assetRepository,
 	}
@@ -66,7 +66,7 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, symbol string, 
 		return nil, fmt.Errorf("could not save new order, err: %w", err)
 	}
 
-	boughtAmount, err := b.converterService.Convert(ctx, userID, amount, balance.Symbol, symbol)
+	boughtAmount, err := b.tradingService.Buy(ctx, userID, balance.Symbol, amount, symbol)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"could not convert %s to %s for user ID = '%s', err: %w",

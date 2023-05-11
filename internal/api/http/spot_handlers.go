@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"websmee/buyspot/internal/api"
 	"websmee/buyspot/internal/domain"
 	"websmee/buyspot/internal/usecases"
 )
@@ -26,7 +25,7 @@ func AddSpotHandlers(
 			return
 		}
 
-		c.IndentedJSON(http.StatusOK, api.SpotsData{CurrentSpotsTotal: count})
+		c.IndentedJSON(http.StatusOK, SpotsData{CurrentSpotsTotal: count})
 	})
 
 	router.GET("/api/v1/spots/:index", func(c *gin.Context) {
@@ -53,13 +52,13 @@ func AddSpotHandlers(
 			return
 		}
 
-		msg := api.ConvertSpotToMessage(spot)
+		msg := ConvertSpotToMessage(spot)
 		msg.Index = index
 		c.IndentedJSON(http.StatusOK, msg)
 	})
 
 	router.POST("/api/v1/spots/buy", func(c *gin.Context) {
-		var buySpotRequest api.BuySpotRequest
+		var buySpotRequest BuySpotRequest
 		if err := c.BindJSON(&buySpotRequest); err != nil {
 			c.Status(http.StatusBadRequest)
 			return
@@ -83,8 +82,8 @@ func AddSpotHandlers(
 			return
 		}
 
-		c.IndentedJSON(http.StatusOK, api.BuySpotResponse{
-			UpdatedBalance: api.Balance{
+		c.IndentedJSON(http.StatusOK, BuySpotResponse{
+			UpdatedBalance: Balance{
 				Symbol: updatedBalance.Symbol,
 				Amount: updatedBalance.Amount,
 			},

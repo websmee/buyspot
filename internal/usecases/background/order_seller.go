@@ -18,7 +18,8 @@ type OrderSeller struct {
 	assetRepository         usecases.AssetRepository
 	currentPricesRepository usecases.CurrentPricesRepository
 	orderRepository         usecases.OrderRepository
-	converterService        usecases.ConverterService
+	tradingService          usecases.TradingService
+	notifier                usecases.Notifier
 	logger                  *log.Logger
 }
 
@@ -28,7 +29,8 @@ func NewOrderSeller(
 	assetRepository usecases.AssetRepository,
 	currentPricesRepository usecases.CurrentPricesRepository,
 	orderRepository usecases.OrderRepository,
-	converterService usecases.ConverterService,
+	tradingService usecases.TradingService,
+	notifier usecases.Notifier,
 	logger *log.Logger,
 ) *OrderSeller {
 	return &OrderSeller{
@@ -37,7 +39,8 @@ func NewOrderSeller(
 		assetRepository,
 		currentPricesRepository,
 		orderRepository,
-		converterService,
+		tradingService,
+		notifier,
 		logger,
 	}
 }
@@ -103,11 +106,11 @@ func (r *OrderSeller) Run(ctx context.Context) error {
 						continue
 					}
 
-					closeAmount, err := r.converterService.Convert(
+					closeAmount, err := r.tradingService.Sell(
 						ctx,
 						user.ID.Hex(),
-						orders[k].ToAmount,
 						orders[k].ToSymbol,
+						orders[k].ToAmount,
 						balanceSymbols[i],
 					)
 					if err != nil {
@@ -128,6 +131,11 @@ func (r *OrderSeller) Run(ctx context.Context) error {
 						r.logger.Println(fmt.Errorf("could not save order after conversion, err: %w", err))
 						continue
 					}
+
+					if err := r.notify(ctx, user, &orders[k]); err != nil {
+						r.logger.Println(fmt.Errorf("could not notify order sell, err: %w", err))
+						continue
+					}
 				}
 			}
 		}
@@ -138,4 +146,21 @@ func (r *OrderSeller) Run(ctx context.Context) error {
 	s.StartAsync()
 
 	return err
+}
+
+func (r *OrderSeller) notify(ctx context.Context, user *domain.User, order *domain.Order) error {
+	if user.NotificationsKey == "" {
+		return nil
+	}
+
+	if order == nil {
+		return nil
+	}
+
+	return r.notifier.Notify(
+		ctx,
+		user,
+		"ORDER CLOSED",
+		fmt.Sprintf("%s: %f", order.ToAssetName, order.CloseAmount-order.FromAmount),
+	)
 }

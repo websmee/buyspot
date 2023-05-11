@@ -9,19 +9,19 @@ import (
 )
 
 type OrderSeller struct {
-	orderRepository  OrderRepository
-	converterService ConverterService
-	balanceService   BalanceService
+	orderRepository OrderRepository
+	tradingService  TradingService
+	balanceService  BalanceService
 }
 
 func NewOrderSeller(
 	orderRepository OrderRepository,
-	converterService ConverterService,
+	tradingService TradingService,
 	balanceService BalanceService,
 ) *OrderSeller {
 	return &OrderSeller{
 		orderRepository,
-		converterService,
+		tradingService,
 		balanceService,
 	}
 }
@@ -42,7 +42,7 @@ func (s *OrderSeller) SellOrder(ctx context.Context, orderID string) (*domain.Ba
 		return nil, fmt.Errorf("could get order by ID = '%s' for user ID = '%s', err: %w", orderID, userID, err)
 	}
 
-	sellAmount, err := s.converterService.Convert(ctx, userID, order.ToAmount, order.ToSymbol, balance.Symbol)
+	sellAmount, err := s.tradingService.Sell(ctx, userID, order.ToSymbol, order.ToAmount, balance.Symbol)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"could not convert %s to %s for user ID = '%s', err: %w",

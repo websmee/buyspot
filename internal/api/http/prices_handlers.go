@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"websmee/buyspot/internal/api"
 	"websmee/buyspot/internal/domain"
 	"websmee/buyspot/internal/usecases"
 )
@@ -29,6 +28,6 @@ func AddPricesHandlers(
 			return
 		}
 
-		c.IndentedJSON(http.StatusOK, api.ConvertPricesToMessage(prices))
+		c.IndentedJSON(http.StatusOK, ConvertPricesToMessage(prices))
 	})
 }

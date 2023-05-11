@@ -83,6 +83,10 @@ type (
 		UpdatePrice(ctx context.Context, price float64, symbol, quote string, expiration time.Duration) error
 	}
 
+	BalanceRepository interface {
+		CreateBalance(ctx context.Context, balance *domain.Balance) error
+	}
+
 	BalanceService interface {
 		GetUserActiveBalance(ctx context.Context, userID string) (*domain.Balance, error)
 		GetUserBalances(ctx context.Context, userID string) ([]domain.Balance, error)
@@ -93,8 +97,21 @@ type (
 		GetCurrentPrices(ctx context.Context, inSymbol string) (*domain.Prices, error)
 	}
 
-	ConverterService interface {
-		Convert(ctx context.Context, userID string, amount float64, fromSymbol, toSymbol string) (float64, error)
+	TradingService interface {
+		Buy(
+			ctx context.Context,
+			userID string,
+			balanceSymbol string,
+			balanceAmount float64,
+			tradeSymbol string,
+		) (float64, error)
+		Sell(
+			ctx context.Context,
+			userID string,
+			tradeSymbol string,
+			tradeAmount float64,
+			balanceSymbol string,
+		) (float64, error)
 	}
 
 	UserRepository interface {
@@ -133,7 +150,7 @@ type (
 		GetSummary(ctx context.Context, url string) (string, error)
 	}
 
-	NewSpotsNotifier interface {
-		Notify(ctx context.Context, user *domain.User, spots []domain.Spot) error
+	Notifier interface {
+		Notify(ctx context.Context, user *domain.User, title, message string) error
 	}
 )

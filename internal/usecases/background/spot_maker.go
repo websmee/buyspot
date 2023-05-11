@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,7 +23,7 @@ type SpotMaker struct {
 	assetRepository        usecases.AssetRepository
 	adviser                usecases.Adviser
 	userRepository         usecases.UserRepository
-	notifier               usecases.NewSpotsNotifier
+	notifier               usecases.Notifier
 	logger                 *log.Logger
 }
 
@@ -35,7 +36,7 @@ func NewSpotMaker(
 	assetRepository usecases.AssetRepository,
 	adviser usecases.Adviser,
 	userRepository usecases.UserRepository,
-	notifier usecases.NewSpotsNotifier,
+	notifier usecases.Notifier,
 	logger *log.Logger,
 ) *SpotMaker {
 	return &SpotMaker{
@@ -74,7 +75,7 @@ func (m *SpotMaker) Run(ctx context.Context) error {
 			return
 		}
 
-		err = m.currentSpotsRepository.SaveSpots(ctx, spots, time.Minute)
+		err = m.currentSpotsRepository.SaveSpots(ctx, spots, time.Hour-time.Minute)
 		if err != nil {
 			m.logger.Println(fmt.Errorf("could not save new spots, err: %w", err))
 			return
@@ -160,7 +161,7 @@ func (m *SpotMaker) notifyUsers(ctx context.Context, spots []domain.Spot) {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			err = m.notifier.Notify(ctx, &users[i], spots)
+			err = m.notify(ctx, &users[i], spots)
 			if err != nil {
 				m.logger.Println(fmt.Errorf("could not notify user %s, err: %w", users[i].Email, err))
 			}
@@ -169,6 +170,28 @@ func (m *SpotMaker) notifyUsers(ctx context.Context, spots []domain.Spot) {
 	wg.Wait()
 
 	return
+}
+
+func (m *SpotMaker) notify(ctx context.Context, user *domain.User, spots []domain.Spot) error {
+	if user.NotificationsKey == "" {
+		return nil
+	}
+
+	if len(spots) == 0 {
+		return nil
+	}
+
+	symbols := make([]string, 0, len(spots))
+	for _, spot := range spots {
+		symbols = append(symbols, spot.Asset.Symbol)
+	}
+
+	return m.notifier.Notify(
+		ctx,
+		user,
+		"NEW SPOTS",
+		strings.Join(symbols, ", "),
+	)
 }
 
 func (m *SpotMaker) GetSpot(
