@@ -13,6 +13,7 @@ type Adviser struct {
 	checkHours         int
 	forecastHours      int
 	forecastMultiplier float64
+	minForecast        float64
 	indicators         []Indicator
 }
 
@@ -20,12 +21,14 @@ func NewAdviser(
 	checkHours int,
 	forecastHours int,
 	forecastMultiplier float64,
+	minForecast float64,
 	indicators ...Indicator,
 ) *Adviser {
 	return &Adviser{
 		checkHours,
 		forecastHours,
 		forecastMultiplier,
+		minForecast,
 		indicators,
 	}
 }
@@ -46,6 +49,10 @@ func (r *Adviser) GetAdvice(_ context.Context, marketData []Kline) (*Advice, err
 	}
 
 	forecast := r.GetForecast(marketData[len(marketData)-r.checkHours:])
+	if forecast < r.minForecast {
+		return nil, nil
+	}
+
 	return &Advice{
 		PriceForecast: forecast,
 		ForecastHours: r.forecastHours,

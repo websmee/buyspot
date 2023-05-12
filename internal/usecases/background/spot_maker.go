@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"strings"
 	"sync"
 	"time"
@@ -266,6 +267,7 @@ func buildForecastHours(
 	endPrice := currentPrice + (currentPrice * priceForecast / 100)
 	diff := (endPrice - currentPrice) / float64(hours)
 	curvature := diff * 0.9
+	noiseSum := 0.0
 	var klines []domain.Kline
 	for i := 0; i < hours; i++ {
 		klines = append(
@@ -273,7 +275,17 @@ func buildForecastHours(
 			getForecastKline(price, 0, after.Add(time.Duration(i)*time.Hour)),
 		)
 		p := float64(i+1) / float64(hours)
-		price += diff - curvature + (2 * curvature * p)
+		noise := diff * rand.Float64() * 2
+		if i%2 == 0 {
+			noise *= -1
+		}
+		if i == hours-1 {
+			noise = -noiseSum
+		} else {
+			noiseSum += noise
+		}
+
+		price += diff - curvature + (2 * curvature * p) + noise
 	}
 
 	return klines

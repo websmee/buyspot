@@ -62,7 +62,8 @@ func main() {
 	adviser := domain.NewAdviser(
 		24,
 		8,
-		4,
+		5,
+		4.0,
 		indicator.NewRSI(10, 65),
 		indicator.NewVolumeRise(3),
 	)
@@ -128,6 +129,7 @@ func main() {
 		logger.Fatalln(fmt.Errorf("could not run news updater, err: %w", err))
 	}
 
+	// todo: fix
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	done := make(chan bool, 1)

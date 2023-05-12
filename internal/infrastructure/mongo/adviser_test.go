@@ -15,7 +15,6 @@ import (
 
 	"websmee/buyspot/internal/domain"
 	"websmee/buyspot/internal/domain/indicator"
-	"websmee/buyspot/internal/infrastructure/example"
 	redisInfra "websmee/buyspot/internal/infrastructure/redis"
 	"websmee/buyspot/internal/usecases/background"
 )
@@ -40,9 +39,9 @@ func (r *TestUserRepository) CreateOrUpdate(ctx context.Context, user *domain.Us
 	return nil
 }
 
-type TestNewSpotsNotifier struct{}
+type Notifier struct{}
 
-func (r *TestNewSpotsNotifier) Notify(ctx context.Context, user *domain.User, spots []domain.Spot) error {
+func (r *Notifier) Notify(ctx context.Context, user *domain.User, title, message string) error {
 	return nil
 }
 
@@ -62,7 +61,8 @@ func TestAdviser(t *testing.T) {
 		24,
 		8,
 		5,
-		indicator.NewRSI(10, 70),
+		4.0,
+		indicator.NewRSI(10, 65),
 		indicator.NewVolumeRise(3),
 		//indicator.NewMFI(14, 75),
 		//indicator.NewPVO(3, 4, 2),
@@ -106,8 +106,8 @@ func TestAdviser(t *testing.T) {
 	marketDataRepository := NewMarketDataRepository(c)
 	newsRepository := NewNewsRepository(c)
 	assetRepository := NewAssetRepository(c)
-	balanceService := example.NewBalanceService()
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
+	balanceService := NewBalanceService(c)
 	spotMaker := background.NewSpotMaker(
 		balanceService,
 		currentSpotsRepository,
@@ -117,7 +117,7 @@ func TestAdviser(t *testing.T) {
 		assetRepository,
 		adviser,
 		&TestUserRepository{},
-		&TestNewSpotsNotifier{},
+		&Notifier{},
 		log.New(os.Stdout, "[ADVISER TEST] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile),
 	)
 
@@ -147,7 +147,7 @@ func getTestMarketData(
 		Collection(fmt.Sprintf("%s%s_%s", symbol, quote, interval)).
 		Find(ctx, bson.M{
 			"$and": []bson.M{
-				{"start_time": bson.M{"$gte": time.Now().AddDate(0, -1, 0)}},
+				{"start_time": bson.M{"$gte": time.Now().AddDate(0, -2, 0)}},
 				{"end_time": bson.M{"$lte": time.Now()}},
 			},
 		}, options.Find().SetSort(bson.D{{"start_time", 1}}))

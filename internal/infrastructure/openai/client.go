@@ -26,6 +26,10 @@ func NewClient(apiKey string, organization string) *Client {
 
 // Post makes a post request
 func (c *Client) Post(ctx context.Context, url string, input any) (response []byte, err error) {
+	if c.apiKey == "" {
+		return nil, nil
+	}
+
 	response = make([]byte, 0)
 
 	rJson, err := json.Marshal(input)
@@ -45,6 +49,10 @@ func (c *Client) Post(ctx context.Context, url string, input any) (response []by
 
 // Get makes a get request
 func (c *Client) Get(ctx context.Context, url string, input any) (response []byte, err error) {
+	if c.apiKey == "" {
+		return nil, nil
+	}
+
 	if input != nil {
 		vals, _ := query.Values(input)
 		query := vals.Encode()
