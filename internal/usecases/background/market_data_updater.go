@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"golang.org/x/sync/errgroup"
+
 	"websmee/buyspot/internal/domain"
 	"websmee/buyspot/internal/usecases"
 )
@@ -52,68 +54,59 @@ func (m *MarketDataUpdater) Run(ctx context.Context) error {
 		return err
 	}
 
+	g := new(errgroup.Group)
 	for i := range balanceSymbols {
 		i := i
 		for j := range assets {
 			j := j
-			done, err := m.marketDataStream.Subscribe(ctx, assets[j].Symbol, balanceSymbols[i], domain.IntervalHour,
-				func(kline *domain.Kline) {
-					if err := m.currentPricesRepository.UpdatePrice(
-						ctx,
-						kline.Close,
-						assets[j].Symbol,
-						balanceSymbols[i],
-						priceExpiration,
-					); err != nil {
+			g.Go(func() error {
+				return m.marketDataStream.Subscribe(ctx, assets[j].Symbol, balanceSymbols[i], domain.IntervalHour,
+					func(kline *domain.Kline) {
+						if err := m.currentPricesRepository.UpdatePrice(
+							ctx,
+							kline.Close,
+							assets[j].Symbol,
+							balanceSymbols[i],
+							priceExpiration,
+						); err != nil {
+							m.logger.Println(fmt.Errorf(
+								"could not update %s%s price, err: %w",
+								assets[j].Symbol,
+								balanceSymbols[i],
+								err,
+							))
+						}
+						if err := m.marketDataRepository.CreateOrUpdate(
+							ctx,
+							assets[j].Symbol,
+							balanceSymbols[i],
+							domain.IntervalHour,
+							kline,
+						); err != nil {
+							m.logger.Println(fmt.Errorf(
+								"could not save %s%s kline, err: %w",
+								assets[j].Symbol,
+								balanceSymbols[i],
+								err,
+							))
+						}
+					},
+					func(err error) {
 						m.logger.Println(fmt.Errorf(
-							"could not update %s%s price, err: %w",
+							"%s%s stream error: %w",
 							assets[j].Symbol,
 							balanceSymbols[i],
 							err,
 						))
-					}
-					if err := m.marketDataRepository.CreateOrUpdate(
-						ctx,
-						assets[j].Symbol,
-						balanceSymbols[i],
-						domain.IntervalHour,
-						kline,
-					); err != nil {
-						m.logger.Println(fmt.Errorf(
-							"could not save %s%s kline, err: %w",
-							assets[j].Symbol,
-							balanceSymbols[i],
-							err,
-						))
-					}
-				},
-				func(err error) {
-					m.logger.Println(fmt.Errorf(
-						"%s%s stream error: %w",
-						assets[j].Symbol,
-						balanceSymbols[i],
-						err,
-					))
-				},
-			)
-			if err != nil {
-				return fmt.Errorf(
-					"could not subscribe to %s%s stream, err: %w",
-					assets[j].Symbol,
-					balanceSymbols[i],
-					err,
+					},
 				)
-			}
-
-			m.doneChs = append(m.doneChs, done)
+			})
 		}
 	}
 
-	return nil
-}
-
-func (m *MarketDataUpdater) Close() {
-	for i := range m.doneChs {
-		<-m.doneChs[i]
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("could not subscribe to market data stream, err: %w", err)
 	}
+
+	return nil
 }

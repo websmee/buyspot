@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/adshao/go-binance/v2"
+	"github.com/gorilla/websocket"
 
 	"websmee/buyspot/internal/domain"
 )
@@ -24,7 +25,7 @@ func (s MarketDataStream) Subscribe(
 	interval domain.Interval,
 	handler func(kline *domain.Kline),
 	errorHandler func(err error),
-) (chan struct{}, error) {
+) error {
 	wsKlineHandler := func(event *binance.WsKlineEvent) {
 		open, _ := strconv.ParseFloat(event.Kline.Open, 64)
 		cls, _ := strconv.ParseFloat(event.Kline.Close, 64)
@@ -50,14 +51,35 @@ func (s MarketDataStream) Subscribe(
 		})
 	}
 
-	doneC, stopC, err := binance.WsKlineServe(symbol+quote, string(interval), wsKlineHandler, errorHandler)
-	if err != nil {
-		return doneC, err
+	restartCh := make(chan struct{})
+	errorHandlerWrapper := func(err error) {
+		if websocket.IsUnexpectedCloseError(err) {
+			restartCh <- struct{}{}
+		}
+
+		errorHandler(err)
 	}
 
 	go func() {
-		stopC <- <-ctx.Done()
+		restartCh <- struct{}{}
 	}()
 
-	return doneC, nil
+	for {
+		var err error
+		doneC := make(chan struct{})
+		stopC := make(chan struct{})
+		select {
+		case <-restartCh:
+			doneC, stopC, err = binance.WsKlineServe(symbol+quote, string(interval), wsKlineHandler, errorHandlerWrapper)
+			if err != nil {
+				return err
+			}
+			go func() {
+				stopC <- <-ctx.Done()
+			}()
+		case <-ctx.Done():
+			<-doneC
+			return nil
+		}
+	}
 }

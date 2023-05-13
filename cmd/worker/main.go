@@ -32,7 +32,7 @@ var openaiAPIKey = os.Getenv("BUYSPOT_OPENAI_API_KEY")
 var openaiOrgID = os.Getenv("BUYSPOT_OPENAI_ORG_ID")
 
 func main() {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
 
 	// dependencies
 	logger := newLogger("[MAIN]")
@@ -99,10 +99,11 @@ func main() {
 		currentPricesRepository,
 		newLogger("[MARKET DATA UPDATER]"),
 	)
-	if err := marketDataBackgroundUpdater.Run(ctx); err != nil {
-		logger.Fatalln(fmt.Errorf("could not run market data updater, err: %w", err))
-	}
-	defer marketDataBackgroundUpdater.Close()
+	go func() {
+		if err := marketDataBackgroundUpdater.Run(ctx); err != nil {
+			logger.Fatalln(fmt.Errorf("could not run market data updater, err: %w", err))
+		}
+	}()
 
 	orderBackgroundSeller := background.NewOrderSeller(
 		userRepository,
@@ -129,7 +130,6 @@ func main() {
 		logger.Fatalln(fmt.Errorf("could not run news updater, err: %w", err))
 	}
 
-	// todo: fix
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	done := make(chan bool, 1)
@@ -140,6 +140,7 @@ func main() {
 		done <- true
 	}()
 	<-done
+	cancel()
 }
 
 func newLogger(name string) *log.Logger {

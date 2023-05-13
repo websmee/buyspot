@@ -128,7 +128,7 @@ type (
 			interval domain.Interval,
 			handler func(kline *domain.Kline),
 			errorHandler func(err error),
-		) (done chan struct{}, err error)
+		) error
 	}
 
 	MarketDataService interface {
