@@ -57,7 +57,7 @@ func NewSpotMaker(
 
 func (m *SpotMaker) Run(ctx context.Context) error {
 	s := gocron.NewScheduler(time.UTC)
-	_, err := s.Cron("0 * * * *").Do(func() {
+	_, err := s.Cron("1 * * * *").Do(func() {
 		m.logger.Println("making new spots")
 
 		spots, err := m.makeSpots(ctx)
