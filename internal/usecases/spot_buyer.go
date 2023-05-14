@@ -10,6 +10,7 @@ import (
 
 type SpotBuyer struct {
 	orderRepository OrderRepository
+	spotRepository  SpotRepository
 	tradingService  TradingService
 	balanceService  BalanceService
 	assetRepository AssetRepository
@@ -17,19 +18,21 @@ type SpotBuyer struct {
 
 func NewSpotBuyer(
 	orderRepository OrderRepository,
+	spotRepository SpotRepository,
 	tradingService TradingService,
 	balanceService BalanceService,
 	assetRepository AssetRepository,
 ) *SpotBuyer {
 	return &SpotBuyer{
 		orderRepository,
+		spotRepository,
 		tradingService,
 		balanceService,
 		assetRepository,
 	}
 }
 
-func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, symbol string, takeProfit, stopLoss float64) (*domain.Balance, error) {
+func (b *SpotBuyer) BuySpot(ctx context.Context, spotID string, amount float64, symbol string, takeProfit, stopLoss float64) (*domain.Balance, error) {
 	userID := domain.GetCtxUserID(ctx)
 	if userID == "" {
 		return nil, domain.ErrUnauthorized
@@ -50,6 +53,7 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, amount float64, symbol string, 
 
 	order := &domain.Order{
 		UserID:      userID,
+		SpotID:      spotID,
 		FromAmount:  amount,
 		FromSymbol:  balance.Symbol,
 		ToAmount:    0,

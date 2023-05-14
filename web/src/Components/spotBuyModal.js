@@ -54,6 +54,7 @@ function SpotBuyModal(props) {
                     className="close-menu btn btn-full btn-m bg-theme color-theme gradient-sunny rounded-sm text-uppercase font-800 mb-3"
                     onClick={() => {
                         dispatch(buySpot(
+                            props.spotID,
                             parseFloat(orderAmount),
                             props.assetSymbol,
                             parseFloat(orderTakeProfit),

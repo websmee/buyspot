@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"websmee/buyspot/internal/domain"
 	"websmee/buyspot/internal/usecases"
@@ -56,7 +57,7 @@ func NewSpotMaker(
 
 func (m *SpotMaker) Run(ctx context.Context) error {
 	s := gocron.NewScheduler(time.UTC)
-	_, err := s.Every(time.Hour).Do(func() {
+	_, err := s.Cron("0 * * * *").Do(func() {
 		m.logger.Println("making new spots")
 
 		spots, err := m.makeSpots(ctx)
@@ -70,10 +71,13 @@ func (m *SpotMaker) Run(ctx context.Context) error {
 			return
 		}
 
-		err = m.SpotRepository.SaveSpots(ctx, spots)
-		if err != nil {
-			m.logger.Println(fmt.Errorf("could not add spots to history, err: %w", err))
-			return
+		for i := range spots {
+			id, err := m.SpotRepository.SaveSpot(ctx, &spots[i])
+			if err != nil {
+				m.logger.Println(fmt.Errorf("could not save spot to history, err: %w", err))
+				return
+			}
+			spots[i].ID, _ = primitive.ObjectIDFromHex(id)
 		}
 
 		err = m.currentSpotsRepository.SaveSpots(ctx, spots, time.Hour-time.Minute)

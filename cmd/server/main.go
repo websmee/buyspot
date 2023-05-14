@@ -59,6 +59,7 @@ func main() {
 	newsRepository := mongoInfra.NewNewsRepository(mongoClient)
 	assetRepository := mongoInfra.NewAssetRepository(mongoClient)
 	orderRepository := mongoInfra.NewOrderRepository(mongoClient)
+	spotRepository := mongoInfra.NewSpotRepository(mongoClient)
 	balanceService := mongoInfra.NewBalanceService(mongoClient)
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
 	currentPricesRepository := redisInfra.NewCurrentPricesRepository(redisClient)
@@ -68,6 +69,7 @@ func main() {
 	spotReader := usecases.NewSpotReader(currentSpotsRepository, orderRepository, marketDataRepository)
 	spotBuyer := usecases.NewSpotBuyer(
 		orderRepository,
+		spotRepository,
 		tradingService,
 		balanceService,
 		assetRepository,

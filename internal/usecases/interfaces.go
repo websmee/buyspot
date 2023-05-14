@@ -15,7 +15,8 @@ type (
 	}
 
 	SpotRepository interface {
-		SaveSpots(ctx context.Context, spots []domain.Spot) error
+		SaveSpot(ctx context.Context, spot *domain.Spot) (string, error)
+		GetSpotByID(ctx context.Context, id string) (*domain.Spot, error)
 	}
 
 	MarketDataRepository interface {

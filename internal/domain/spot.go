@@ -1,6 +1,9 @@
 package domain
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type Spot struct {
+	ID                         primitive.ObjectID `json:"id" bson:"_id"`
 	Asset                      *Asset             `json:"asset" bson:"asset"`
 	ActiveOrders               int                `json:"active_orders" bson:"active_orders"`
 	Advice                     *Advice            `json:"advice" bson:"advice"`

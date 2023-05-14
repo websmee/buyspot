@@ -66,6 +66,7 @@ func AddSpotHandlers(
 
 		updatedBalance, err := spotBuyer.BuySpot(
 			c,
+			buySpotRequest.SpotID,
 			buySpotRequest.Amount,
 			buySpotRequest.Symbol,
 			buySpotRequest.TakeProfit,

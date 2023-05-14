@@ -56,6 +56,7 @@ type BuyOrderSettings struct {
 }
 
 type Spot struct {
+	ID                 string                `json:"id"`
 	Index              int                   `json:"index"`
 	Asset              Asset                 `json:"asset"`
 	ActiveOrders       int                   `json:"activeOrders"`
@@ -74,6 +75,7 @@ type LoginRequest struct {
 }
 
 type BuySpotRequest struct {
+	SpotID     string  `json:"spotID"`
 	Amount     float64 `json:"amount"`
 	Symbol     string  `json:"symbol"`
 	TakeProfit float64 `json:"takeProfit"`

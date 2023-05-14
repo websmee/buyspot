@@ -2,7 +2,9 @@ package mongo
 
 import (
 	"context"
+	"fmt"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"websmee/buyspot/internal/domain"
@@ -20,15 +22,22 @@ func (r *SpotRepository) getCollection() *mongo.Collection {
 	return r.client.Database("buyspot_main").Collection("spots")
 }
 
-func (r *SpotRepository) SaveSpots(ctx context.Context, spots []domain.Spot) error {
-	var docs []interface{}
-	for _, spot := range spots {
-		docs = append(docs, spot)
+func (r *SpotRepository) SaveSpot(ctx context.Context, spot *domain.Spot) (string, error) {
+	res, err := r.getCollection().InsertOne(ctx, spot)
+	if err != nil {
+		return "", fmt.Errorf("could not save spot to mongo, err: %w", err)
 	}
 
-	if _, err := r.getCollection().InsertMany(ctx, docs); err != nil {
-		return err
+	return res.InsertedID.(primitive.ObjectID).Hex(), nil
+}
+
+func (r *SpotRepository) GetSpotByID(ctx context.Context, id string) (*domain.Spot, error) {
+	var spot domain.Spot
+
+	err := r.getCollection().FindOne(ctx, map[string]string{"_id": id}).Decode(&spot)
+	if err != nil {
+		return nil, fmt.Errorf("could not get spot by ID = '%s', err: %w", id, err)
 	}
 
-	return nil
+	return &spot, nil
 }

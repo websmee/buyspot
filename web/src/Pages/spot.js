@@ -84,6 +84,7 @@ function Spot() {
 
             <SpotBuyModal
                 id="buy-modal"
+                spotID={spot.id}
                 assetName={spot.asset.name}
                 assetSymbol={spot.asset.symbol}
                 balanceSymbol={balance.symbol}

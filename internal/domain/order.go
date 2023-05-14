@@ -9,6 +9,7 @@ import (
 type Order struct {
 	ID            primitive.ObjectID `bson:"_id"`
 	UserID        string             `bson:"user_id"`
+	SpotID        string             `bson:"spot_id"`
 	FromAmount    float64            `bson:"from_amount"`
 	FromSymbol    string             `bson:"from_symbol"`
 	ToAmount      float64            `bson:"to_amount"`

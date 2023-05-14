@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"websmee/buyspot/internal/domain"
@@ -33,7 +34,7 @@ func NewMarketDataUpdater(
 	}
 }
 
-func (r *MarketDataUpdater) Update(ctx context.Context, secretKey string, period int) error {
+func (r *MarketDataUpdater) Update(ctx context.Context, secretKey, asset string, period int) error {
 	if secretKey != r.secretKey {
 		return domain.ErrForbidden
 	}
@@ -46,6 +47,10 @@ func (r *MarketDataUpdater) Update(ctx context.Context, secretKey string, period
 	balanceSymbols, err := r.balanceService.GetAvailableSymbols(ctx)
 	if err != nil {
 		return fmt.Errorf("could not get balance symbols, err: %w", err)
+	}
+
+	if strings.ToLower(asset) != "all" {
+		assets = []domain.Asset{{Symbol: asset}}
 	}
 
 	for i := range balanceSymbols {

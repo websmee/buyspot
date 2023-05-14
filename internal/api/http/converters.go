@@ -72,6 +72,7 @@ func ConvertSpotToMessage(spot *domain.Spot) *Spot {
 	}
 
 	return &Spot{
+		ID: spot.ID.Hex(),
 		Asset: Asset{
 			Name:        spot.Asset.Name,
 			Symbol:      spot.Asset.Symbol,

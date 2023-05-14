@@ -18,14 +18,19 @@ func AddAdminHandlers(
 	newsUpdater *admin.NewsUpdater,
 	userManager *admin.UserManager,
 ) {
-	router.POST("/api/v1/admin/market_data/update/:period", func(c *gin.Context) {
+	router.POST("/api/v1/admin/market_data/update/:asset/:period", func(c *gin.Context) {
 		period, err := strconv.Atoi(c.Param("period"))
 		if err != nil {
 			c.Status(http.StatusBadRequest)
 			return
 		}
+		asset := c.Param("asset")
+		if asset == "" {
+			c.Status(http.StatusBadRequest)
+			return
+		}
 
-		if err := marketDataUpdater.Update(c, c.GetHeader("X-BUYSPOT-SECRET-KEY"), period); err != nil {
+		if err := marketDataUpdater.Update(c, c.GetHeader("X-BUYSPOT-SECRET-KEY"), asset, period); err != nil {
 			if errors.Is(err, domain.ErrForbidden) {
 				c.Status(http.StatusForbidden)
 				return

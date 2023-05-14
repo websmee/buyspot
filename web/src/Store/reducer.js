@@ -31,6 +31,7 @@ const slice = createSlice({
         currentSpotsPrev: 0,
         currentSpotsTotal: 0,
         spot: {
+            id: "",
             asset: {
                 name: "",
                 symbol: "",
@@ -331,12 +332,12 @@ export const getSpotByIndex = (index) => (dispatch) => {
     );
 };
 
-export const buySpot = (amount, symbol, takeProfit, stopLoss) => (dispatch) => {
+export const buySpot = (spotID, amount, symbol, takeProfit, stopLoss) => (dispatch) => {
     return dispatch(
         apiCallBegan({
             url: "/api/v1/spots/buy",
             method: "post",
-            data: { amount, symbol, takeProfit, stopLoss },
+            data: { spotID, amount, symbol, takeProfit, stopLoss },
             onStart: buySpotRequested.type,
             onSuccess: buySpotRequestSucceded.type,
             onError: buySpotRequestFailed.type,
