@@ -14,7 +14,6 @@ import (
 	"websmee/buyspot/internal/domain/indicator"
 	binanceInfra "websmee/buyspot/internal/infrastructure/binance"
 	"websmee/buyspot/internal/infrastructure/cryptonews"
-	"websmee/buyspot/internal/infrastructure/local"
 	mongoInfra "websmee/buyspot/internal/infrastructure/mongo"
 	"websmee/buyspot/internal/infrastructure/openai"
 	redisInfra "websmee/buyspot/internal/infrastructure/redis"
@@ -64,14 +63,15 @@ func main() {
 		8,
 		5,
 		4.0,
-		indicator.NewRSI(10, 65),
-		indicator.NewVolumeRise(3),
+		indicator.NewRSI(10, 75),
+		indicator.NewVolumeSpike(2.0),
 	)
 	orderRepository := mongoInfra.NewOrderRepository(mongoClient)
-	balanceService := mongoInfra.NewBalanceService(mongoClient)
+	balanceService := mongoInfra.NewDemoBalanceService(mongoClient)
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
 	currentPricesRepository := redisInfra.NewCurrentPricesRepository(redisClient)
-	tradingService := local.NewTradingService(currentPricesRepository, balanceService)
+	tradingService := binanceInfra.NewTradingService()
+	demoTradingService := mongoInfra.NewDemoTradingService(currentPricesRepository, balanceService)
 	newsService := cryptonews.NewNewsService(cryptonewsAPIToken)
 	summarizer := openai.NewSummarizer(openai.NewClient(openaiAPIKey, openaiOrgID))
 
@@ -112,6 +112,7 @@ func main() {
 		currentPricesRepository,
 		orderRepository,
 		tradingService,
+		demoTradingService,
 		simplepush.NewNotifier(),
 		newLogger("[ORDER SELLER]"),
 	)

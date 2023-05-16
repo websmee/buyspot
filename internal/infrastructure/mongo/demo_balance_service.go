@@ -10,19 +10,19 @@ import (
 	"websmee/buyspot/internal/domain"
 )
 
-type BalanceService struct {
+type DemoBalanceService struct {
 	client *mongo.Client
 }
 
-func NewBalanceService(client *mongo.Client) *BalanceService {
-	return &BalanceService{client}
+func NewDemoBalanceService(client *mongo.Client) *DemoBalanceService {
+	return &DemoBalanceService{client}
 }
 
-func (s *BalanceService) getCollection() *mongo.Collection {
+func (s *DemoBalanceService) getCollection() *mongo.Collection {
 	return s.client.Database("buyspot_main").Collection("balances")
 }
 
-func (s *BalanceService) CreateBalance(ctx context.Context, balance *domain.Balance) error {
+func (s *DemoBalanceService) CreateBalance(ctx context.Context, balance *domain.Balance) error {
 	if _, err := s.getCollection().InsertOne(ctx, balance); err != nil {
 		return fmt.Errorf("could not create balance in mongo, err: %w", err)
 	}
@@ -30,7 +30,7 @@ func (s *BalanceService) CreateBalance(ctx context.Context, balance *domain.Bala
 	return nil
 }
 
-func (s *BalanceService) ChangeBalance(ctx context.Context, userID, symbol string, value float64) error {
+func (s *DemoBalanceService) ChangeBalance(ctx context.Context, userID, symbol string, value float64) error {
 	if _, err := s.getCollection().UpdateOne(ctx, primitive.M{
 		"user_id":   userID,
 		"symbol":    symbol,
@@ -46,24 +46,24 @@ func (s *BalanceService) ChangeBalance(ctx context.Context, userID, symbol strin
 	return nil
 }
 
-func (s *BalanceService) GetUserActiveBalance(ctx context.Context, userID string) (*domain.Balance, error) {
+func (s *DemoBalanceService) GetUserActiveBalance(ctx context.Context, user *domain.User) (*domain.Balance, error) {
 	var balance domain.Balance
 	if err := s.getCollection().FindOne(ctx, primitive.M{
-		"user_id":   userID,
+		"user_id":   user.ID.Hex(),
 		"is_active": true,
 	}).Decode(&balance); err != nil {
-		return nil, fmt.Errorf("could not get balance by user id = '%s' from mongo, err: %w", userID, err)
+		return nil, fmt.Errorf("could not get balance by user id = '%s' from mongo, err: %w", user.ID.Hex(), err)
 	}
 
 	return &balance, nil
 }
 
-func (s *BalanceService) GetUserBalances(ctx context.Context, userID string) ([]domain.Balance, error) {
+func (s *DemoBalanceService) GetUserBalances(ctx context.Context, user *domain.User) ([]domain.Balance, error) {
 	cur, err := s.getCollection().Find(ctx, primitive.M{
-		"user_id": userID,
+		"user_id": user.ID.Hex(),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not get balances by user id = '%s' from mongo, err: %w", userID, err)
+		return nil, fmt.Errorf("could not get balances by user id = '%s' from mongo, err: %w", user.ID.Hex(), err)
 	}
 
 	var balances []domain.Balance
@@ -78,6 +78,6 @@ func (s *BalanceService) GetUserBalances(ctx context.Context, userID string) ([]
 	return balances, nil
 }
 
-func (s *BalanceService) GetAvailableSymbols(_ context.Context) ([]string, error) {
+func (s *DemoBalanceService) GetAvailableSymbols(_ context.Context) ([]string, error) {
 	return []string{"USDT"}, nil
 }

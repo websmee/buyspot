@@ -8,14 +8,20 @@ import (
 )
 
 type BalanceReader struct {
-	balanceService BalanceService
+	userRepository     UserRepository
+	balanceService     BalanceService
+	demoBalanceService BalanceService
 }
 
 func NewBalanceReader(
+	userRepository UserRepository,
 	balanceService BalanceService,
+	demoBalanceService BalanceService,
 ) *BalanceReader {
 	return &BalanceReader{
+		userRepository,
 		balanceService,
+		demoBalanceService,
 	}
 }
 
@@ -25,9 +31,22 @@ func (r *BalanceReader) GetActiveBalance(ctx context.Context) (*domain.Balance, 
 		return nil, domain.ErrUnauthorized
 	}
 
-	balance, err := r.balanceService.GetUserActiveBalance(ctx, userID)
+	user, err := r.userRepository.GetByID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get user active balance, err: %w", err)
+		return nil, fmt.Errorf("could not get user by ID = '%s', err: %w", userID, err)
+	}
+
+	var balance *domain.Balance
+	if user.IsDemo {
+		balance, err = r.demoBalanceService.GetUserActiveBalance(ctx, user)
+		if err != nil {
+			return nil, fmt.Errorf("could not get demo user active balance, err: %w", err)
+		}
+	} else {
+		balance, err = r.balanceService.GetUserActiveBalance(ctx, user)
+		if err != nil {
+			return nil, fmt.Errorf("could not get user active balance, err: %w", err)
+		}
 	}
 
 	return balance, nil

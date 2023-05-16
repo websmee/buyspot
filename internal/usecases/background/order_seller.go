@@ -19,6 +19,7 @@ type OrderSeller struct {
 	currentPricesRepository usecases.CurrentPricesRepository
 	orderRepository         usecases.OrderRepository
 	tradingService          usecases.TradingService
+	demoTradingService      usecases.TradingService
 	notifier                usecases.Notifier
 	logger                  *log.Logger
 }
@@ -30,6 +31,7 @@ func NewOrderSeller(
 	currentPricesRepository usecases.CurrentPricesRepository,
 	orderRepository usecases.OrderRepository,
 	tradingService usecases.TradingService,
+	demoTradingService usecases.TradingService,
 	notifier usecases.Notifier,
 	logger *log.Logger,
 ) *OrderSeller {
@@ -40,6 +42,7 @@ func NewOrderSeller(
 		currentPricesRepository,
 		orderRepository,
 		tradingService,
+		demoTradingService,
 		notifier,
 		logger,
 	}
@@ -106,21 +109,43 @@ func (r *OrderSeller) Run(ctx context.Context) error {
 						continue
 					}
 
-					closeAmount, err := r.tradingService.Sell(
-						ctx,
-						user.ID.Hex(),
-						orders[k].ToSymbol,
-						orders[k].ToAmount,
-						balanceSymbols[i],
-					)
-					if err != nil {
-						r.logger.Println(fmt.Errorf(
-							"could not convert %s to %s, err: %w",
+					var closeAmount float64
+					if user.IsDemo {
+						closeAmount, err = r.demoTradingService.Sell(
+							ctx,
+							user,
 							orders[k].ToSymbol,
+							orders[k].ToAmount,
 							balanceSymbols[i],
-							err,
-						))
-						continue
+						)
+						if err != nil {
+							r.logger.Println(fmt.Errorf(
+								"could not sell %s for %s as demo user ID='%s', err: %w",
+								orders[k].ToSymbol,
+								balanceSymbols[i],
+								user.ID.Hex(),
+								err,
+							))
+							continue
+						}
+					} else {
+						closeAmount, err = r.tradingService.Sell(
+							ctx,
+							user,
+							orders[k].ToSymbol,
+							orders[k].ToAmount,
+							balanceSymbols[i],
+						)
+						if err != nil {
+							r.logger.Println(fmt.Errorf(
+								"could not sell %s for %s as user ID='%s', err: %w",
+								orders[k].ToSymbol,
+								balanceSymbols[i],
+								user.ID.Hex(),
+								err,
+							))
+							continue
+						}
 					}
 
 					orders[k].CloseAmount = closeAmount

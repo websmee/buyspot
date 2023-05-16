@@ -2,16 +2,18 @@ package http
 
 import (
 	"fmt"
+	"strconv"
 
 	"websmee/buyspot/internal/domain"
 )
 
 func ConvertOrderToMessages(order *domain.Order) *Order {
+	toAmount, _ := strconv.ParseFloat(order.ToAmount, 64)
 	return &Order{
 		ID:          order.ID.Hex(),
 		FromAmount:  order.FromAmount,
 		FromSymbol:  order.FromSymbol,
-		ToAmount:    order.ToAmount,
+		ToAmount:    toAmount,
 		ToSymbol:    order.ToSymbol,
 		ToAssetName: order.ToAssetName,
 		TakeProfit:  order.TakeProfit,

@@ -12,7 +12,7 @@ type Order struct {
 	SpotID        string             `bson:"spot_id"`
 	FromAmount    float64            `bson:"from_amount"`
 	FromSymbol    string             `bson:"from_symbol"`
-	ToAmount      float64            `bson:"to_amount"`
+	ToAmount      string             `bson:"to_amount"`
 	ToSymbol      string             `bson:"to_symbol"`
 	ToSymbolPrice float64            `bson:"to_symbol_price"`
 	ToAssetName   string             `bson:"to_asset_name"`

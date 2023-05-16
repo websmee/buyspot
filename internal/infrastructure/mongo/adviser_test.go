@@ -3,26 +3,25 @@ package mongo
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
-	"sort"
 	"testing"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"websmee/buyspot/internal/domain"
 	"websmee/buyspot/internal/domain/indicator"
-	redisInfra "websmee/buyspot/internal/infrastructure/redis"
-	"websmee/buyspot/internal/usecases/background"
 )
 
 type TestSpotRepository struct{}
 
-func (r *TestSpotRepository) SaveSpots(ctx context.Context, spots []domain.Spot) error {
-	return nil
+func (r *TestSpotRepository) SaveSpot(ctx context.Context, spot *domain.Spot) (string, error) {
+	return "", nil
+}
+
+func (r *TestSpotRepository) GetSpotByID(ctx context.Context, id string) (*domain.Spot, error) {
+	return nil, nil
 }
 
 type TestUserRepository struct{}
@@ -46,6 +45,7 @@ func (r *Notifier) Notify(ctx context.Context, user *domain.User, title, message
 }
 
 func TestAdviser(t *testing.T) {
+	ctx := context.Background()
 	checksCount := 0
 	adviceCount := 0
 	takeProfitCount := 0
@@ -62,15 +62,16 @@ func TestAdviser(t *testing.T) {
 		8,
 		5,
 		4.0,
-		indicator.NewRSI(10, 65),
-		indicator.NewVolumeRise(3),
+		indicator.NewRSI(10, 75),
+		indicator.NewVolumeSpike(2.0),
+		//indicator.NewVolumeRise(3),
 		//indicator.NewMFI(14, 75),
 		//indicator.NewPVO(3, 4, 2),
-		indicator.NewTrue(),
+		//indicator.NewTrue(),
 	)
-	assets, _ := ar.GetAvailableAssets(context.Background())
+	assets, _ := ar.GetAvailableAssets(ctx)
 	for _, asset := range assets {
-		marketData := getTestMarketData(asset.Symbol, "USDT", domain.IntervalHour)
+		marketData := getTestMarketData(ctx, c, asset.Symbol, "USDT", domain.IntervalHour)
 		for i := range marketData {
 			if i > 24 && i < len(marketData)-24 {
 				checksCount++
@@ -102,55 +103,60 @@ func TestAdviser(t *testing.T) {
 	fmt.Println("PROFIT RATE:", float64(takeProfitCount)/float64(adviceCount)*100, "%")
 	fmt.Println("PROFIT AMOUNT:", percentProfit, "%")
 
-	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
-	marketDataRepository := NewMarketDataRepository(c)
-	newsRepository := NewNewsRepository(c)
-	assetRepository := NewAssetRepository(c)
-	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
-	balanceService := NewBalanceService(c)
-	spotMaker := background.NewSpotMaker(
-		balanceService,
-		currentSpotsRepository,
-		&TestSpotRepository{},
-		marketDataRepository,
-		newsRepository,
-		assetRepository,
-		adviser,
-		&TestUserRepository{},
-		&Notifier{},
-		log.New(os.Stdout, "[ADVISER TEST] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile),
-	)
-
-	var spots []domain.Spot
-	for i := range advices {
-		spot := spotMaker.GetSpot(context.Background(), &advices[i], times[i], &asts[i], []string{"USDT"})
-		spots = append(spots, *spot)
-	}
-
-	sort.Slice(spots, func(i, j int) bool {
-		return spots[i].ForecastMarketDataByQuotes["USDT"][0].StartTime.Before(spots[j].ForecastMarketDataByQuotes["USDT"][0].StartTime)
-	})
-
-	currentSpotsRepository.ClearSpots(context.Background())
-	currentSpotsRepository.SaveSpots(context.Background(), spots, time.Hour)
+	//redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
+	//marketDataRepository := NewMarketDataRepository(c)
+	//newsRepository := NewNewsRepository(c)
+	//assetRepository := NewAssetRepository(c)
+	//currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
+	//balanceService := NewDemoBalanceService(c)
+	//spotMaker := background.NewSpotMaker(
+	//	balanceService,
+	//	currentSpotsRepository,
+	//	&TestSpotRepository{},
+	//	marketDataRepository,
+	//	newsRepository,
+	//	assetRepository,
+	//	adviser,
+	//	&TestUserRepository{},
+	//	&Notifier{},
+	//	log.New(os.Stdout, "[ADVISER TEST] ", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile),
+	//)
+	//
+	//var spots []domain.Spot
+	//for i := range advices {
+	//	spot := spotMaker.GetSpot(ctx, &advices[i], times[i], &asts[i], []string{"USDT"})
+	//	spots = append(spots, *spot)
+	//}
+	//
+	//sort.Slice(spots, func(i, j int) bool {
+	//	return spots[i].ForecastMarketDataByQuotes["USDT"][0].StartTime.Before(spots[j].ForecastMarketDataByQuotes["USDT"][0].StartTime)
+	//})
+	//
+	//currentSpotsRepository.ClearSpots(ctx)
+	//currentSpotsRepository.SaveSpots(ctx, spots, time.Hour)
 }
 
 func getTestMarketData(
+	ctx context.Context,
+	client *mongo.Client,
 	symbol string,
 	quote string,
 	interval domain.Interval,
 ) []domain.Kline {
-	ctx := context.Background()
-	client, _ := Connect(ctx, "mongodb://localhost:27017", "", "")
-	cur, _ := client.
+	cur, err := client.
 		Database("buyspot_market_data").
 		Collection(fmt.Sprintf("%s%s_%s", symbol, quote, interval)).
 		Find(ctx, bson.M{
 			"$and": []bson.M{
-				{"start_time": bson.M{"$gte": time.Now().AddDate(0, -2, 0)}},
-				{"end_time": bson.M{"$lte": time.Now()}},
+				{"start_time": bson.M{"$gte": time.Now().AddDate(0, 0, -80)}},
+				{"end_time": bson.M{"$lte": time.Now().AddDate(0, 0, 0)}},
 			},
 		}, options.Find().SetSort(bson.D{{"start_time", 1}}))
+
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
 
 	var klines []domain.Kline
 	for cur.Next(ctx) {

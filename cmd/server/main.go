@@ -13,7 +13,6 @@ import (
 	adminHTTPAPI "websmee/buyspot/internal/api/http/admin"
 	binanceInfra "websmee/buyspot/internal/infrastructure/binance"
 	"websmee/buyspot/internal/infrastructure/cryptonews"
-	"websmee/buyspot/internal/infrastructure/local"
 	mongoInfra "websmee/buyspot/internal/infrastructure/mongo"
 	redisInfra "websmee/buyspot/internal/infrastructure/redis"
 	"websmee/buyspot/internal/usecases"
@@ -60,29 +59,36 @@ func main() {
 	assetRepository := mongoInfra.NewAssetRepository(mongoClient)
 	orderRepository := mongoInfra.NewOrderRepository(mongoClient)
 	spotRepository := mongoInfra.NewSpotRepository(mongoClient)
-	balanceService := mongoInfra.NewBalanceService(mongoClient)
+	demoBalanceService := mongoInfra.NewDemoBalanceService(mongoClient)
+	balanceService := binanceInfra.NewBalanceService()
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
 	currentPricesRepository := redisInfra.NewCurrentPricesRepository(redisClient)
-	tradingService := local.NewTradingService(currentPricesRepository, balanceService)
+	demoTradingService := mongoInfra.NewDemoTradingService(currentPricesRepository, demoBalanceService)
+	tradingService := binanceInfra.NewTradingService()
 	marketDataService := binanceInfra.NewMarketDataService(binance.NewClient(binanceAPIKey, binanceSecretKey))
 	newsService := cryptonews.NewNewsService(cryptonewsAPIToken)
 	spotReader := usecases.NewSpotReader(currentSpotsRepository, orderRepository, marketDataRepository)
 	spotBuyer := usecases.NewSpotBuyer(
+		userRepository,
 		orderRepository,
 		spotRepository,
 		tradingService,
+		demoTradingService,
 		balanceService,
+		demoBalanceService,
 		assetRepository,
 	)
 	orderReader := usecases.NewOrderReader(orderRepository)
-	balanceReader := usecases.NewBalanceReader(balanceService)
+	balanceReader := usecases.NewBalanceReader(userRepository, balanceService, demoBalanceService)
 	orderSeller := usecases.NewOrderSeller(
+		userRepository,
 		orderRepository,
 		tradingService,
+		demoTradingService,
 		balanceService,
 	)
-	pricesReader := usecases.NewPricesReader(assetRepository, currentPricesRepository, balanceService)
-	userManager := admin.NewUserManager(secretKey, userRepository, balanceService)
+	pricesReader := usecases.NewPricesReader(userRepository, assetRepository, currentPricesRepository, balanceService)
+	userManager := admin.NewUserManager(secretKey, userRepository, demoBalanceService)
 	marketDataUpdater := admin.NewMarketDataUpdater(
 		secretKey,
 		balanceService,

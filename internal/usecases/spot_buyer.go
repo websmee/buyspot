@@ -3,31 +3,41 @@ package usecases
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"websmee/buyspot/internal/domain"
 )
 
 type SpotBuyer struct {
-	orderRepository OrderRepository
-	spotRepository  SpotRepository
-	tradingService  TradingService
-	balanceService  BalanceService
-	assetRepository AssetRepository
+	userRepository     UserRepository
+	orderRepository    OrderRepository
+	spotRepository     SpotRepository
+	tradingService     TradingService
+	demoTradingService TradingService
+	balanceService     BalanceService
+	demoBalanceService BalanceService
+	assetRepository    AssetRepository
 }
 
 func NewSpotBuyer(
+	userRepository UserRepository,
 	orderRepository OrderRepository,
 	spotRepository SpotRepository,
 	tradingService TradingService,
+	demoTradingService TradingService,
 	balanceService BalanceService,
+	demoBalanceService BalanceService,
 	assetRepository AssetRepository,
 ) *SpotBuyer {
 	return &SpotBuyer{
+		userRepository,
 		orderRepository,
 		spotRepository,
 		tradingService,
+		demoTradingService,
 		balanceService,
+		demoBalanceService,
 		assetRepository,
 	}
 }
@@ -38,9 +48,22 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, spotID string, amount float64, 
 		return nil, domain.ErrUnauthorized
 	}
 
-	balance, err := b.balanceService.GetUserActiveBalance(ctx, userID)
+	user, err := b.userRepository.GetByID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", userID, err)
+		return nil, fmt.Errorf("could not get user by ID = '%s', err: %w", userID, err)
+	}
+
+	var balance *domain.Balance
+	if user.IsDemo {
+		balance, err = b.demoBalanceService.GetUserActiveBalance(ctx, user)
+		if err != nil {
+			return nil, fmt.Errorf("could not get demo user active balance, err: %w", err)
+		}
+	} else {
+		balance, err = b.balanceService.GetUserActiveBalance(ctx, user)
+		if err != nil {
+			return nil, fmt.Errorf("could not get user active balance, err: %w", err)
+		}
 	}
 
 	asset, err := b.assetRepository.GetAssetBySymbol(ctx, symbol)
@@ -56,7 +79,7 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, spotID string, amount float64, 
 		SpotID:      spotID,
 		FromAmount:  amount,
 		FromSymbol:  balance.Symbol,
-		ToAmount:    0,
+		ToAmount:    "0",
 		ToSymbol:    symbol,
 		ToAssetName: asset.Name,
 		TakeProfit:  takeProfit,
@@ -70,26 +93,41 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, spotID string, amount float64, 
 		return nil, fmt.Errorf("could not save new order, err: %w", err)
 	}
 
-	boughtAmount, err := b.tradingService.Buy(ctx, userID, balance.Symbol, amount, symbol)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"could not convert %s to %s for user ID = '%s', err: %w",
-			balance.Symbol,
-			symbol,
-			userID,
-			err,
-		)
+	var boughtAmount string
+	if user.IsDemo {
+		boughtAmount, err = b.demoTradingService.Buy(ctx, user, balance.Symbol, amount, symbol)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"could not buy %s for %s as demo user with ID = '%s', err: %w",
+				order.ToSymbol,
+				balance.Symbol,
+				userID,
+				err,
+			)
+		}
+	} else {
+		boughtAmount, err = b.tradingService.Buy(ctx, user, balance.Symbol, amount, symbol)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"could not buy %s for %s as user with ID = '%s', err: %w",
+				order.ToSymbol,
+				balance.Symbol,
+				userID,
+				err,
+			)
+		}
 	}
 
 	order.ToAmount = boughtAmount
-	order.ToSymbolPrice = amount / boughtAmount
+	boughtAmountFloat, _ := strconv.ParseFloat(boughtAmount, 64)
+	order.ToSymbolPrice = amount / boughtAmountFloat
 	order.Updated = time.Now()
 	order.Status = domain.OrderStatusActive
 	if err := b.orderRepository.SaveOrder(ctx, order); err != nil {
 		return nil, fmt.Errorf("could not save order after conversion, err: %w", err)
 	}
 
-	balance, err = b.balanceService.GetUserActiveBalance(ctx, userID)
+	balance, err = b.balanceService.GetUserActiveBalance(ctx, user)
 	if err != nil {
 		return nil, fmt.Errorf("could not get balance for user ID = '%s' after conversion, err: %w", userID, err)
 	}

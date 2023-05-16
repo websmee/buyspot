@@ -89,8 +89,8 @@ type (
 	}
 
 	BalanceService interface {
-		GetUserActiveBalance(ctx context.Context, userID string) (*domain.Balance, error)
-		GetUserBalances(ctx context.Context, userID string) ([]domain.Balance, error)
+		GetUserActiveBalance(ctx context.Context, user *domain.User) (*domain.Balance, error)
+		GetUserBalances(ctx context.Context, user *domain.User) ([]domain.Balance, error)
 		GetAvailableSymbols(ctx context.Context) ([]string, error)
 	}
 
@@ -101,16 +101,16 @@ type (
 	TradingService interface {
 		Buy(
 			ctx context.Context,
-			userID string,
+			user *domain.User,
 			balanceSymbol string,
 			balanceAmount float64,
 			tradeSymbol string,
-		) (float64, error)
+		) (string, error)
 		Sell(
 			ctx context.Context,
-			userID string,
+			user *domain.User,
 			tradeSymbol string,
-			tradeAmount float64,
+			tradeAmount string,
 			balanceSymbol string,
 		) (float64, error)
 	}

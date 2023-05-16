@@ -6,6 +6,7 @@ type User struct {
 	BinanceAPIKey    string `json:"binanceAPIKey"`
 	BinanceSecretKey string `json:"binanceSecretKey"`
 	NotificationsKey string `json:"notificationsKey"`
+	IsDemo           bool   `json:"isDemo"`
 }
 
 type Balance struct {

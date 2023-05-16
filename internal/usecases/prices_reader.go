@@ -8,17 +8,20 @@ import (
 )
 
 type PricesReader struct {
+	userRepository          UserRepository
 	assetRepository         AssetRepository
 	currentPricesRepository CurrentPricesRepository
 	balanceService          BalanceService
 }
 
 func NewPricesReader(
+	userRepository UserRepository,
 	assetRepository AssetRepository,
 	currentPricesRepository CurrentPricesRepository,
 	balanceService BalanceService,
 ) *PricesReader {
 	return &PricesReader{
+		userRepository,
 		assetRepository,
 		currentPricesRepository,
 		balanceService,
@@ -31,9 +34,18 @@ func (r *PricesReader) GetCurrentPrices(ctx context.Context) (*domain.Prices, er
 		return nil, domain.ErrUnauthorized
 	}
 
-	balance, err := r.balanceService.GetUserActiveBalance(ctx, userID)
-	if err != nil {
-		return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", userID, err)
+	// todo: use cashed balance
+	//user, err := r.userRepository.GetByID(ctx, userID)
+	//if err != nil {
+	//	return nil, fmt.Errorf("could not get user by ID = '%s', err: %w", userID, err)
+	//}
+
+	//balance, err := r.balanceService.GetUserActiveBalance(ctx, user)
+	//if err != nil {
+	//	return nil, fmt.Errorf("could not get balance for user ID = '%s', err: %w", userID, err)
+	//}
+	balance := &domain.Balance{
+		Symbol: "USDT",
 	}
 
 	assets, err := r.assetRepository.GetAvailableAssets(ctx)
