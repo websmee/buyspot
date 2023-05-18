@@ -30,23 +30,17 @@ function SpotBuyModal(props) {
                     <i className="fa fa-check disabled valid color-green-dark"></i>
                     <em>(required)</em>
                 </div>
-                <div className="input-style input-style-always-active no-borders no-icon">
-                    <label htmlFor="f1" className="color-theme opacity-30 text-uppercase font-700 font-10 mt-1">Take Profit
-                        At</label>
-                    <select id="f1" value={orderTakeProfit} onChange={(e) => { setOrderTakeProfit(e.target.value) }}>
-                        {props.takeProfitOptions.map((o, i) => <option key={i} value={o.value}>{o.text}</option>)}
-                    </select>
-                    <span><i className="fa fa-chevron-down"></i></span>
+                <div className="input-style input-style-always-active validate-field no-borders no-icon">
+                    <input type="number" className="form-control validate-number" id="f1" value={orderTakeProfit} onChange={(e) => { setOrderTakeProfit(e.target.value) }} />
+                    <label htmlFor="f1" className="color-theme opacity-30 text-uppercase font-700 font-10 mt-1">Take Profit At</label>
+                    <i className="fa fa-times disabled invalid color-red-dark"></i>
                     <i className="fa fa-check disabled valid color-green-dark"></i>
                     <em></em>
                 </div>
                 <div className="input-style input-style-always-active no-borders no-icon">
-                    <label htmlFor="f1a" className="color-theme opacity-30 text-uppercase font-700 font-10 mt-1">Stop Loss
-                        At</label>
-                    <select id="f1a" value={orderStopLoss} onChange={(e) => { setOrderStopLoss(e.target.value) }}>
-                        {props.stopLossOptions.map((o, i) => <option key={i} value={o.value}>{o.text}</option>)}
-                    </select>
-                    <span><i className="fa fa-chevron-down"></i></span>
+                    <input type="number" className="form-control validate-number" id="f1a" value={orderStopLoss} onChange={(e) => { setOrderStopLoss(e.target.value) }} />
+                    <label htmlFor="f1a" className="color-theme opacity-30 text-uppercase font-700 font-10 mt-1">Stop Loss At</label>
+                    <i className="fa fa-times disabled invalid color-red-dark"></i>
                     <i className="fa fa-check disabled valid color-green-dark"></i>
                     <em></em>
                 </div>

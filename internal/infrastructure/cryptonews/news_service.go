@@ -41,17 +41,27 @@ type NewsArticle struct {
 }
 
 func (s *NewsService) GetNews(ctx context.Context, symbols []string, period domain.NewsPeriod) ([]domain.NewsArticle, error) {
-	data, err := s.makeRequest(ctx, symbols, period)
-	if err != nil {
-		return nil, fmt.Errorf("could not make news api request, err: %w", err)
+	var news []domain.NewsArticle
+	for i := 0; i < len(symbols); i = i + 20 {
+		j := i + 20
+		if i+20 > len(symbols) {
+			j = len(symbols)
+		}
+
+		data, err := s.makeRequest(ctx, symbols[i:j], period)
+		if err != nil {
+			return nil, fmt.Errorf("could not make news api request, err: %w", err)
+		}
+
+		var response NewsArticleResponse
+		if err := json.Unmarshal(data, &response); err != nil {
+			return nil, fmt.Errorf("could not unmarshal news api response, err: %w", err)
+		}
+
+		news = append(news, apiResponseToNewsArticles(response.Data)...)
 	}
 
-	var response NewsArticleResponse
-	if err := json.Unmarshal(data, &response); err != nil {
-		return nil, fmt.Errorf("could not unmarshal news api response, err: %w", err)
-	}
-
-	return apiResponseToNewsArticles(response.Data), nil
+	return news, nil
 }
 
 func (s *NewsService) makeRequest(ctx context.Context, symbols []string, period domain.NewsPeriod) ([]byte, error) {

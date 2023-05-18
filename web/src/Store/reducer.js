@@ -24,7 +24,7 @@ const slice = createSlice({
         },
         balance: {
             amount: 0,
-            symbol: "",
+            symbol: "USDT",
         },
         currentSpotsIndex: 0,
         currentSpotsNext: 0,

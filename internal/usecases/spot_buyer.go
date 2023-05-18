@@ -127,9 +127,16 @@ func (b *SpotBuyer) BuySpot(ctx context.Context, spotID string, amount float64, 
 		return nil, fmt.Errorf("could not save order after conversion, err: %w", err)
 	}
 
-	balance, err = b.balanceService.GetUserActiveBalance(ctx, user)
-	if err != nil {
-		return nil, fmt.Errorf("could not get balance for user ID = '%s' after conversion, err: %w", userID, err)
+	if user.IsDemo {
+		balance, err = b.demoBalanceService.GetUserActiveBalance(ctx, user)
+		if err != nil {
+			return nil, fmt.Errorf("could not get demo balance for user ID = '%s' after conversion, err: %w", userID, err)
+		}
+	} else {
+		balance, err = b.balanceService.GetUserActiveBalance(ctx, user)
+		if err != nil {
+			return nil, fmt.Errorf("could not get balance for user ID = '%s' after conversion, err: %w", userID, err)
+		}
 	}
 
 	return balance, nil

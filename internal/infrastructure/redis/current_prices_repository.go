@@ -48,7 +48,7 @@ func (r *CurrentPricesRepository) GetPrice(ctx context.Context, symbol, quote st
 		price, err := cmd.Float64()
 		if err != nil {
 			if err == redis.Nil {
-				return 0, nil
+				return 0, domain.ErrPriceNotFound
 			}
 
 			return 0, fmt.Errorf("could not find %s%s price in redis, err: %w", symbol, quote, err)
