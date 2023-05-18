@@ -15,7 +15,7 @@ type (
 	}
 
 	SpotRepository interface {
-		SaveSpot(ctx context.Context, spot *domain.Spot) (string, error)
+		SaveSpot(ctx context.Context, spot *domain.Spot) error
 		GetSpotByID(ctx context.Context, id string) (*domain.Spot, error)
 	}
 

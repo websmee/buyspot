@@ -22,13 +22,14 @@ func (r *SpotRepository) getCollection() *mongo.Collection {
 	return r.client.Database("buyspot_main").Collection("spots")
 }
 
-func (r *SpotRepository) SaveSpot(ctx context.Context, spot *domain.Spot) (string, error) {
-	res, err := r.getCollection().InsertOne(ctx, spot)
+func (r *SpotRepository) SaveSpot(ctx context.Context, spot *domain.Spot) error {
+	spot.ID = primitive.NewObjectID()
+	_, err := r.getCollection().InsertOne(ctx, spot)
 	if err != nil {
-		return "", fmt.Errorf("could not save spot to mongo, err: %w", err)
+		return fmt.Errorf("could not save spot to mongo, err: %w", err)
 	}
 
-	return res.InsertedID.(primitive.ObjectID).Hex(), nil
+	return nil
 }
 
 func (r *SpotRepository) GetSpotByID(ctx context.Context, id string) (*domain.Spot, error) {
