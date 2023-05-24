@@ -45,7 +45,7 @@ function Spot() {
                     <strong>No spots found at the moment.</strong>
                 </div>}
 
-                {currentSpotsTotal > 0 && <>
+                {currentSpotsTotal > 0 && spot.chartsDataByQuotes[balance.symbol] && <>
                     <SpotCharts
                         assetName={spot.asset.name}
                         assetSymbol={spot.asset.symbol}
@@ -56,6 +56,7 @@ function Spot() {
                         chartActual={spot.chartsDataByQuotes[balance.symbol].actual}
                         chartVolumes={spot.chartsDataByQuotes[balance.symbol].volumes}
                         isProfitable={spot.isProfitable}
+                        confidence={spot.confidence}
                         assetDescriptionModalId="asset-desc-modal"
                     />
 

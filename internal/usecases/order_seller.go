@@ -11,6 +11,7 @@ import (
 type OrderSeller struct {
 	userRepository     UserRepository
 	orderRepository    OrderRepository
+	assetRepository    AssetRepository
 	tradingService     TradingService
 	demoTradingService TradingService
 	balanceService     BalanceService
@@ -19,6 +20,7 @@ type OrderSeller struct {
 func NewOrderSeller(
 	userRepository UserRepository,
 	orderRepository OrderRepository,
+	assetRepository AssetRepository,
 	tradingService TradingService,
 	demoTradingService TradingService,
 	balanceService BalanceService,
@@ -26,6 +28,7 @@ func NewOrderSeller(
 	return &OrderSeller{
 		userRepository,
 		orderRepository,
+		assetRepository,
 		tradingService,
 		demoTradingService,
 		balanceService,

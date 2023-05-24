@@ -92,6 +92,7 @@ func ConvertSpotToMessage(spot *domain.Spot) *Spot {
 			StopLossOptions:   stopLossOptions,
 		},
 		IsProfitable: spot.Advice.IsProfitable,
+		Confidence:   spot.Advice.Confidence,
 	}
 }
 

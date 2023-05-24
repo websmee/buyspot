@@ -49,10 +49,7 @@ type (
 	AssetRepository interface {
 		GetAvailableAssets(ctx context.Context) ([]domain.Asset, error)
 		GetAssetBySymbol(ctx context.Context, symbol string) (*domain.Asset, error)
-	}
-
-	Adviser interface {
-		GetAdvice(ctx context.Context, marketData []domain.Kline) (*domain.Advice, error)
+		CreateOrUpdate(ctx context.Context, asset *domain.Asset) error
 	}
 
 	OrderRepository interface {
@@ -153,5 +150,15 @@ type (
 
 	Notifier interface {
 		Notify(ctx context.Context, user *domain.User, title, message string) error
+	}
+
+	AdviserRepository interface {
+		SaveAdvisers(ctx context.Context, advisers []domain.Adviser) error
+		GetLatestAdvisers(ctx context.Context) ([]domain.Adviser, error)
+		MarkAllAdvisersAsNotLatest(ctx context.Context) error
+	}
+
+	ExchangeInfoService interface {
+		GetExchangeInfo(ctx context.Context, symbols []string) ([]domain.AssetExchangeInfo, error)
 	}
 )

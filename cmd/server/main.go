@@ -83,6 +83,7 @@ func main() {
 	orderSeller := usecases.NewOrderSeller(
 		userRepository,
 		orderRepository,
+		assetRepository,
 		tradingService,
 		demoTradingService,
 		balanceService,

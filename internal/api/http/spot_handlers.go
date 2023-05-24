@@ -78,6 +78,12 @@ func AddSpotHandlers(
 				return
 			}
 
+			if errors.Is(err, domain.ErrTradingNotAvailable) {
+				c.Error(fmt.Errorf("could not buy spot, err: %w", err))
+				c.Status(http.StatusPreconditionFailed)
+				return
+			}
+
 			c.Error(fmt.Errorf("could not buy spot, err: %w", err))
 			c.Status(http.StatusInternalServerError)
 			return

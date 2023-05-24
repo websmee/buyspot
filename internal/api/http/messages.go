@@ -67,6 +67,7 @@ type Spot struct {
 	News               []NewsArticle         `json:"news"`
 	BuyOrderSettings   BuyOrderSettings      `json:"buyOrderSettings"`
 	IsProfitable       bool                  `json:"isProfitable"`
+	Confidence         int                   `json:"confidence"`
 }
 
 type LoginRequest struct {

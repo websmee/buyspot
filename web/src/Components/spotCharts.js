@@ -83,6 +83,14 @@ function SpotCharts(props) {
                             {props.assetName}
                             <span className="font-16 font-400 opacity-50" style={{ marginLeft: "5px" }}>{props.assetSymbol}</span>
                             {props.isProfitable && <span className='ms-2 font-16 font-400 badge rounded-xl bg-sunny-light'>PROFIT</span>}
+                            <span className={'ms-2 font-16 font-400 badge rounded-xl ' + classNames({
+                                "bg-red-dark": props.confidence <= 50,
+                                "bg-gray-dark": props.confidence > 50 && props.confidence <= 60,
+                                "bg-green-dark": props.confidence > 60 && props.confidence <= 70,
+                                "bg-sunny-light": props.confidence > 70,
+                            })}>
+                                {props.confidence}%
+                            </span>
                         </h1>
                         <h4 className="font-400 text-uppercase mt-n2 font-16 opacity-30">
                             <a style={{ marginRight: "12px" }} className={classNames({ "text-info": dataPointsCount != 24 })} onClick={() => { setDataPointsCount(24) }}>1d</a>

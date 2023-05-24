@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math/rand"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -22,7 +22,7 @@ type SpotMaker struct {
 	marketDataRepository   usecases.MarketDataRepository
 	newsRepository         usecases.NewsRepository
 	assetRepository        usecases.AssetRepository
-	adviser                usecases.Adviser
+	adviserRepository      usecases.AdviserRepository
 	userRepository         usecases.UserRepository
 	notifier               usecases.Notifier
 	logger                 *log.Logger
@@ -35,7 +35,7 @@ func NewSpotMaker(
 	marketDataRepository usecases.MarketDataRepository,
 	newsRepository usecases.NewsRepository,
 	assetRepository usecases.AssetRepository,
-	adviser usecases.Adviser,
+	adviserRepository usecases.AdviserRepository,
 	userRepository usecases.UserRepository,
 	notifier usecases.Notifier,
 	logger *log.Logger,
@@ -47,7 +47,7 @@ func NewSpotMaker(
 		marketDataRepository,
 		newsRepository,
 		assetRepository,
-		adviser,
+		adviserRepository,
 		userRepository,
 		notifier,
 		logger,
@@ -95,6 +95,14 @@ func (m *SpotMaker) Run(ctx context.Context) error {
 }
 
 func (m *SpotMaker) makeSpots(ctx context.Context) ([]domain.Spot, error) {
+	advisers, err := m.adviserRepository.GetLatestAdvisers(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("could not get current advisers, err: %w", err)
+	}
+	sort.Slice(advisers, func(i, j int) bool {
+		return advisers[i].SuccessRatePercent > advisers[j].SuccessRatePercent
+	})
+
 	assets, err := m.assetRepository.GetAvailableAssets(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("could not get available assets, err: %w", err)
@@ -124,14 +132,13 @@ func (m *SpotMaker) makeSpots(ctx context.Context) ([]domain.Spot, error) {
 			continue
 		}
 
-		advice, err := m.adviser.GetAdvice(ctx, adviceMarketData)
-		if err != nil {
-			m.logger.Println(fmt.Errorf(
-				"could not find spot for %s, err: %w",
-				assets[i].Symbol,
-				err,
-			))
-			continue
+		var advice *domain.Advice
+		for _, adviser := range advisers {
+			advice = adviser.GetAdvice(adviceMarketData)
+			if advice != nil {
+				advice.Confidence = adviser.SuccessRatePercent
+				break
+			}
 		}
 
 		if advice == nil {
@@ -186,7 +193,7 @@ func (m *SpotMaker) notify(ctx context.Context, user *domain.User, spots []domai
 
 	symbols := make([]string, 0, len(spots))
 	for _, spot := range spots {
-		symbols = append(symbols, spot.Asset.Symbol)
+		symbols = append(symbols, fmt.Sprintf("%s %d%%", spot.Asset.Symbol, spot.Advice.Confidence))
 	}
 
 	return m.notifier.Notify(
@@ -228,8 +235,7 @@ func (m *SpotMaker) GetSpot(
 		}
 
 		if len(historyMarketData[balanceSymbols[j]]) > 0 {
-			forecastMarketData[balanceSymbols[j]] = buildForecastHours(
-				ctx,
+			forecastMarketData[balanceSymbols[j]] = domain.BuildForecastHours(
 				historyMarketData[balanceSymbols[j]][len(historyMarketData[balanceSymbols[j]])-1].Close,
 				advice.PriceForecast,
 				before,
@@ -255,52 +261,5 @@ func (m *SpotMaker) GetSpot(
 		ForecastMarketDataByQuotes: forecastMarketData,
 		ActualMarketDataByQuotes:   actualMarketData,
 		News:                       news,
-	}
-}
-
-func buildForecastHours(
-	_ context.Context,
-	currentPrice float64,
-	priceForecast float64,
-	after time.Time,
-	hours int,
-) []domain.Kline {
-	price := currentPrice
-	endPrice := currentPrice + (currentPrice * priceForecast / 100)
-	diff := (endPrice - currentPrice) / float64(hours)
-	curvature := diff * 0.9
-	noiseSum := 0.0
-	var klines []domain.Kline
-	for i := 0; i < hours; i++ {
-		klines = append(
-			klines,
-			getForecastKline(price, 0, after.Add(time.Duration(i)*time.Hour)),
-		)
-		p := float64(i+1) / float64(hours)
-		noise := diff * rand.Float64() * 2
-		if i%2 == 0 {
-			noise *= -1
-		}
-		if i == hours-1 {
-			noise = -noiseSum
-		} else {
-			noiseSum += noise
-		}
-
-		price += diff - curvature + (2 * curvature * p) + noise
-	}
-
-	return klines
-}
-
-func getForecastKline(price float64, volume float64, startTime time.Time) domain.Kline {
-	return domain.Kline{
-		Open:      price,
-		Low:       price,
-		High:      price,
-		Close:     price,
-		Volume:    volume,
-		StartTime: startTime,
-		EndTime:   startTime.Add(time.Hour),
 	}
 }

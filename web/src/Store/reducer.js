@@ -72,6 +72,7 @@ const slice = createSlice({
                 ],
             },
             isPorfitable: false,
+            confidence: 0,
         },
         orders: [
             // {

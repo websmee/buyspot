@@ -8,10 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/adshao/go-binance/v2"
 	"github.com/redis/go-redis/v9"
 
-	"websmee/buyspot/internal/domain"
-	"websmee/buyspot/internal/domain/indicator"
 	binanceInfra "websmee/buyspot/internal/infrastructure/binance"
 	"websmee/buyspot/internal/infrastructure/cryptonews"
 	mongoInfra "websmee/buyspot/internal/infrastructure/mongo"
@@ -22,6 +21,8 @@ import (
 )
 
 var redisAddr = os.Getenv("BUYSPOT_REDIS")
+var binanceAPIKey = os.Getenv("BUYSPOT_BINANCE_API_KEY")
+var binanceSecretKey = os.Getenv("BUYSPOT_BINANCE_SECRET_KEY")
 var redisPassword = os.Getenv("BUYSPOT_REDIS_PASSWORD")
 var mongoURI = os.Getenv("BUYSPOT_MONGO")
 var mongoUser = os.Getenv("BUYSPOT_MONGO_USER")
@@ -55,19 +56,13 @@ func main() {
 
 	userRepository := mongoInfra.NewUserRepository(mongoClient)
 	spotRepository := mongoInfra.NewSpotRepository(mongoClient)
+	adviserRepository := mongoInfra.NewAdviserRepository(mongoClient)
 	marketDataRepository := mongoInfra.NewMarketDataRepository(mongoClient)
 	newsRepository := mongoInfra.NewNewsRepository(mongoClient)
 	assetRepository := mongoInfra.NewAssetRepository(mongoClient)
-	adviser := domain.NewAdviser(
-		24,
-		8,
-		5,
-		4.0,
-		indicator.NewRSI(10, 75),
-		indicator.NewVolumeSpike(2.0),
-	)
 	orderRepository := mongoInfra.NewOrderRepository(mongoClient)
 	balanceService := mongoInfra.NewDemoBalanceService(mongoClient)
+	exchangeInfoService := binanceInfra.NewExchangeInfoService(binance.NewClient(binanceAPIKey, binanceSecretKey))
 	currentSpotsRepository := redisInfra.NewCurrentSpotsRepository(redisClient)
 	currentPricesRepository := redisInfra.NewCurrentPricesRepository(redisClient)
 	tradingService := binanceInfra.NewTradingService()
@@ -82,7 +77,7 @@ func main() {
 		marketDataRepository,
 		newsRepository,
 		assetRepository,
-		adviser,
+		adviserRepository,
 		userRepository,
 		simplepush.NewNotifier(),
 		newLogger("[SPOT MAKER]"),
@@ -91,7 +86,30 @@ func main() {
 		logger.Fatalln(fmt.Errorf("could not run spot maker, err: %w", err))
 	}
 
-	marketDataBackgroundUpdater := background.NewMarketDataUpdater(
+	assetUpdater := background.NewAssetUpdater(
+		assetRepository,
+		exchangeInfoService,
+		newLogger("[ASSET UPDATER]"),
+	)
+	go func() {
+		if err := assetUpdater.Run(ctx); err != nil {
+			logger.Fatalln(fmt.Errorf("could not run asset updater, err: %w", err))
+		}
+	}()
+
+	adviserCreator := background.NewAdviserCreator(
+		assetRepository,
+		marketDataRepository,
+		adviserRepository,
+		newLogger("[ADVISER CREATOR]"),
+	)
+	go func() {
+		if err := adviserCreator.Run(ctx); err != nil {
+			logger.Fatalln(fmt.Errorf("could not run adviser creator, err: %w", err))
+		}
+	}()
+
+	marketDataUpdater := background.NewMarketDataUpdater(
 		balanceService,
 		assetRepository,
 		binanceInfra.NewMarketDataStream(),
@@ -100,12 +118,12 @@ func main() {
 		newLogger("[MARKET DATA UPDATER]"),
 	)
 	go func() {
-		if err := marketDataBackgroundUpdater.Run(ctx); err != nil {
+		if err := marketDataUpdater.Run(ctx); err != nil {
 			logger.Fatalln(fmt.Errorf("could not run market data updater, err: %w", err))
 		}
 	}()
 
-	orderBackgroundSeller := background.NewOrderSeller(
+	orderSeller := background.NewOrderSeller(
 		userRepository,
 		balanceService,
 		assetRepository,
@@ -116,18 +134,18 @@ func main() {
 		simplepush.NewNotifier(),
 		newLogger("[ORDER SELLER]"),
 	)
-	if err := orderBackgroundSeller.Run(ctx); err != nil {
+	if err := orderSeller.Run(ctx); err != nil {
 		logger.Fatalln(fmt.Errorf("could not run order seller, err: %w", err))
 	}
 
-	newsBackgroundUpdater := background.NewNewsUpdater(
+	newsUpdater := background.NewNewsUpdater(
 		assetRepository,
 		newsRepository,
 		newsService,
 		summarizer,
 		newLogger("[NEWS UPDATER]"),
 	)
-	if err := newsBackgroundUpdater.Run(ctx); err != nil {
+	if err := newsUpdater.Run(ctx); err != nil {
 		logger.Fatalln(fmt.Errorf("could not run news updater, err: %w", err))
 	}
 

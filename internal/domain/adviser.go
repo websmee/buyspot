@@ -1,61 +1,49 @@
 package domain
 
 import (
-	"context"
 	"math"
+	"math/rand"
+	"time"
 )
 
-type Indicator interface {
-	Check(klines []Kline) bool
-}
-
 type Adviser struct {
-	checkHours         int
-	forecastHours      int
-	forecastMultiplier float64
-	minForecast        float64
-	indicators         []Indicator
+	CheckHours            int                  `bson:"check_hours"`
+	ForecastHours         int                  `bson:"forecast_hours"`
+	ForecastMultiplier    float64              `bson:"forecast_multiplier"`
+	MinForecast           float64              `bson:"min_forecast"`
+	RSI                   RSIIndicator         `bson:"rsi"`
+	VolumeRise            VolumeRiseIndicator  `bson:"volume_rise"`
+	VolumeSpike           VolumeSpikeIndicator `bson:"volume_spike"`
+	AdviceFrequencyPerDay float64              `bson:"frequency_per_day"`
+	SuccessRatePercent    int                  `bson:"success_rate_percent"`
+	IsLatest              bool                 `bson:"is_latest"`
 }
 
-func NewAdviser(
-	checkHours int,
-	forecastHours int,
-	forecastMultiplier float64,
-	minForecast float64,
-	indicators ...Indicator,
-) *Adviser {
-	return &Adviser{
-		checkHours,
-		forecastHours,
-		forecastMultiplier,
-		minForecast,
-		indicators,
-	}
-}
-
-func (r *Adviser) GetAdvice(_ context.Context, marketData []Kline) (*Advice, error) {
-	if len(r.indicators) == 0 {
-		return nil, nil
+func (r *Adviser) GetAdvice(marketData []Kline) *Advice {
+	if len(marketData) < r.CheckHours {
+		return nil
 	}
 
-	if len(marketData) < r.checkHours {
-		return nil, nil
+	if !r.RSI.Check(marketData[len(marketData)-r.CheckHours:]) {
+		return nil
 	}
 
-	for _, indicator := range r.indicators {
-		if !indicator.Check(marketData[len(marketData)-r.checkHours:]) {
-			return nil, nil
-		}
+	if !r.VolumeRise.Check(marketData[len(marketData)-r.CheckHours:]) {
+		return nil
 	}
 
-	forecast := r.GetForecast(marketData[len(marketData)-r.checkHours:])
-	if forecast < r.minForecast {
-		return nil, nil
+	if !r.VolumeSpike.Check(marketData[len(marketData)-r.CheckHours:]) {
+		return nil
+	}
+
+	forecast := r.GetForecast(marketData[len(marketData)-r.CheckHours:])
+	if forecast < r.MinForecast {
+		return nil
 	}
 
 	return &Advice{
 		PriceForecast: forecast,
-		ForecastHours: r.forecastHours,
+		ForecastHours: r.ForecastHours,
 		BuyOrderSettings: BuyOrderSettings{
 			Amount:            100,
 			TakeProfit:        forecast,
@@ -63,7 +51,7 @@ func (r *Adviser) GetAdvice(_ context.Context, marketData []Kline) (*Advice, err
 			StopLoss:          -forecast,
 			StopLossOptions:   []float64{-forecast, -forecast * 2, -forecast * 4},
 		},
-	}, nil
+	}
 }
 
 func (r *Adviser) GetForecast(klines []Kline) float64 {
@@ -80,30 +68,53 @@ func (r *Adviser) GetForecast(klines []Kline) float64 {
 
 	avg := sum / float64(len(klines))
 	forecast := diffSum / float64(len(klines)-1) / avg * 100
-	forecast *= r.forecastMultiplier
+	forecast *= r.ForecastMultiplier
 
 	return math.Ceil(forecast)
 }
 
-func (r *Adviser) CheckAdvice(advice *Advice, followingMarketData []Kline) int {
-	startPrice := followingMarketData[0].Open
-	for i := range followingMarketData {
-		highDiff := followingMarketData[i].High - startPrice
-		lowDiff := followingMarketData[i].Low - startPrice
-		highPercent := highDiff / startPrice * 100
-		lowPercent := lowDiff / startPrice * 100
-		isTakeProfit := highPercent >= advice.BuyOrderSettings.TakeProfit
-		isStopLoss := lowPercent <= advice.BuyOrderSettings.StopLoss
-		if isTakeProfit && !isStopLoss {
-			return 1
+func BuildForecastHours(
+	currentPrice float64,
+	priceForecast float64,
+	after time.Time,
+	hours int,
+) []Kline {
+	price := currentPrice
+	endPrice := currentPrice + (currentPrice * priceForecast / 100)
+	diff := (endPrice - currentPrice) / float64(hours)
+	curvature := diff * 0.9
+	noiseSum := 0.0
+	var klines []Kline
+	for i := 0; i < hours; i++ {
+		klines = append(
+			klines,
+			getForecastKline(price, 0, after.Add(time.Duration(i)*time.Hour)),
+		)
+		p := float64(i+1) / float64(hours)
+		noise := diff * rand.Float64() * 2
+		if i%2 == 0 {
+			noise *= -1
 		}
-		if !isTakeProfit && isStopLoss {
-			return -1
+		if i == hours-1 {
+			noise = -noiseSum
+		} else {
+			noiseSum += noise
 		}
-		if isTakeProfit && isStopLoss {
-			return 0
-		}
+
+		price += diff - curvature + (2 * curvature * p) + noise
 	}
 
-	return 0
+	return klines
+}
+
+func getForecastKline(price float64, volume float64, startTime time.Time) Kline {
+	return Kline{
+		Open:      price,
+		Low:       price,
+		High:      price,
+		Close:     price,
+		Volume:    volume,
+		StartTime: startTime,
+		EndTime:   startTime.Add(time.Hour),
+	}
 }
