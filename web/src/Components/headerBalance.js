@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { getCurrentBalance } from 'Store/reducer';
 
-function HeaderBalance(props) {
+function HeaderBalance() {
     const dispatch = useDispatch();
     const balance = useSelector((state) => state.balance);
 

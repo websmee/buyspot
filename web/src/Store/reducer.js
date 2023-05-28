@@ -26,6 +26,7 @@ const slice = createSlice({
             amount: 0,
             symbol: "USDT",
         },
+        amountInOrders: 0,
         currentSpotsIndex: 0,
         currentSpotsNext: 0,
         currentSpotsPrev: 0,
@@ -234,6 +235,7 @@ const slice = createSlice({
 });
 
 const updateOrders = state => {
+    state.amountInOrders = 0;
     state.orders.forEach(order => {
         order.pnl = converter.calculatePNL(
             order.fromAmount,
@@ -248,6 +250,7 @@ const updateOrders = state => {
             state.balance.symbol,
             state.currentPrices.pricesBySymbols,
         );
+        state.amountInOrders += order.amountInBalanceSymbol;
     });
 };
 
