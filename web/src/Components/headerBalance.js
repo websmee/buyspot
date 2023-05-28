@@ -16,7 +16,7 @@ function HeaderBalance() {
             <i className="fa fa-wallet color-sunny-light"></i>
             <span className="color-sunny-light" style={{marginLeft:"5px"}}>
                 <span className="opacity-30 font-200" style={{marginRight:"3px"}}>{balance.symbol}</span>
-                {balance.amount}
+                {Math.round(balance.amount * 100) / 100}
             </span>
         </span>
     );
