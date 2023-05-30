@@ -12,6 +12,7 @@ const CtxKeyUserID = "user"
 type User struct {
 	ID               primitive.ObjectID `bson:"_id"`
 	Email            string             `bson:"email"`
+	TelegramUsername string             `bson:"telegram_username"`
 	Password         string             `bson:"password"`
 	BinanceAPIKey    string             `bson:"binance_api_key"`
 	BinanceSecretKey string             `bson:"binance_secret_key"`

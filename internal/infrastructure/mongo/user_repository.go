@@ -63,6 +63,15 @@ func (r *UserRepository) GetByID(ctx context.Context, userID string) (*domain.Us
 	return &user, nil
 }
 
+func (r *UserRepository) FindByTelegramUsername(ctx context.Context, username string) (*domain.User, error) {
+	var user domain.User
+	if err := r.getCollection().FindOne(ctx, primitive.M{"telegram_username": username}).Decode(&user); err != nil {
+		return nil, fmt.Errorf("could not get user by telegram = '%s' from mongo, err: %w", username, err)
+	}
+
+	return &user, nil
+}
+
 func (r *UserRepository) GetUsers(ctx context.Context) ([]domain.User, error) {
 	var users []domain.User
 	cur, err := r.getCollection().Find(ctx, bson.M{})

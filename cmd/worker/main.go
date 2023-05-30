@@ -16,7 +16,7 @@ import (
 	mongoInfra "websmee/buyspot/internal/infrastructure/mongo"
 	"websmee/buyspot/internal/infrastructure/openai"
 	redisInfra "websmee/buyspot/internal/infrastructure/redis"
-	"websmee/buyspot/internal/infrastructure/simplepush"
+	"websmee/buyspot/internal/infrastructure/telegram"
 	"websmee/buyspot/internal/usecases/background"
 )
 
@@ -30,6 +30,7 @@ var mongoPwd = os.Getenv("BUYSPOT_MONGO_PWD")
 var cryptonewsAPIToken = os.Getenv("BUYSPOT_CRYPTONEWS_API_TOKEN")
 var openaiAPIKey = os.Getenv("BUYSPOT_OPENAI_API_KEY")
 var openaiOrgID = os.Getenv("BUYSPOT_OPENAI_ORG_ID")
+var telegramBotAPIToken = os.Getenv("BUYSPOT_TELEGRAM_BOT_API_TOKEN")
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -69,6 +70,8 @@ func main() {
 	demoTradingService := mongoInfra.NewDemoTradingService(currentPricesRepository, balanceService)
 	newsService := cryptonews.NewNewsService(cryptonewsAPIToken)
 	summarizer := openai.NewSummarizer(openai.NewClient(openaiAPIKey, openaiOrgID))
+	notifier := telegram.NewNotifier(telegramBotAPIToken)
+	notificationsSubscriber := telegram.NewNotificationsSubscriber(telegramBotAPIToken)
 
 	spotMaker := background.NewSpotMaker(
 		balanceService,
@@ -78,8 +81,7 @@ func main() {
 		newsRepository,
 		assetRepository,
 		adviserRepository,
-		userRepository,
-		simplepush.NewNotifier(),
+		notifier,
 		newLogger("[SPOT MAKER]"),
 	)
 	if err := spotMaker.Run(ctx); err != nil {
@@ -131,7 +133,7 @@ func main() {
 		orderRepository,
 		tradingService,
 		demoTradingService,
-		simplepush.NewNotifier(),
+		notifier,
 		newLogger("[ORDER SELLER]"),
 	)
 	if err := orderSeller.Run(ctx); err != nil {
@@ -148,6 +150,12 @@ func main() {
 	if err := newsUpdater.Run(ctx); err != nil {
 		logger.Fatalln(fmt.Errorf("could not run news updater, err: %w", err))
 	}
+
+	background.NewNotificationKeyUpdater(
+		notificationsSubscriber,
+		userRepository,
+		newLogger("[NOTIFICATION KEY UPDATER]"),
+	).Run(ctx)
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)

@@ -115,6 +115,7 @@ type (
 	UserRepository interface {
 		CreateOrUpdate(ctx context.Context, user *domain.User) error
 		GetByID(ctx context.Context, userID string) (*domain.User, error)
+		FindByTelegramUsername(ctx context.Context, username string) (*domain.User, error)
 		GetUsers(ctx context.Context) ([]domain.User, error)
 	}
 
@@ -149,7 +150,8 @@ type (
 	}
 
 	Notifier interface {
-		Notify(ctx context.Context, user *domain.User, title, message string) error
+		NotifyAll(ctx context.Context, title, message string) error
+		NotifyUser(ctx context.Context, user *domain.User, title, message string) error
 	}
 
 	AdviserRepository interface {
@@ -160,5 +162,12 @@ type (
 
 	ExchangeInfoService interface {
 		GetExchangeInfo(ctx context.Context, symbols []string) ([]domain.AssetExchangeInfo, error)
+	}
+
+	NotificationsSubscriber interface {
+		Run(
+			updateKey func(username, key string) error,
+			handleErr func(err error),
+		) error
 	}
 )

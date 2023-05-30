@@ -182,7 +182,7 @@ func (r *OrderSeller) notify(ctx context.Context, user *domain.User, order *doma
 		return nil
 	}
 
-	return r.notifier.Notify(
+	return r.notifier.NotifyUser(
 		ctx,
 		user,
 		"ORDER CLOSED",

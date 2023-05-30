@@ -41,7 +41,7 @@ func (r *SpotReader) GetSpotByIndex(ctx context.Context, index int) (*domain.Spo
 	for i := range spot.HistoryMarketDataByQuotes {
 		last := spot.HistoryMarketDataByQuotes[i][len(spot.HistoryMarketDataByQuotes[i])-1]
 		hours := len(spot.ForecastMarketDataByQuotes[i])
-		if last.EndTime.Add(time.Hour).Before(time.Now()) {
+		if last.EndTime.Before(time.Now()) {
 			spot.ActualMarketDataByQuotes[i], err = r.marketDataRepository.GetKlines(
 				ctx,
 				spot.Asset.Symbol,

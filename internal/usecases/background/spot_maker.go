@@ -6,7 +6,6 @@ import (
 	"log"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/go-co-op/gocron"
@@ -23,7 +22,6 @@ type SpotMaker struct {
 	newsRepository         usecases.NewsRepository
 	assetRepository        usecases.AssetRepository
 	adviserRepository      usecases.AdviserRepository
-	userRepository         usecases.UserRepository
 	notifier               usecases.Notifier
 	logger                 *log.Logger
 }
@@ -36,7 +34,6 @@ func NewSpotMaker(
 	newsRepository usecases.NewsRepository,
 	assetRepository usecases.AssetRepository,
 	adviserRepository usecases.AdviserRepository,
-	userRepository usecases.UserRepository,
 	notifier usecases.Notifier,
 	logger *log.Logger,
 ) *SpotMaker {
@@ -48,7 +45,6 @@ func NewSpotMaker(
 		newsRepository,
 		assetRepository,
 		adviserRepository,
-		userRepository,
 		notifier,
 		logger,
 	}
@@ -84,7 +80,10 @@ func (m *SpotMaker) Run(ctx context.Context) error {
 			return
 		}
 
-		m.notifyUsers(ctx, spots)
+		if err := m.notify(ctx, spots); err != nil {
+			m.logger.Println(fmt.Errorf("could not notify users, err: %w", err))
+			return
+		}
 
 		m.logger.Println("new spots saved")
 	})
@@ -156,37 +155,7 @@ func (m *SpotMaker) makeSpots(ctx context.Context) ([]domain.Spot, error) {
 	return spots, nil
 }
 
-func (m *SpotMaker) notifyUsers(ctx context.Context, spots []domain.Spot) {
-	if len(spots) == 0 {
-		return
-	}
-
-	users, err := m.userRepository.GetUsers(ctx)
-	if err != nil {
-		m.logger.Println(fmt.Errorf("could not get users to notify, err: %w", err))
-	}
-
-	var wg sync.WaitGroup
-	for i := range users {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			err = m.notify(ctx, &users[i], spots)
-			if err != nil {
-				m.logger.Println(fmt.Errorf("could not notify user %s, err: %w", users[i].Email, err))
-			}
-		}(i)
-	}
-	wg.Wait()
-
-	return
-}
-
-func (m *SpotMaker) notify(ctx context.Context, user *domain.User, spots []domain.Spot) error {
-	if user.NotificationsKey == "" {
-		return nil
-	}
-
+func (m *SpotMaker) notify(ctx context.Context, spots []domain.Spot) error {
 	if len(spots) == 0 {
 		return nil
 	}
@@ -196,9 +165,8 @@ func (m *SpotMaker) notify(ctx context.Context, user *domain.User, spots []domai
 		symbols = append(symbols, fmt.Sprintf("%s %d%%", spot.Asset.Symbol, spot.Advice.Confidence))
 	}
 
-	return m.notifier.Notify(
+	return m.notifier.NotifyAll(
 		ctx,
-		user,
 		"NEW SPOTS",
 		strings.Join(symbols, ", "),
 	)
