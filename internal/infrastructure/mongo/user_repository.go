@@ -29,9 +29,12 @@ func (r *UserRepository) CreateOrUpdate(ctx context.Context, user *domain.User) 
 		bson.M{"email": user.Email},
 		bson.M{"$set": bson.M{
 			"email":              user.Email,
+			"telegram_username":  user.TelegramUsername,
 			"password":           user.Password,
 			"binance_api_key":    user.BinanceAPIKey,
 			"binance_secret_key": user.BinanceSecretKey,
+			"notifications_key":  user.NotificationsKey,
+			"is_demo":            user.IsDemo,
 		}},
 	)
 	if err != nil {
