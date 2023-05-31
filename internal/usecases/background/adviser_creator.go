@@ -29,9 +29,9 @@ func NewAdviserCreator(
 	trainer := domain.NewAdviserTrainer(
 		[]any{ // initial parameters:
 			3.0,  // forecastMultiplier
-			3.0,  // minForecast
+			2.0,  // minForecast
 			5,    // rsiPeriod
-			60.0, // rsiTrigger
+			70.0, // rsiTrigger
 			1.5,  // volumeSpikeRate
 			1,    // volumeRiseInARow
 		},
@@ -49,12 +49,12 @@ func NewAdviserCreator(
 		func(parameters []any, index int) bool { // increment parameters:
 			switch index {
 			case 0: // forecastMultiplier
-				if parameters[index].(float64) < 7 {
+				if parameters[index].(float64) < 5 {
 					parameters[index] = parameters[index].(float64) + 1
 					return true
 				}
 			case 1: // minForecast
-				if parameters[index].(float64) < 10 {
+				if parameters[index].(float64) < 4 {
 					parameters[index] = parameters[index].(float64) + 1
 					return true
 				}
@@ -64,17 +64,17 @@ func NewAdviserCreator(
 					return true
 				}
 			case 3: // rsiTrigger
-				if parameters[index].(float64) < 90 {
+				if parameters[index].(float64) < 85 {
 					parameters[index] = parameters[index].(float64) + 5
 					return true
 				}
 			case 4: // volumeSpikeRate
-				if parameters[index].(float64) < 4 {
+				if parameters[index].(float64) < 3 {
 					parameters[index] = parameters[index].(float64) + 0.5
 					return true
 				}
 			case 5: // volumeRiseInARow
-				if parameters[index].(int) < 4 {
+				if parameters[index].(int) < 3 {
 					parameters[index] = parameters[index].(int) + 1
 					return true
 				}
@@ -83,10 +83,14 @@ func NewAdviserCreator(
 			return false
 		},
 		func(result *domain.AdviserTrainerResult) bool { // check result:
-			return (result.SuccessRatePercent >= 45 && result.AdviceFrequencyPerDay > 5) ||
-				(result.SuccessRatePercent >= 50 && result.AdviceFrequencyPerDay > 1) ||
-				(result.SuccessRatePercent >= 55 && result.AdviceFrequencyPerDay > 0.5) ||
-				(result.SuccessRatePercent >= 60 && result.AdviceFrequencyPerDay > 0.1)
+			return (result.SuccessRatePercent >= 60 && result.AdviceFrequencyPerDay > 5) ||
+				(result.SuccessRatePercent >= 65 && result.AdviceFrequencyPerDay > 1) ||
+				(result.SuccessRatePercent >= 70 && result.AdviceFrequencyPerDay > 0.3) ||
+				(result.SuccessRatePercent >= 75 && result.AdviceFrequencyPerDay > 0.1)
+			//return (result.SuccessRatePercent >= 45 && result.AdviceFrequencyPerDay > 5) ||
+			//	(result.SuccessRatePercent >= 50 && result.AdviceFrequencyPerDay > 1) ||
+			//	(result.SuccessRatePercent >= 55 && result.AdviceFrequencyPerDay > 0.5) ||
+			//	(result.SuccessRatePercent >= 60 && result.AdviceFrequencyPerDay > 0.1)
 		},
 	)
 
@@ -116,7 +120,7 @@ func (c *AdviserCreator) Run(ctx context.Context) error {
 				ctx,
 				asset.Symbol,
 				"USDT",
-				time.Now().AddDate(0, 0, -30),
+				time.Now().AddDate(0, 0, -50),
 				time.Now(),
 				domain.IntervalHour,
 			)
