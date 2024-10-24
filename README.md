@@ -1,0 +1,1 @@
+This app allows users to get notifications (using Telegram) about crypto price movements and ability to insta buy coins (market order with stop loss/take profit using Binance API). It has mobile web app to view and manage current advices and orders + browsing summarised (using OpenAI) related news from Cryptonews API. The backend written in Go and uses MongoDB.
